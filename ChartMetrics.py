@@ -94,7 +94,7 @@ for metric in metric_names:
         values.append(averages[cat][metric])
     plt.figure(figsize=(10,6))
     plt.bar(cats, values, color='skyblue')
-    plt.xlabel("Категория")
+    plt.xlabel("Комбинация")
     plt.ylabel(metric)
     plt.title(f"Среднее значение метрики {metric}")
     plt.xticks(rotation=45)
@@ -103,3 +103,11 @@ for metric in metric_names:
     plt.savefig(output_file)
     plt.close()
     print(f"Сохранён график для {metric} в {output_file}")
+
+    output_csv = os.path.join(main_dir, f"data_{metric}.csv")
+    with open(output_csv, "w", newline="", encoding="utf8") as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(["Category", metric])
+        for cat in sorted_categories:
+            writer.writerow([cat, averages[cat][metric]])
+    print(f"Сохранены агрегированные данные для метрики {metric} в {output_csv}")
