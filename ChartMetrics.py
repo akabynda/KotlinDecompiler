@@ -16,16 +16,6 @@ expected_categories = [
     "JDGUIJ2K", "JDGUIChatGPT"
 ]
 
-"""
-expected_categories = [
-    "Origin",
-    "BytecodeChatGPT",
-    "CFRJ2K", "CFRChatGPT", "CFRCodeConvert",
-    "FernflowerJ2K", "FernflowerChatGPT", "FernflowerCodeConvert",
-    "JDGUIJ2K", "JDGUIChatGPT", "JDGUICodeConvert"
-]
-"""
-
 # Инициализируем словарь для накопления метрик по категориям
 categories = {cat: {"program_size": [],
                     "abrupt_control_flow": [],

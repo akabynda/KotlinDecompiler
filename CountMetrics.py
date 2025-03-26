@@ -21,7 +21,7 @@ def count_abrupt_control_flow(node):
     Рекурсивно подсчитывает узлы, соответствующие операторам прерывания:
     типы "break_expression" и "continue_expression".
     """
-    count = 1 if node.type in ["break_expression", "continue_expression"] else 0
+    count = 1 if node.type in ["jump_expression", "break_expression", "continue_expression"] else 0
     for child in node.children:
         count += count_abrupt_control_flow(child)
     return count
