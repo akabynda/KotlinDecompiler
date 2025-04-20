@@ -25,7 +25,7 @@ def main():
     )
     args = parser.parse_args()
 
-    decompilers = ["CFR", "JDGUI", "Fernflower"]
+    decompilers = ["CFR", "JDGUI", "Fernflower", "Bytecode"]
 
     # Список всех тестовых директорий
     test_dirs = [d for d in args.root.iterdir() if d.is_dir()]
