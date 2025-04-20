@@ -14,13 +14,13 @@ def main():
     parser.add_argument(
         "--output-table",
         type=Path,
-        default=Path("results-J2K.csv"),
+        default=Path("results-ChatGPT.csv"),
         help="Имя выходного CSV-файла с подробными результатами",
     )
     parser.add_argument(
         "--output-summary",
         type=Path,
-        default=Path("summary-J2K.txt"),
+        default=Path("summary-ChatGPT.txt"),
         help="Имя выходного файла с процентом успеха для каждого декомпилятора",
     )
     args = parser.parse_args()
@@ -41,9 +41,9 @@ def main():
             dec_dir = td / dec
             ok = False
             if dec_dir.is_dir():
-                # ищем .class‑файл с J2K в имени
+                # ищем .class‑файл с ChatGPT в имени
                 for cls in dec_dir.glob("*.class"):
-                    if "J2K" in cls.name:
+                    if "ChatGPT" in cls.name:
                         ok = True
                         break
             row[dec] = "+" if ok else "-"
