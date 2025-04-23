@@ -1,4 +1,4 @@
-from common import conditional_entropy
+from .common import conditional_entropy
 
 
 def compute(orig: str, decomp: str) -> float:

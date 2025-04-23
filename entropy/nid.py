@@ -1,4 +1,4 @@
-from common import nid
+from .common import nid
 
 
 def compute(orig: str, decomp: str) -> float:

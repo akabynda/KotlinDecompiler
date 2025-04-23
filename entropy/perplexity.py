@@ -1,4 +1,4 @@
-from common import perplexity
+from .common import perplexity
 
 
 def compute(orig: str, decomp: str) -> float:
