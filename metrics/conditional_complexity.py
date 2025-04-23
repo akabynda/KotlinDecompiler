@@ -22,10 +22,9 @@ def conditional_complexity(root: Node) -> float:
     def _conditions(node: Node):
         conds = []
         if node.type == "if_expression":
-            for ch in node.children:
-                if ch.type == "parenthesized_expression" and ch.child_count:
-                    conds.append(ch.children[0])
-                    break
+            cond = node.child_by_field_name("condition")
+            if cond:
+                conds.append(cond)
         for ch in node.children:
             conds.extend(_conditions(ch))
         return conds
