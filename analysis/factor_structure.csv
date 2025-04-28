@@ -1,0 +1,42 @@
+Factor,Metric,Loading
+F1,Chapin Q,0.9380486440608083
+F1,Conditional Complexity,0.5546679616043688
+F1,Conditional Statements,0.7892851542344536
+F1,Cyclomatic Complexity,0.7188045736811525
+F1,Halstead Total Operators,0.9209333729219524
+F1,Halstead Total Operands,0.9435140975897196
+F1,Halstead Bugs,0.953897408904292
+F1,Halstead Difficulty,0.7711491187199978
+F1,Halstead Effort,0.9221164555871412
+F1,Halstead Length,0.9676032314138284
+F1,Halstead Distinct Operators,0.6792401523592938
+F1,Halstead Distinct Operands,0.9073741099412442
+F1,Halstead Vocabulary,0.8813568015763383
+F1,Local Variables,0.898512338996791
+F1,Pivovarsky N(G),0.667192255382341
+F1,Program Size,0.9215597969558964
+F2,CE,0.8708990976911719
+F2,NID,0.6539153549624303
+F2,Hcond,0.7068471325149663
+F2,CE_2gram,0.8552648563563068
+F2,CE_3gram,0.8449737156371226
+F2,detekt_LongParameterList,0.6973842424166375
+F2,detekt_FunctionParameterNaming,0.5261290426987183
+F2,detekt_FunctionNaming,0.6857441800355926
+F2,detekt_MatchingDeclarationName,-0.9227843148250292
+F2,detekt_ConstructorParameterNaming,0.9126386983940166
+F2,detekt_MemberNameEqualsClassName,0.8103805752571178
+F2,detekt_SpreadOperator,0.8615146841485264
+F2,detekt_UnusedPrivateProperty,0.899377719220363
+F2,detekt_ThrowingExceptionsWithoutMessageOrCause,0.559454277605934
+F2,detekt_UtilityClassWithPublicConstructor,-0.9480991656487436
+F3,Conditional Complexity,0.7148143017596357
+F3,Cyclomatic Complexity,0.6740654518482013
+F3,Pivovarsky N(G),0.728886977022038
+F4,detekt_LongParameterList,0.572230049616886
+F4,detekt_FunctionNaming,0.7050153538814738
+F4,detekt_MagicNumber,-0.749873482209724
+F4,detekt_ThrowingExceptionsWithoutMessageOrCause,0.7198762920502773
+F5,detekt_FunctionParameterNaming,0.821988436638283
+F5,detekt_MemberNameEqualsClassName,0.5456597771546486
+F5,detekt_LoopWithTooManyJumpStatements,0.6767174316500271

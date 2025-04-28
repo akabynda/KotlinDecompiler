@@ -53,7 +53,7 @@ def write_category_summary(csv_path: Path,
         "CFRChatGPT":          { "Program Size": [400, 190, ...], ... },
         ...
     }
-    —→ формирует CSV «Category, metric‑1, metric‑2, …»,
+    -> формирует CSV «Category, metric‑1, metric‑2, …»,
        где в ячейках записано среднее value.
     """
     if not data:
