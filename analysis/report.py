@@ -5,10 +5,10 @@ from typing import Tuple, List
 
 import pandas as pd
 
-FULL = Path("full_metrics.csv")
-LOAD = Path("factor_loadings.csv")
-SCORES = Path("factor_scores.csv")
-FPCA = Path("fpca_scores.csv")
+FULL = Path("./full_metrics.csv")
+LOAD = Path("./factor_loadings.csv")
+SCORES = Path("./factor_scores.csv")
+FPCA = Path("./fpca_scores.csv")
 
 LOADING_CUT = 0.50  # |λ|
 CORR_TH = 0.70  # |r|
