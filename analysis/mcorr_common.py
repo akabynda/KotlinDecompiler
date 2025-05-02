@@ -8,7 +8,7 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
 FULL = Path("full_metrics.csv")
-TARGETS = ["CE", "KL", "PPL", "NID", "Hcond"] + [f"CE_{i}gram" for i in range(1, 7)]
+TARGETS = ["CE", "KL", "PPL", "NID", "Hcond"]
 CORR_DROP = .95
 
 
@@ -20,7 +20,6 @@ np.ndarray]:
 
     struct0 = [c for c in df.columns
                if c not in ("Test", "Category")
-               and not c.startswith("CE_")
                and c not in TARGETS]
 
     corr = df[struct0].corr().abs()

@@ -25,7 +25,7 @@ def _label(col: pd.Series) -> str:
         return "Halstead"
     if any(m.startswith("detekt") for m in hi.index[:3]):
         return "Detekt"
-    if any(k in top for k in ("ce_", "kl", "ppl", "nid", "hcond", "ce ")):
+    if any(k in top for k in ("kl", "ppl", "nid", "hcond", "ce")):
         return "Entropy"
     return " / ".join(hi.index[:3])
 
@@ -65,9 +65,8 @@ cat_stats = (
 _save(Path("./category_factor_scores.csv"), cat_stats)
 
 struct_cols = [c for c in df_all.columns
-               if c not in ("Test", "Category") and not c.startswith("CE_")]
-entropy_cols = [c for c in df_all.columns if c.startswith("CE_")] + \
-               ["CE", "KL", "PPL", "NID", "Hcond"]
+               if c not in ("Test", "Category")]
+entropy_cols = ["CE", "KL", "PPL", "NID", "Hcond"]
 
 corr = df_all[struct_cols + entropy_cols].corr().loc[struct_cols, entropy_cols]
 strong = (corr.where(corr.abs() >= CORR_TH)

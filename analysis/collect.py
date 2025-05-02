@@ -4,10 +4,8 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
-from entropy.common import cross_entropy_ngram, _tokens
 from entropy.conditional_entropy import compute as Hcond
 from entropy.cross_entropy import compute as CE
 from entropy.kl_divergence import compute as KL
@@ -40,15 +38,16 @@ def structural(src: str) -> dict[str, float]:
     return {n: fn(tree) for n, fn in registry.items()}
 
 
-def entropy(orig: str, dec: str, n_max: int) -> dict[str, float]:
-    m = dict(CE=CE(orig, dec), KL=KL(orig, dec),
-             PPL=PPL(orig, dec), NID=NID(orig, dec), Hcond=Hcond(orig, dec))
-    for n in range(1, n_max + 1):
-        m[f"CE_{n}gram"] = cross_entropy_ngram(orig, dec, n)
-    return m
+def entropy(orig: str, dec: str) -> dict[str, float]:
+    return dict(
+        CE=CE(orig, dec),
+        KL=KL(orig, dec),
+        PPL=PPL(orig, dec),
+        NID=NID(orig, dec),
+        Hcond=Hcond(orig, dec),
+    )
 
 
-# 1. читаем тесты
 tests: dict[str, dict] = {}
 
 for td in TEST_ROOT.iterdir():
@@ -91,7 +90,6 @@ for td in TEST_ROOT.iterdir():
 
 print(len(tests))
 
-# превращаем в список пар (Test, Category, dec_code, orig_code)
 pairs: list[tuple[str, str, str, str]] = []
 for test, data in tests.items():
     pairs.append((test, "Original", data["orig"], data["orig"]))
@@ -106,34 +104,6 @@ print(f"Всего пар для анализа: {len(pairs)}")
 for t, d in tests.items():
     print(f"{t:20s}  ->  {len(d['decs']):2d} категорий: {list(d['decs'])}")
 
-# 2. ищем best_n
-dec_pairs = [p for p in pairs if p[1] != "Original"]
-avg_len = int(np.mean([len(_tokens(o)) for *_, o in dec_pairs]))
-hard_cap = min(200, max(3, int(avg_len * 0.25)))
-
-
-def ce_curve(o, d):
-    return [cross_entropy_ngram(o, d, n) for n in range(1, hard_cap + 1)]
-
-
-df_ce = pd.DataFrame([ce_curve(o, c) for *_, c, o in dec_pairs],
-                     columns=[f"CE_{n}" for n in range(1, hard_cap + 1)])
-
-rel = df_ce.pct_change(axis=1).abs().iloc[:, 1:]
-q1, q3 = rel.stack().quantile([.25, .75])
-REL_THRESH = 0.5 * (q3 - q1) or 0.01
-
-plateau_len = 3
-best_n = hard_cap
-for i in range(len(rel.columns) - plateau_len + 1):
-    if (rel.iloc[:, i:i + plateau_len].mean() < REL_THRESH).all():
-        best_n = i + 2  # +2, т.к. rel начинается с CE_2
-        break
-
-Path("ngram_best.txt").write_text(str(best_n))
-print(f"★ best_n = {best_n}, REL_THRESH = {REL_THRESH:.4f} (плато {plateau_len})")
-
-# 3. detekt
 ISSUE_RE = re.compile(r'^(?P<issue>\w+)\s+-.*\s+at\s+(?P<path>/.*?):\d+:\d+')
 DET_REPORT = Path(input("Путь к detekt_report.txt: ").strip()).expanduser()
 detekt: dict[str, defaultdict[str, int]] = defaultdict(lambda: defaultdict(int))
@@ -169,7 +139,7 @@ rows: list[dict[str, float]] = []
 for test, cat, dec_code, orig_code in pairs:
     row = {"Test": test, "Category": cat}
     row |= structural(dec_code)
-    row |= entropy(orig_code, dec_code, best_n)
+    row |= entropy(orig_code, dec_code)
 
     # detekt-метрики
     if cat in detekt_df.index:
@@ -182,4 +152,3 @@ df = pd.DataFrame(rows).sort_values(["Test", "Category"]).reset_index(drop=True)
 df.to_csv(OUT_CSV, index=False)
 
 print(f"{OUT_CSV} (строк: {len(df)})")
-print("ngram_best.txt создано")
