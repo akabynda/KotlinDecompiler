@@ -82,19 +82,3 @@ def conditional_entropy(p_src: str, q_src: str, eps=1e-12):
         p_cond = bp.get((a, b), eps) / up.get(a, eps)
         res += q * math.log2(1 / max(p_cond, eps))
     return res
-
-
-def cross_entropy_ngram(orig: str, dec: str, n: int, eps=1e-12):
-    from collections import Counter
-    def ngrams(src):
-        tok = _tokens(src)
-        if len(tok) < n:
-            return {}
-        c = Counter(tuple(tok[i:i + n]) for i in range(len(tok) - n + 1))
-        tot = sum(c.values())
-        return {g: v / tot for g, v in c.items()}
-
-    p, q = ngrams(orig), ngrams(dec)
-    keys = _merge(p, q)
-    return sum(q.get(k, eps) * math.log2(1 / max(p.get(k, eps), eps))
-               for k in keys)
