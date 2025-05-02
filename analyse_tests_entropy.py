@@ -16,8 +16,8 @@ _ENT_FUNCS: dict[str, Callable[[str, str], float]] = {
     "PPL": perplexity,
     "NID": nid,
     "Hcond": conditional_entropy,
-    **{f"CE_{n}gram": (lambda p, q, n=n: cross_entropy_ngram(p, q, n))
-       for n in range(1, 7)}
+    #**{f"CE_{n}gram": (lambda p, q, n=n: cross_entropy_ngram(p, q, n))
+    #   for n in range(1, 7)}
 }
 
 
@@ -106,7 +106,7 @@ def build_charts(summary: Dict[str, Dict[str, List[float]]],
         png_path = out_dir / f"{metric.replace(' ', '')}_by_category.png"
         plt.savefig(png_path, dpi=150)
         plt.close()
-        print(f"📊Chart saved: {png_path}")
+        print(f"Chart saved: {png_path}")
 
 
 def aggregate(base_dir: Path):
