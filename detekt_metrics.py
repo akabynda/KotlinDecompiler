@@ -32,7 +32,7 @@ def main():
             if decomp != "original" and len(parts) > 2:
                 for c in _CONVERTERS:
                     if c in parts[2]:
-                        conv = c;
+                        conv = c
                         break
             if decomp != "original" and conv == "original":
                 continue
@@ -42,18 +42,28 @@ def main():
     cnt = (df.groupby(["decompiler", "converter", "issue"])
            .size()
            .reset_index(name="count"))
+
+    total = (df.groupby(["decompiler", "converter"])
+             .size()
+             .reset_index(name="total_tests"))
+
+    cnt = cnt.merge(total, on=["decompiler", "converter"])
+    cnt["share"] = cnt["count"] / cnt["total_tests"]
+
+    # стало
     cnt["Category"] = cnt.apply(
-        lambda r: "Original" if r.decompiler == r.converter == "original"
+        lambda r: "Original"
+        if r.decompiler == r.converter == "original"
         else f"{r.decompiler}{r.converter}", axis=1)
 
-    pv = cnt.pivot_table(index="Category", columns="issue", values="count", fill_value=0)
+    pv = cnt.pivot_table(index="Category", columns="issue", values="share", fill_value=0)
     (out / "detekt_metrics_category_summary.csv").write_text(pv.to_csv())
 
     for issue in pv.columns:
         plt.figure(figsize=(10, 4))
         pv[issue].plot(kind="bar")
-        plt.title(f"{issue} by category")
-        plt.ylabel("Count")
+        plt.title(f"{issue}")
+        plt.ylabel("Share of findings")
         plt.xticks(rotation=45, ha="right")
         plt.tight_layout()
         plt.savefig(out / f"{issue}_by_category.png")
