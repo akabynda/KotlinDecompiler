@@ -1,6 +1,6 @@
 """
 Любая функция, помеченная декоратором @metric, автоматически
-попадает в общий реестр и будет вызвана в analyse_tests.py
+попадает в общий реестр и будет вызвана в analyse_tests_metrics.py
 """
 from typing import Callable, Dict
 
