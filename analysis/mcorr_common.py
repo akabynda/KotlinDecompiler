@@ -50,6 +50,7 @@ def flush(path: Path,
         buffer.clear()
     return False
 
+
 def comb_cnt(n: int, k_max: int) -> int:
     return sum(math.comb(n, k) for k in range(1, k_max + 1))
 

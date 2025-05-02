@@ -7,19 +7,19 @@ from typing import Dict, List, Callable
 
 import matplotlib.pyplot as plt
 
-from entropy.common import (cross_entropy, kl_div, perplexity,
-                            nid, conditional_entropy, cross_entropy_ngram)
+from entropy.conditional_entropy import conditional_entropy
+from entropy.cross_entropy import cross_entropy
+from entropy.kl_divergence import kl_div
+from entropy.nid import nid
+from entropy.perplexity import perplexity
 
 _ENT_FUNCS: dict[str, Callable[[str, str], float]] = {
     "CE": cross_entropy,
     "KL": kl_div,
     "PPL": perplexity,
     "NID": nid,
-    "Hcond": conditional_entropy,
-    #**{f"CE_{n}gram": (lambda p, q, n=n: cross_entropy_ngram(p, q, n))
-    #   for n in range(1, 7)}
+    "Hcond": conditional_entropy
 }
-
 
 _DECOMPILERS = {"Bytecode", "CFR", "Fernflower", "JDGUI"}
 _CONVERTERS = {"ChatGPT", "J2K"}
