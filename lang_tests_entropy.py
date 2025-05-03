@@ -10,6 +10,7 @@ from utils.detect_category import detect_category
 
 language = "kotlin"
 entr = Entropy(language)
+# language_model_name = "kstack"
 language_model_name = "kstack-clean+kexercises"
 
 LANG_MODEL_DIR = Path(f"lang_models/{language}/{language_model_name}")
