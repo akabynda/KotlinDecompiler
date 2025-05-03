@@ -14,7 +14,7 @@ language = "kotlin"
 entr = Entropy(language)
 
 TEST_ROOT = Path(input("Путь к папке с тестами: ").strip()).expanduser()
-OUT_CSV = Path("full_metrics.csv")
+OUT_CSV = Path("analysis/full_metrics.csv")
 
 DECOMPILERS = {"Bytecode", "CFR", "JDGUI", "Fernflower"}
 CONVERTERS = {"ChatGPT", "J2K"}
