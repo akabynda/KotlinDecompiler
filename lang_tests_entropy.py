@@ -25,8 +25,8 @@ _ENT_FUNCS: dict[str, Callable[[str], float]] = {
     "CE": lambda s: entr.cross_entropy_lang(P_uni, s),
     "KL": lambda s: entr.kl_div_lang(P_uni, s),
     "PPL": lambda s: entr.perplexity_lang(P_uni, s),
-    "NID": lambda s: entr.nid_lang(P_uni, s),
-    "Hcond": lambda s: entr.conditional_entropy_lang(P_bi, P_left, s)
+    "JSD": lambda s: entr.jensen_shannon_distance_lang(P_uni, s),
+    "CondE": lambda s: entr.conditional_entropy_lang(P_bi, P_left, s)
 }
 
 

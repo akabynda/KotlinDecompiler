@@ -70,9 +70,23 @@ class Entropy:
     def entropy(self, src: str):
         return self.cross_entropy(src, src)
 
-    def nid(self, p_src: str, q_src: str):
-        h_p, h_q = self.entropy(p_src), self.entropy(q_src)
-        return (self.kl_div(p_src, q_src) + self.kl_div(q_src, p_src)) / (h_p + h_q)
+    def jensen_shannon_divergence(self, p: dict[str, float], q: dict[str, float], eps=1e-12) -> float:
+        m = {k: 0.5 * (p.get(k, 0.0) + q.get(k, 0.0)) for k in self.merge(p, q)}
+        kl_pm = 0.0
+        kl_qm = 0.0
+        for k in self.merge(p, q):
+            p_val = p.get(k, eps)
+            q_val = q.get(k, eps)
+            m_val = m.get(k, eps)
+            kl_pm += p_val * math.log2(p_val / m_val)
+            kl_qm += q_val * math.log2(q_val / m_val)
+        return 0.5 * (kl_pm + kl_qm)
+
+    def jensen_shannon_distance(self, p_src: str, q_src: str) -> float:
+        p_dist = self.dist(p_src)
+        q_dist = self.dist(q_src)
+        divergence = self.jensen_shannon_divergence(p_dist, q_dist)
+        return math.sqrt(divergence)
 
     def perplexity(self, p_src: str, q_src: str):
         return 2 ** self.cross_entropy(p_src, q_src)
@@ -91,12 +105,10 @@ class Entropy:
     def perplexity_lang(self, lang_dist: dict[str, float], src: str, eps=1e-12):
         return 2 ** self.cross_entropy_lang(lang_dist, src, eps)
 
-    def nid_lang(self, lang_dist: dict[str, float], src: str, eps=1e-12):
-        H_lang = sum(p * math.log2(1 / p) for p in lang_dist.values())
-        H_src = self.entropy(src)
-        kl_ps = self.kl_div_lang(lang_dist, src, eps)
-        kl_sp = self.kl_div(src, ''.join(lang_dist.keys()))
-        return (kl_ps + kl_sp) / (H_lang + H_src)
+    def jensen_shannon_distance_lang(self, lang_dist: dict[str, float], src: str, eps=1e-12) -> float:
+        q_dist = self.dist(src)
+        divergence = self.jensen_shannon_divergence(lang_dist, q_dist, eps=eps)
+        return math.sqrt(divergence)
 
     def conditional_entropy_lang(self, bi_dist, left_dist, src: str, eps=1e-12):
         toks = self.tokens(src)

@@ -42,8 +42,8 @@ def entropy(orig: str, dec: str) -> dict[str, float]:
         CE=entr.cross_entropy(orig, dec),
         KL=entr.kl_div(orig, dec),
         PPL=entr.perplexity(orig, dec),
-        NID=entr.nid(orig, dec),
-        Hcond=entr.conditional_entropy(orig, dec),
+        JSD=entr.jensen_shannon_distance(orig, dec),
+        CondE=entr.conditional_entropy(orig, dec),
     )
 
 

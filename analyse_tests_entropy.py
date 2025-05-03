@@ -16,8 +16,8 @@ _ENT_FUNCS: dict[str, Callable[[str, str], float]] = {
     "CE": entr.cross_entropy,
     "KL": entr.kl_div,
     "PPL": entr.perplexity,
-    "NID": entr.nid,
-    "Hcond": entr.conditional_entropy
+    "JSD": entr.jensen_shannon_distance,
+    "CondE": entr.conditional_entropy
 }
 
 
