@@ -7,18 +7,17 @@ from typing import Dict, List, Callable
 
 import matplotlib.pyplot as plt
 
-from entropy.conditional_entropy import conditional_entropy
-from entropy.cross_entropy import cross_entropy
-from entropy.kl_divergence import kl_div
-from entropy.nid import nid
-from entropy.perplexity import perplexity
+from entropy import Entropy
+
+language = "kotlin"
+entr = Entropy(language)
 
 _ENT_FUNCS: dict[str, Callable[[str, str], float]] = {
-    "CE": cross_entropy,
-    "KL": kl_div,
-    "PPL": perplexity,
-    "NID": nid,
-    "Hcond": conditional_entropy
+    "CE": entr.cross_entropy,
+    "KL": entr.kl_div,
+    "PPL": entr.perplexity,
+    "NID": entr.nid,
+    "Hcond": entr.conditional_entropy
 }
 
 _DECOMPILERS = {"Bytecode", "CFR", "Fernflower", "JDGUI"}

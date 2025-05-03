@@ -6,13 +6,13 @@ from pathlib import Path
 
 import pandas as pd
 
-from entropy.conditional_entropy import compute as Hcond
-from entropy.cross_entropy import compute as CE
-from entropy.kl_divergence import compute as KL
-from entropy.nid import compute as NID
-from entropy.perplexity import compute as PPL
+from entropy import Entropy
 from metrics import registry
 from utils.kotlin_parser import parse
+
+language = "kotlin"
+entr = Entropy(language)
+
 
 TEST_ROOT = Path(input("Путь к папке с тестами: ").strip()).expanduser()
 OUT_CSV = Path("full_metrics.csv")
@@ -40,11 +40,11 @@ def structural(src: str) -> dict[str, float]:
 
 def entropy(orig: str, dec: str) -> dict[str, float]:
     return dict(
-        CE=CE(orig, dec),
-        KL=KL(orig, dec),
-        PPL=PPL(orig, dec),
-        NID=NID(orig, dec),
-        Hcond=Hcond(orig, dec),
+        CE=entr.cross_entropy(orig, dec),
+        KL=entr.kl_div(orig, dec),
+        PPL=entr.perplexity(orig, dec),
+        NID=entr.nid(orig, dec),
+        Hcond=entr.conditional_entropy(orig, dec),
     )
 
 
