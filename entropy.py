@@ -76,3 +76,45 @@ class Entropy:
 
     def perplexity(self, p_src: str, q_src: str):
         return 2 ** self.cross_entropy(p_src, q_src)
+
+    def cross_entropy_lang(self, lang_dist: dict[str, float], src: str, eps=1e-12):
+        q = self.dist(src)
+        return sum(q.get(k, eps) * math.log2(1 / max(lang_dist.get(k, eps), eps))
+                   for k in self.merge(lang_dist, q))
+
+    def kl_div_lang(self, lang_dist: dict[str, float], src: str, eps=1e-12):
+        q = self.dist(src)
+        return sum(q.get(k, eps) * math.log2(max(q.get(k, eps), eps) /
+                                             max(lang_dist.get(k, eps), eps))
+                   for k in self.merge(lang_dist, q))
+
+    def perplexity_lang(self, lang_dist: dict[str, float], src: str, eps=1e-12):
+        return 2 ** self.cross_entropy_lang(lang_dist, src, eps)
+
+    def nid_lang(self, lang_dist: dict[str, float], src: str, eps=1e-12):
+        H_lang = sum(p * math.log2(1 / p) for p in lang_dist.values())
+        H_src = self.entropy(src)
+        kl_ps = self.kl_div_lang(lang_dist, src, eps)
+        kl_sp = self.kl_div(src, ''.join(lang_dist.keys()))
+        return (kl_ps + kl_sp) / (H_lang + H_src)
+
+    def conditional_entropy_lang(self, bi_dist, left_dist, src: str, eps=1e-12):
+        toks = self.tokens(src)
+        if len(toks) < 2:
+            return 0.0
+
+        bq = Counter(zip(toks, toks[1:]))
+        total = sum(bq.values())
+        bq = {k: v / total for k, v in bq.items()}
+
+        pairs = set(bq)
+        for a, inner in bi_dist.items():
+            for b in inner:
+                pairs.add((a, b))
+
+        h = 0.0
+        for a, b in pairs:
+            q = bq.get((a, b), eps)
+            p_cond = bi_dist.get(a, {}).get(b, eps) / left_dist.get(a, eps)
+            h += q * math.log2(1 / max(p_cond, eps))
+        return h

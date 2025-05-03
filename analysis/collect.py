@@ -13,7 +13,6 @@ from utils.kotlin_parser import parse
 language = "kotlin"
 entr = Entropy(language)
 
-
 TEST_ROOT = Path(input("Путь к папке с тестами: ").strip()).expanduser()
 OUT_CSV = Path("full_metrics.csv")
 
