@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from entropy import Entropy
+from metrics.entropy import Entropy
 from metrics import registry
 from utils.kotlin_parser import parse
 

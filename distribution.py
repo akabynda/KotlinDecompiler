@@ -9,7 +9,7 @@ from pathlib import Path
 from datasets import load_dataset
 from tqdm import tqdm
 
-from entropy import Entropy
+from metrics.entropy import Entropy
 
 language = "kotlin"
 
