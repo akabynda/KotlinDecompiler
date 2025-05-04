@@ -14,7 +14,7 @@
 
 
 - **`build_charts.py`**  
-  Строит графики по данным из full_metrics.csv.
+  Строит графики по данным.
 
 
 - **`distribution.py`**  
