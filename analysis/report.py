@@ -5,7 +5,7 @@ from typing import Tuple, List
 
 import pandas as pd
 
-FULL = Path("./full_metrics.csv")
+FULL = Path("../full_metrics.csv")
 LOAD = Path("./factor_loadings.csv")
 SCORES = Path("./factor_scores.csv")
 FPCA = Path("./fpca_scores.csv")

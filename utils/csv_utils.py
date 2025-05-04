@@ -4,9 +4,6 @@ from typing import Dict, List, Any
 
 
 def append_metrics(csv_path: Path, metrics: Dict[str, Any]) -> None:
-    """
-    Создаёт файл, если его нет, или добавляет новые столбцы.
-    """
     csv_path.parent.mkdir(parents=True, exist_ok=True)
 
     if csv_path.exists():
@@ -47,15 +44,6 @@ def write_summary(csv_path: Path, rows: List[Dict[str, Any]]) -> None:
 
 def write_category_summary(csv_path: Path,
                            data: Dict[str, Dict[str, List[float]]]) -> None:
-    """
-    data: {
-        "Original":            { "Program Size": [420, 188, ...], ... },
-        "CFRChatGPT":          { "Program Size": [400, 190, ...], ... },
-        ...
-    }
-    -> формирует CSV «Category, metric‑1, metric‑2, …»,
-       где в ячейках записано среднее value.
-    """
     if not data:
         return
 

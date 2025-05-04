@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
-FULL = Path("full_metrics.csv")
+FULL = Path("../full_metrics.csv")
 TARGETS = ["CE", "KL", "PPL", "NID", "Hcond"]
 CORR_DROP = .95
 

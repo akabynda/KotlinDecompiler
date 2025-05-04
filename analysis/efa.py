@@ -27,7 +27,7 @@ def cumulative_var(x_std: np.ndarray, k: int) -> float:
         .get_factor_variance()[1][k - 1]
 
 
-DATA_CSV = Path("full_metrics.csv")
+DATA_CSV = Path("../full_metrics.csv")
 ROTATION = "varimax"
 DELTA_TH = 0.03
 PA_ITER = 100

@@ -8,7 +8,7 @@ from skfda import FDataGrid
 from skfda.preprocessing.dim_reduction.feature_extraction import FPCA
 
 BEST_N_TXT = Path("./ngram_best.txt")
-FULL_METRICS = Path("./full_metrics.csv")
+FULL_METRICS = Path("../full_metrics.csv")
 PC_OUT = Path("./fpca_scores.csv")
 INFO_OUT = Path("./fpca_info.txt")
 
