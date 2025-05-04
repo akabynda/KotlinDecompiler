@@ -15,9 +15,9 @@ def combine_features(
 ) -> list[str]:
     _, _, _, recommended_pca = pca(df, **pca_kwargs)
     _, _, _, recommended_minres_efa = efa(df, **minres_efa_kwargs)
-    _, _, _, recommended_mlres_efa = efa(df, **ml_efa_kwargs)
+    _, _, _, recommended_ml_efa = efa(df, **ml_efa_kwargs)
 
-    return sorted(list(set(recommended_pca + recommended_minres_efa + recommended_mlres_efa)))
+    return sorted(list(set(recommended_pca + recommended_minres_efa + recommended_ml_efa)))
 
 
 if __name__ == "__main__":
