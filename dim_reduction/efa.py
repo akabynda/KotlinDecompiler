@@ -80,11 +80,12 @@ def efa(
     print("\n=== Сводка EFA ===")
     var_exp, prop_var, cum_var = fa.get_factor_variance()
     for i in range(n_factors):
-        feats = ", ".join(top_features[f"F{i + 1}"])
-        print(
-            f"F{i + 1:>2}: {prop_var[i]:5.1%} "
-            f"(накопл. {cum_var[i]:5.1%})  →  {feats}"
-        )
+        f = f"F{i + 1}"
+        print(f"\n{f}: {prop_var[i]:5.1%} (накопл. {cum_var[i]:5.1%})")
+        sorted_feats = loadings[f].abs().sort_values(ascending=False)
+        for feat in sorted_feats.index:
+            raw_value = loadings.loc[feat, f]
+            print(f"  {feat:<40} {raw_value: .4f}")
 
     if recommend == "union":
         recommended = sorted({f for lst in top_features.values() for f in lst})

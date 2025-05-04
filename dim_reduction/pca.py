@@ -40,8 +40,12 @@ def pca(df: pd.DataFrame,
     expl = pca.explained_variance_ratio_
     cum = expl.cumsum()
     for i, (v, c) in enumerate(zip(expl, cum), start=1):
-        pcs = ", ".join(top_features[f"PC{i}"])
-        print(f"PC{i:>2}: {v:5.1%} (накопл. {c:5.1%})  →  {pcs}")
+        pc = f"PC{i}"
+        print(f"\n{pc}: {v:5.1%} (накопл. {c:5.1%})")
+        sorted_feats = loadings[pc].abs().sort_values(ascending=False)
+        for feat in sorted_feats.index:
+            raw_value = loadings.loc[feat, pc]
+            print(f"  {feat:<40} {raw_value: .4f}")
 
     if recommend == "union":
         recommended = sorted({f for lst in top_features.values() for f in lst})
