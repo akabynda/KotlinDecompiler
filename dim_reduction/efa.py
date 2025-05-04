@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import List, Tuple, Dict, Literal, Optional
 
 import numpy as np
@@ -6,7 +5,6 @@ import pandas as pd
 from factor_analyzer import FactorAnalyzer
 from factor_analyzer.factor_analyzer import (
     calculate_kmo,
-    calculate_bartlett_sphericity,
 )
 from sklearn.preprocessing import StandardScaler
 
@@ -49,13 +47,8 @@ def efa(
     if kmo_total < kmo_warn:
         print(f"После всех удалений общий KMO всё ещё < {kmo_warn:.2f}")
 
-    bartlett_chi2, bartlett_p = calculate_bartlett_sphericity(X)
-    p = X.shape[1]
-    bartlett_df = p * (p - 1) // 2
-
     print("\n=== Диагностика факторизации ===")
     print(f"KMO (общий)          : {kmo_total:5.3f}")
-    print(f"Bartlett χ² = {bartlett_chi2:,.1f}, df = {bartlett_df}, p = {bartlett_p:.3e}")
 
     if n_factors == "auto":
         fa_tmp = FactorAnalyzer(rotation=None)
