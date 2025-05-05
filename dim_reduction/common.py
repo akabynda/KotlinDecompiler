@@ -2,24 +2,35 @@ from typing import List
 
 import numpy as np
 import pandas as pd
+from sklearn.feature_selection import VarianceThreshold
 
 
-def numeric_df(df: pd.DataFrame) -> pd.DataFrame:
-    num = df.select_dtypes(include="number").copy()
-    num.drop(columns=[c for c in ("Test", "Category") if c in num.columns],
-             inplace=True, errors="ignore")
-    const_cols = num.columns[num.var(ddof=0) == 0].tolist()
+def numeric_df(df_in: pd.DataFrame, removed: List[str]) -> pd.DataFrame:
+    df_out = df_in.select_dtypes(include="number").copy()
+    drop_cols = [col for col in ("Test", "Category") if col in df_out.columns]
+    df_out.drop(columns=drop_cols, inplace=True, errors="ignore")
+    removed.extend(drop_cols)
+
+    const_cols = df_out.columns[df_out.var(ddof=0) == 0].tolist()
     if const_cols:
-        print("Удалено константных столбцов:", const_cols)
-        num.drop(columns=const_cols, inplace=True)
-    return num
+        removed.extend(const_cols)
+        df_out.drop(columns=const_cols, inplace=True)
+    return df_out
 
 
-def drop_high_corr(df: pd.DataFrame,
-                   thresh: float = 0.995,
-                   removed: list[str] | None = None) -> pd.DataFrame:
-    df_copy = df.copy()
-    corr = df_copy.corr().abs()
+def drop_low_variance(df_in: pd.DataFrame, removed: List[str], threshold: float = 0.01) -> pd.DataFrame:
+    sel = VarianceThreshold(threshold)
+    df_array = sel.fit_transform(df_in)
+    mask = sel.get_support()
+    selected_cols = df_in.columns[mask]
+    dropped_cols = df_in.columns[np.logical_not(mask)].tolist()
+    removed.extend(dropped_cols)
+    return pd.DataFrame(df_array, columns=selected_cols)
+
+
+def drop_high_corr(df_in: pd.DataFrame, removed: List[str], thresh: float = 0.995) -> pd.DataFrame:
+    df_out = df_in.copy()
+    corr = df_out.corr().abs()
     upper = corr.where(np.triu(np.ones_like(corr), k=1).astype(bool))
     to_drop: set[str] = set()
 
@@ -33,17 +44,14 @@ def drop_high_corr(df: pd.DataFrame,
                 else:
                     to_drop.add(col)
     if to_drop:
-        if removed is not None:
-            removed.extend(to_drop)
-        df_copy = df_copy.drop(columns=list(to_drop))
-    return df_copy
+        removed.extend(to_drop)
+        df_out.drop(columns=list(to_drop), inplace=True)
+    return df_out
 
 
-def drop_high_corr_interactive(df: pd.DataFrame,
-                               thresh: float = 0.995,
-                               removed: list[str] | None = None) -> pd.DataFrame:
-    df_copy = df.copy()
-    corr = df_copy.corr().abs()
+def drop_high_corr_interactive(df_in: pd.DataFrame, removed: List[str], thresh: float = 0.995) -> pd.DataFrame:
+    df_out = df_in.copy()
+    corr = df_out.corr().abs()
     upper = corr.where(np.triu(np.ones_like(corr), k=1).astype(bool))
     to_drop: set[str] = set()
 
@@ -68,39 +76,38 @@ def drop_high_corr_interactive(df: pd.DataFrame,
                         print("Некорректный ввод, попробуйте снова.")
 
     if to_drop:
-        if removed is not None:
-            removed.extend(to_drop)
-        df_copy = df_copy.drop(columns=list(to_drop))
-    return df_copy
+        removed.extend(to_drop)
+        df_out.drop(columns=list(to_drop), inplace=True)
+    return df_out
 
 
-def safe_corr_df_interactive(df: pd.DataFrame, removed: List[str]) -> pd.DataFrame:
+def safe_corr_df(df_in: pd.DataFrame, removed: List[str]) -> pd.DataFrame:
+    df_out = df_in.copy()
     thresh = 0.99
-    tmp_df = df.copy()
     while thresh >= 0.80:
         print(f"\n=== Порог корреляции: {thresh:.2f} ===")
-        tmp_df = drop_high_corr_interactive(tmp_df, thresh, removed)
-        if tmp_df.shape[1] < 3:
+        df_out = drop_high_corr(df_out, removed, thresh)
+        if df_out.shape[1] < 3:
             print("Осталось менее 3 признаков — останавливаемся.")
             break
-        if np.linalg.matrix_rank(np.corrcoef(tmp_df.T)) == tmp_df.shape[1]:
+        if np.linalg.matrix_rank(np.corrcoef(df_out.T)) == df_out.shape[1]:
             print("Корреляционная матрица невырождена, готово.")
-            return tmp_df
+            return df_out
         thresh -= 0.02
     raise RuntimeError("Не удалось получить невырожденную корреляционную матрицу")
 
 
-def safe_corr_df(df: pd.DataFrame, removed: List[str]) -> pd.DataFrame:
+def safe_corr_df_interactive(df_in: pd.DataFrame, removed: List[str]) -> pd.DataFrame:
+    df_out = df_in.copy()
     thresh = 0.99
-    tmp_df = df.copy()
     while thresh >= 0.80:
         print(f"\n=== Порог корреляции: {thresh:.2f} ===")
-        tmp_df = drop_high_corr(tmp_df, thresh, removed)
-        if tmp_df.shape[1] < 3:
+        df_out = drop_high_corr_interactive(df_out, removed, thresh)
+        if df_out.shape[1] < 3:
             print("Осталось менее 3 признаков — останавливаемся.")
             break
-        if np.linalg.matrix_rank(np.corrcoef(tmp_df.T)) == tmp_df.shape[1]:
+        if np.linalg.matrix_rank(np.corrcoef(df_out.T)) == df_out.shape[1]:
             print("Корреляционная матрица невырождена, готово.")
-            return tmp_df
+            return df_out
         thresh -= 0.02
     raise RuntimeError("Не удалось получить невырожденную корреляционную матрицу")
