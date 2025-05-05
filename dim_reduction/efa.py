@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List, Tuple, Literal, Optional
 
 import numpy as np
@@ -81,3 +82,7 @@ def efa(
             print(f"  {feat:<40} {raw_value: .4f}")
 
     return fa, loadings
+
+if __name__ == "__main__":
+    df = pd.read_csv(Path(input("Path to metrics.csv:")))
+    efa(df, scale=True, n_factors="auto", kmo_warn = 0.6, method="ml", rotation="promax", )

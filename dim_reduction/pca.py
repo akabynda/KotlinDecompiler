@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import List, Tuple
 
 import pandas as pd
@@ -41,3 +42,8 @@ def pca(df: pd.DataFrame,
             print(f"  {feat:<40} {raw_value: .4f}")
 
     return pca, loadings
+
+
+if __name__ == "__main__":
+    df = pd.read_csv(Path(input("Path to metrics.csv:")))
+    pca(df, scale=True, n_components=0.8)
