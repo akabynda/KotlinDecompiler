@@ -1,4 +1,4 @@
-from typing import List, Tuple, Dict, Literal, Optional
+from typing import List, Tuple, Literal, Optional
 
 import numpy as np
 import pandas as pd
@@ -18,10 +18,8 @@ def efa(
         n_factors: int | Literal["auto"] = "auto",
         rotation: Optional[str] = "varimax",
         method: Optional[str] = "minres",
-        top_k: int = 3,
-        recommend: Literal["union", "per_factor", None] = "union",
         kmo_warn: float = 0.60,
-) -> Tuple[FactorAnalyzer, pd.DataFrame, Dict[str, List[str]], List[str]]:
+) -> Tuple[FactorAnalyzer, pd.DataFrame]:
     num = numeric_df(df)
     removed: List[str] = []
     num = safe_corr_df(num, removed)
@@ -72,11 +70,6 @@ def efa(
         columns=[f"F{i + 1}" for i in range(n_factors)],
     )
 
-    top_features: Dict[str, List[str]] = {}
-    for f in loadings.columns:
-        abs_load = loadings[f].abs()
-        top_features[f] = abs_load.nlargest(top_k).index.tolist()
-
     print("\n=== Сводка EFA ===")
     var_exp, prop_var, cum_var = fa.get_factor_variance()
     for i in range(n_factors):
@@ -87,23 +80,4 @@ def efa(
             raw_value = loadings.loc[feat, f]
             print(f"  {feat:<40} {raw_value: .4f}")
 
-    if recommend == "union":
-        recommended = sorted({f for lst in top_features.values() for f in lst})
-        title = "Рекомендуемые признаки (объединённый топ)"
-    elif recommend == "per_factor":
-        recommended, used = [], set()
-        for f in loadings.columns:
-            for feat in loadings[f].abs().sort_values(ascending=False).index:
-                if feat not in used:
-                    recommended.append(feat)
-                    used.add(feat)
-                    break
-        title = "Рекомендуемые признаки (по одному на фактор, без дубликатов)"
-    else:
-        recommended, title = [], None
-
-    if title:
-        print(f"\n{title}:")
-        print(", ".join(recommended))
-
-    return fa, loadings, top_features, recommended
+    return fa, loadings

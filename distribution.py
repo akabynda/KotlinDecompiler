@@ -13,15 +13,16 @@ from metrics.entropy import Entropy
 
 language = "kotlin"
 
-"""datasets = [
+datasets = [
     ("KStack-clean", "content", lambda row: bool(row["content"])),
     ("KExercises", "solution", lambda row: bool(row["solution"])),
-]"""
+]
 
+"""
 datasets = [
     ("KStack", "content",
      lambda row: bool(row["content"]) and (int(row.get("stars", 0)) + int(row.get("forks", 0)) >= 6))
-]
+]"""
 
 model_name = "+".join(d[0] for d in datasets)
 out = Path(f"lang_models/{language.lower()}/{model_name.lower()}")
