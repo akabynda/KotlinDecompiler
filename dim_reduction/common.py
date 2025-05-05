@@ -3,6 +3,7 @@ from typing import List
 import numpy as np
 import pandas as pd
 from sklearn.feature_selection import VarianceThreshold
+from sklearn.preprocessing import MinMaxScaler
 
 
 def numeric_df(df_in: pd.DataFrame, removed: List[str]) -> pd.DataFrame:
@@ -15,17 +16,31 @@ def numeric_df(df_in: pd.DataFrame, removed: List[str]) -> pd.DataFrame:
     if const_cols:
         removed.extend(const_cols)
         df_out.drop(columns=const_cols, inplace=True)
+
+    print("Удалены константные признаки", const_cols)
     return df_out
 
 
-def drop_low_variance(df_in: pd.DataFrame, removed: List[str], threshold: float = 0.01) -> pd.DataFrame:
+def drop_low_variance(df_in: pd.DataFrame,
+                      removed: List[str],
+                      threshold: float = 0.01) -> pd.DataFrame:
+    scaler = MinMaxScaler()
+    scaled_array = scaler.fit_transform(df_in)
+    scaled_df = pd.DataFrame(scaled_array, columns=df_in.columns, index=df_in.index)
+
     sel = VarianceThreshold(threshold)
-    df_array = sel.fit_transform(df_in)
+    sel.fit_transform(scaled_df)
     mask = sel.get_support()
     selected_cols = df_in.columns[mask]
     dropped_cols = df_in.columns[np.logical_not(mask)].tolist()
-    removed.extend(dropped_cols)
-    return pd.DataFrame(df_array, columns=selected_cols)
+
+    if dropped_cols:
+        removed.extend(dropped_cols)
+
+    df_out = df_in[selected_cols]
+
+    print("Удалены признаки с низкой дисперсией:", dropped_cols)
+    return df_out
 
 
 def drop_high_corr(df_in: pd.DataFrame, removed: List[str], thresh: float = 0.995) -> pd.DataFrame:
