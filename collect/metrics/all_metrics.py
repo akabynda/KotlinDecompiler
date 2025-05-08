@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from collect.common import structural, entropy_metrics, collect_tests, \
+from collect.metrics.common import structural, entropy_metrics, collect_tests, \
     build_pairs, parse_detekt, lm_metrics, load_lm
 
 test_root = Path(input("Путь к папке с тестами: ").strip()).expanduser()

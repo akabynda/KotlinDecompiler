@@ -4,7 +4,7 @@ from typing import Any
 import pandas as pd
 from datasets import load_dataset
 
-from collect.common import structural, load_lm
+from collect.metrics.common import structural, load_lm
 
 out_csv = Path("kstack-clean_metrics.csv")
 
