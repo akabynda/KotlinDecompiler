@@ -21,7 +21,7 @@ def guess_kt_filename(root: str) -> str:
 def index_kt_files(originals_root: Path) -> Dict[Tuple[str, str], List[Path]]:
     idx: Dict[Tuple[str, str], List[Path]] = defaultdict(list)
     for kt in originals_root.rglob("*.kt"):
-        repo = kt.relative_to(originals_root).parts[0].lower()
+        repo = kt.relative_to(originals_root).parts[0]
         idx[(repo, kt.name.lower())].append(kt)
     return idx
 
@@ -37,17 +37,27 @@ def build_pairs(orig_root: Path, bc_root: Path) -> Dict[Path, List[Path]]:
         if "/META-INF/" in p or any(s in p for s in skipped_stdlib):
             continue
 
-        repo = cls.relative_to(bc_root).parts[0].lower()
-        kt_name = guess_kt_filename(get_root_name(cls)).lower()
+        rel_cls = cls.relative_to(bc_root)
+        repo = rel_cls.parts[0]
+        cls_subpath = rel_cls.with_suffix("").parts[1:]
+        root = get_root_name(cls)
+        kt_filename = guess_kt_filename(root).lower()
 
-        cands = kt_index.get((repo, kt_name))
+        cands = kt_index.get((repo, kt_filename))
         if not cands:
             continue
 
         if len(cands) == 1:
             pairs[cands[0]].append(cls)
         else:
-            print(cands)
+            for cand in cands:
+                cand_rel = cand.relative_to(orig_root / repo)
+                cand_parts = cand_rel.with_suffix("").parts
+                if cls_subpath[-len(cand_parts):] == [p.lower() for p in cand_parts]:
+                    pairs[cand].append(cls)
+                    break
+                else:
+                    print(cand)
 
     return pairs
 
