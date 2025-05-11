@@ -11,9 +11,9 @@ from typing import Dict, List, Tuple
 from tqdm import tqdm
 
 
-def run(cmd: List[str]) -> str:
-    return subprocess.run(cmd, capture_output=True, text=True,
-                          check=False).stdout
+def run(cmd: List[str]) -> Tuple[str, str, int]:
+    proc = subprocess.run(cmd, capture_output=True, text=True)
+    return proc.stdout, proc.stderr, proc.returncode
 
 
 _pkg_re = re.compile(r"^\s*package\s+([\w.]+)")
@@ -104,18 +104,32 @@ def build_pairs(orig_root: Path, bc_root: Path) -> Dict[Path, List[Path]]:
     return pairs
 
 
-def _build_record(task: Tuple[Path, List[Path], Path, Path]) -> str:
+def _build_record(task: Tuple[Path, List[Path], Path, Path]) -> str | None:
     kt_path, cls_list, orig_root, bc_root = task
+    class_entries = []
+    all_empty = True
+
+    for c in cls_list:
+        stdout, stderr, code = run(["javap", "-c", "-p", str(c)])
+        if stdout.strip():
+            all_empty = False
+        class_entries.append({
+            "class_path": str(c.relative_to(bc_root)),
+            "javap": stdout,
+            "javap_err": stderr
+        })
+
+    if all_empty:
+        print(f"\nПропущено: {kt_path} — все javap пустые")
+        for entry in class_entries:
+            print(
+                f"\n{entry['class_path']} | return code: {entry['return_code']} | stderr: {entry['javap_err'].strip()}")
+        return None
+
     record = {
         "kt_path": str(kt_path.relative_to(orig_root)),
         "kt_source": kt_path.read_text(encoding="utf-8", errors="ignore"),
-        "classes": [
-            {
-                "class_path": str(c.relative_to(bc_root)),
-                "javap": run(["javap", "-c", "-p", str(c)]),
-            }
-            for c in cls_list
-        ],
+        "classes": class_entries,
     }
     return json.dumps(record, ensure_ascii=False)
 
@@ -133,11 +147,12 @@ def write_jsonl(pairs: Dict[Path, List[Path]], out_path: Path) -> None:
     ]
 
     with out_path.open("w", encoding="utf-8") as fh, \
-            ProcessPoolExecutor(max_workers=multiprocessing.cpu_count() - 1) as pool:
+            ProcessPoolExecutor(max_workers=multiprocessing.cpu_count() // 2) as pool:
         for json_line in tqdm(pool.map(_build_record, tasks, chunksize=8),
                               total=len(tasks),
                               desc="javap"):
-            fh.write(json_line + "\n")
+            if json_line is not None:
+                fh.write(json_line + "\n")
 
     print(f"Записано {len(tasks)} объектов → {out_path}")
 
