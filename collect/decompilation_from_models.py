@@ -4,7 +4,7 @@ import re
 from collections import namedtuple
 from pathlib import Path
 from statistics import median
-from typing import Iterable, Iterator, List
+from typing import Iterable, List
 
 import torch
 from datasets import load_dataset
@@ -30,7 +30,7 @@ class Config:
     top_p: float = 0.9
     flush_every: int = 100
     num_variants: int = 1
-    est_scale: float = 1.2
+    est_scale: float = 1
     out_dir: Path = Path(f"{dataset_name.split("/")[-1]}_with_models")
     quant: BitsAndBytesConfig | None = (
         BitsAndBytesConfig(
@@ -91,7 +91,7 @@ def gen_stats(rows: Iterable[Row], tokenizer) -> tuple[int, float]:
         bc = len(tokenizer(r.bytecode).input_ids)
         kt_lens.append(kt)
         ratios.append(kt / bc if bc else 0)
-    return min(1024, int(sum(kt_lens) / len(kt_lens) * 2)), round(min(0.5, median(ratios)), 3)
+    return min(512, int(sum(kt_lens) / len(kt_lens) * 2)), round(min(0.5, median(ratios)), 3)
 
 
 def _hf_generate(
@@ -111,10 +111,13 @@ def _hf_generate(
         truncation=True,
     ).to(model.device)
 
+    input_len = enc.input_ids.shape[1]
+    max_length = input_len + max_new
+
     with torch.inference_mode(), torch.amp.autocast("cuda"):
         out = model.generate(
             **enc,
-            max_new_tokens=max_new,
+            max_length=max_length,
             do_sample=True,
             temperature=temperature,
             top_p=top_p,
@@ -124,8 +127,7 @@ def _hf_generate(
             early_stopping=True,
             use_cache=True,
         )
-    cut = enc.input_ids.shape[1]
-    return tokenizer.batch_decode(out[:, cut:], skip_special_tokens=True)
+    return tokenizer.batch_decode(out[:, input_len:], skip_special_tokens=True)
 
 
 def process_model_hf(name: str, rows: List[Row]) -> None:
