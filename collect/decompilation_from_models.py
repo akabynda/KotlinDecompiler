@@ -18,13 +18,36 @@ class Config:
     dataset_name: str = "akabynda/KExercises-bytecode"
     split: str = "train"
     model_names: tuple[str, ...] = (
+        "Qwen/Qwen2.5-Coder-1.5B",
+        "Qwen/Qwen2.5-Coder-1.5B-Instruct",
+
         "JetBrains/deepseek-coder-1.3B-kexer",
+        "deepseek-ai/deepseek-coder-1.3b-base",
+        "deepseek-ai/deepseek-coder-1.3b-instruct",
+
+        "Qwen/Qwen2.5-Coder-3B-Instruct",
+        "Qwen/Qwen2.5-Coder-3B",
+
+        "JetBrains/Mellum-4b-base",
+
+        "deepseek-ai/deepseek-coder-6.7b-instruct",
+        "deepseek-ai/deepseek-coder-6.7b-base",
         "JetBrains/deepseek-coder-6.7B-kexer",
+
+        "Qwen/CodeQwen1.5-7B-Chat",
+        "Qwen/Qwen2.5-Coder-7B",
+        "Qwen/Qwen2.5-Coder-7B-Instruct",
+
         "JetBrains/CodeLlama-7B-Kexer",
         "JetBrains/CodeLlama-7B-KStack-clean",
         "JetBrains/CodeLlama-7B-KStack",
-        "JetBrains/Mellum-4b-base",
-        "Qwen/Qwen2.5-Coder-32B-Instruct",
+
+        "deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct",
+        "deepseek-ai/DeepSeek-Coder-V2-Lite-Base",
+        "codefuse-ai/CodeFuse-DeepSeek-33B",
+        "deepseek-ai/deepseek-coder-33b-instruct"
+        "deepseek-ai/deepseek-coder-33b-base",
+        "Qwen/Qwen2.5-Coder-32B",
     )
     temperature: float = 0.2
     top_p: float = 0.9
@@ -161,20 +184,6 @@ def process_model_hf(name: str, rows: List[Row]) -> None:
         model = torch.compile(model, mode="max-autotune", fullgraph=True)
     except Exception as e:
         print("torch.compile failed:", e)
-
-    # warm‑up
-    try:
-        _ = _hf_generate(
-            model,
-            tokenizer,
-            prompts=[build_prompt(name, rows[0].bytecode, tokenizer=tokenizer)],
-            max_new=32,
-            temperature=0.0,
-            top_p=0.0,
-            variants=1,
-        )
-    except Exception:
-        pass
 
     batch_size = model_batch_size(model, CFG.est_scale)
     print("batch size:", batch_size)
