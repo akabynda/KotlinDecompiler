@@ -1,155 +1,235 @@
 import gc
 import json
 import re
+from collections import namedtuple
 from pathlib import Path
+from statistics import median
+from typing import Iterable, Iterator, List
 
 import torch
 from datasets import load_dataset
-from transformers import (
-    AutoTokenizer,
-    AutoModelForCausalLM, BitsAndBytesConfig,
-)
+from tqdm.auto import tqdm
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 
-DATASET_NAME = "akabynda/KExercises-bytecode"
-SPLIT = "train"
-MODEL_NAMES = [
-    "JetBrains/deepseek-coder-1.3B-kexer",
-    "JetBrains/deepseek-coder-6.7B-kexer",
-    "JetBrains/CodeLlama-7B-Kexer",
-    "JetBrains/CodeLlama-7B-KStack-clean",
-    "JetBrains/CodeLlama-7B-KStack",
-    "JetBrains/Mellum-4b-base",
-    "Qwen/Qwen2.5-Coder-32B-Instruct"
-]
-OUT_DIR = Path(f"{DATASET_NAME.split("/")[-1]}_with_models")
-OUT_DIR.mkdir(exist_ok=True)
-TEMPERATURE = 0.2
-TOP_P = 0.9
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-DTYPE = torch.float16 if DEVICE == "cuda" else torch.float32
-MAX_RATIO = 0.3
-NUM_VARIANTS = 1
-MAX_NEW_TOKENS_LIMIT = 4056
-FLUSH_EVERY = 1000
-QUANT_CONFIG = BitsAndBytesConfig(load_in_4bit=True)
+Row = namedtuple("Row", ("kt_path", "kt_source", "bytecode"))
+
+
+class Config:
+    dataset_name: str = "akabynda/KExercises-bytecode"
+    split: str = "train"
+    model_names: tuple[str, ...] = (
+        "JetBrains/deepseek-coder-1.3B-kexer",
+        "JetBrains/deepseek-coder-6.7B-kexer",
+        "JetBrains/CodeLlama-7B-Kexer",
+        "JetBrains/CodeLlama-7B-KStack-clean",
+        "JetBrains/CodeLlama-7B-KStack",
+        "JetBrains/Mellum-4b-base",
+        "Qwen/Qwen2.5-Coder-32B-Instruct",
+    )
+    temperature: float = 0.2
+    top_p: float = 0.9
+    flush_every: int = 100
+    num_variants: int = 1
+    est_scale: float = 1.2
+    out_dir: Path = Path(f"{dataset_name.split("/")[-1]}_with_models")
+    quant: BitsAndBytesConfig | None = (
+        BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_use_double_quant=True,
+            bnb_4bit_compute_dtype=torch.float16,
+            bnb_4bit_quant_type="nf4",
+        )
+        if torch.cuda.is_available()
+        else None
+    )
+
+
+CFG = Config()
+CFG.out_dir.mkdir(exist_ok=True)
+
+
+def to_bytecode(row) -> str:
+    return "\n".join(cls["javap"] for cls in row["classes"])
+
+
+def load_rows() -> list[Row]:
+    ds = load_dataset(CFG.dataset_name, split=CFG.split, streaming=False)
+    return [Row(r["kt_path"], r["kt_source"], to_bytecode(r)) for r in ds]
 
 
 def extract_kotlin(text: str) -> str:
-    m = re.search(r"```[^\n]*kotlin[^\n]*\n([\s\S]*?)(?:```|\Z)", text, re.I)
-    if m:
-        return m.group(1).strip()
+    for pat in (
+            r"```[^\n]*kotlin[^\n]*\n([\s\S]*?)(?:```|\Z)",
+            r"```[^\n]*\n([\s\S]*?)(?:```|\Z)",
+            r"### Kotlin\n([\s\S]*?)(?:\n###|\Z)",
+    ):
+        m = re.search(pat, text, re.I | re.M)
+        if m:
+            return m.group(1).strip()
+    return ""
 
-    m = re.compile(r"```[^\n]*\n([\s\S]*?)(?:```|\Z)", re.M).search(text)
-    if m:
-        return m.group(1).strip()
 
-    m = re.search(r"### Kotlin\n([\s\S]*?)(?:\n###|\Z)", text, re.M)
-    return m.group(1).strip() if m else ""
+def build_prompt(model_name: str, bytecode: str, tokenizer) -> str:
+    head = "Convert the following JVM byte‑code into **Kotlin source**.\nOutput **Kotlin code ONLY**"
+    if model_name.startswith("Qwen/"):
+        tmpl = [{"role": "user", "content": f"{head}\n\n### Byte‑code\n{bytecode}\n\n### Kotlin"}]
+        return tokenizer.apply_chat_template(tmpl, tokenize=False, add_generation_prompt=True)
+    return f"### Task\n{head}\n\n### Byte‑code\n{bytecode}\n\n### Kotlin\n"
 
 
-def make_prompt(name: str, code: str) -> str:
-    kotlin_task = (
-        "Convert the following JVM byte‑code into **Kotlin source**.\n"
-        "Output **Kotlin code ONLY**"
-    )
-    if name.startswith("Qwen/"):
-        messages = [
-            {"role": "user",
-             "content": kotlin_task + "\n\n### Byte‑code\n" + code + "\n\n### Kotlin"}
-        ]
-        return tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True
+def model_batch_size(model: torch.nn.Module, scale: float) -> int:
+    props = torch.cuda.get_device_properties(0) if torch.cuda.is_available() else None
+    vram = props.total_memory if props else 8 << 30
+    size = sum(p.numel() * p.element_size() for p in model.parameters())
+    return max(1, int(vram / size * scale))
+
+
+def gen_stats(rows: Iterable[Row], tokenizer) -> tuple[int, float]:
+    kt_lens, ratios = [], []
+    for r in rows:
+        kt = len(tokenizer(r.kt_source).input_ids)
+        bc = len(tokenizer(r.bytecode).input_ids)
+        kt_lens.append(kt)
+        ratios.append(kt / bc if bc else 0)
+    return min(1024, int(sum(kt_lens) / len(kt_lens) * 2)), round(min(0.5, median(ratios)), 3)
+
+
+def _hf_generate(
+        model: torch.nn.Module,
+        tokenizer,
+        prompts: List[str],
+        *,
+        max_new: int,
+        temperature: float,
+        top_p: float,
+        variants: int,
+) -> List[str]:
+    enc = tokenizer(
+        prompts,
+        return_tensors="pt",
+        padding=True,
+        truncation=True,
+    ).to(model.device)
+
+    with torch.inference_mode(), torch.amp.autocast("cuda"):
+        out = model.generate(
+            **enc,
+            max_new_tokens=max_new,
+            do_sample=True,
+            temperature=temperature,
+            top_p=top_p,
+            pad_token_id=tokenizer.eos_token_id,
+            eos_token_id=tokenizer.eos_token_id,
+            num_return_sequences=variants,
+            early_stopping=True,
+            use_cache=True,
         )
-    else:
-        return (
-                "### Task\n" + kotlin_task +
-                "\n\n### Byte‑code\n" + code + "\n\n### Kotlin\n"
+    cut = enc.input_ids.shape[1]
+    return tokenizer.batch_decode(out[:, cut:], skip_special_tokens=True)
+
+
+def process_model_hf(name: str, rows: List[Row]) -> None:
+    col = name.split("/")[-1]
+    outfile = CFG.out_dir / f"{col}.jsonl"
+
+    done = set()
+    if outfile.exists():
+        with outfile.open() as file:
+            done = {json.loads(line)["kt_path"] for line in file}
+
+    print(f"[HF] loading {name}")
+    tokenizer = AutoTokenizer.from_pretrained(name)
+    model = AutoModelForCausalLM.from_pretrained(
+        name,
+        device_map="auto",
+        torch_dtype=torch.float16 if torch.cuda.is_available() else "auto",
+        trust_remote_code=True,
+        quantization_config=CFG.quant,
+    ).eval()
+
+    try:
+        model = torch.compile(model, mode="max-autotune", fullgraph=True)
+    except Exception as e:
+        print("torch.compile failed:", e)
+
+    # warm‑up
+    try:
+        _ = _hf_generate(
+            model,
+            tokenizer,
+            prompts=[build_prompt(name, rows[0].bytecode, tokenizer=tokenizer)],
+            max_new=32,
+            temperature=0.0,
+            top_p=0.0,
+            variants=1,
         )
+    except Exception:
+        pass
 
+    batch_size = model_batch_size(model, CFG.est_scale)
+    print("batch size:", batch_size)
+    max_new, _ratio = gen_stats(rows, tokenizer)
 
-dataset = load_dataset(DATASET_NAME, split=SPLIT, streaming=True)
-
-for model_name in MODEL_NAMES:
-    col = model_name.split("/")[-1]
-    out_file = OUT_DIR / f"{col}.jsonl"
-
-    done_ids = set()
-    if out_file.exists():
-        with out_file.open(encoding="utf-8") as f:
-            done_ids = {json.loads(line)["kt_path"] for line in f}
-        print(f"{col}: {len(done_ids)} lines already present -> will skip")
-
-    print(f"\n===== {col}: loading model …")
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = (
-        AutoModelForCausalLM.from_pretrained(
-            model_name,
-            device_map="auto",
-            torch_dtype=DTYPE,
-            quantization_config=QUANT_CONFIG
-        ).eval()
-    )
-
-    with out_file.open("a", buffering=1, encoding="utf-8") as fout:
-        buffer = []
-        for i, row in enumerate(dataset):
-            key = row["kt_path"]
-            if key in done_ids:
+    buf: list[dict] = []
+    prompts, payload = [], []
+    with outfile.open("a", encoding="utf-8") as f_out:
+        for row in tqdm(rows, desc=col):
+            if row.kt_path in done:
                 continue
-
-            bytecode = "\n".join(cls["javap"] for cls in row["classes"])
-            prompt = make_prompt(model_name, bytecode)
-
-            enc = tokenizer(prompt, return_tensors="pt", padding=True, truncation=True)
-            inp, attn = enc.input_ids.to(DEVICE), enc.attention_mask.to(DEVICE)
-            max_new = min(
-                int(attn.sum().item() * MAX_RATIO), MAX_NEW_TOKENS_LIMIT
-            )
-
-            with torch.inference_mode(), torch.autocast(device_type=DEVICE, dtype=DTYPE):
-                out = model.generate(
-                    input_ids=inp,
-                    attention_mask=attn,
-                    max_new_tokens=max_new,
-                    do_sample=True,
-                    temperature=TEMPERATURE,
-                    top_p=TOP_P,
-                    pad_token_id=tokenizer.eos_token_id,
-                    eos_token_id=tokenizer.eos_token_id
+            prompts.append(build_prompt(name, row.bytecode, tokenizer=tokenizer))
+            payload.append(row)
+            if len(prompts) >= batch_size:
+                answers = _hf_generate(
+                    model,
+                    tokenizer,
+                    prompts,
+                    max_new=max_new,
+                    temperature=CFG.temperature,
+                    top_p=CFG.top_p,
+                    variants=CFG.num_variants,
                 )
-
-            if DEVICE == "cuda":
-                out = out.to("cpu")
-                torch.cuda.empty_cache()
-
-            prompt_len = inp.ne(tokenizer.pad_token_id).sum().item()
-            txt = tokenizer.decode(out[0][prompt_len:], skip_special_tokens=True)
-            kotlin = extract_kotlin(txt)
-
-            result = {
-                "kt_path": row["kt_path"],
-                col: kotlin
-            }
-            buffer.append(result)
-
-            if len(buffer) >= FLUSH_EVERY:
-                for item in buffer:
-                    fout.write(json.dumps(item, ensure_ascii=False) + "\n")
-                fout.flush()
-                buffer.clear()
-
-        if buffer:
-            for item in buffer:
-                fout.write(json.dumps(item, ensure_ascii=False) + "\n")
-            fout.flush()
-            buffer.clear()
+                for r, ans in zip(payload, answers):
+                    buf.append({"kt_path": r.kt_path, col: extract_kotlin(ans)})
+                prompts.clear()
+                payload.clear()
+            if len(buf) >= CFG.flush_every:
+                for item in buf:
+                    f_out.write(json.dumps(item, ensure_ascii=False) + "\n")
+                f_out.flush()
+                buf.clear()
+        # tail
+        if prompts:
+            answers = _hf_generate(
+                model,
+                tokenizer,
+                prompts,
+                max_new=max_new,
+                temperature=CFG.temperature,
+                top_p=CFG.top_p,
+                variants=CFG.num_variants,
+            )
+            for r, ans in zip(payload, answers):
+                buf.append({"kt_path": r.kt_path, col: extract_kotlin(ans)})
+        for item in buf:
+            f_out.write(json.dumps(item, ensure_ascii=False) + "\n")
 
     del model
-    if DEVICE == "cuda":
+    if torch.cuda.is_available():
         torch.cuda.empty_cache()
     gc.collect()
-    print(f"{col}: done, results in {out_file}")
 
-print("\nВсе модели обработаны построчно. JSONL‑файлы теперь можно объединить.")
+
+def main() -> None:
+    print("Loading dataset stream…")
+    rows = load_rows()
+    print(f"Total rows: {len(rows):,}")
+    rows.sort(key=lambda r: len(r.bytecode))
+
+    for name in CFG.model_names:
+        process_model_hf(name, rows)
+
+    print("Finished")
+
+
+if __name__ == "__main__":
+    main()
