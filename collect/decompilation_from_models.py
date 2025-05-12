@@ -31,6 +31,7 @@ class Config:
     flush_every: int = 100
     num_variants: int = 1
     est_scale: float = 1
+    dataset_size: int = 100
     out_dir: Path = Path(f"{dataset_name.split("/")[-1]}_with_models")
     quant: BitsAndBytesConfig | None = (
         BitsAndBytesConfig(
@@ -38,6 +39,8 @@ class Config:
             bnb_4bit_use_double_quant=True,
             bnb_4bit_compute_dtype=torch.float16,
             bnb_4bit_quant_type="nf4",
+            llm_int8_enable_fp32_cpu_offload=True,
+
         )
         if torch.cuda.is_available()
         else None
@@ -139,6 +142,9 @@ def process_model_hf(name: str, rows: List[Row]) -> None:
         with outfile.open() as file:
             done = {json.loads(line)["kt_path"] for line in file}
 
+    if len(done) >= CFG.dataset_size:
+        return
+
     print(f"[HF] loading {name}")
     tokenizer = AutoTokenizer.from_pretrained(name)
     model = AutoModelForCausalLM.from_pretrained(
@@ -148,6 +154,9 @@ def process_model_hf(name: str, rows: List[Row]) -> None:
         trust_remote_code=True,
         quantization_config=CFG.quant,
     ).eval()
+
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
 
     try:
         model = torch.compile(model, mode="max-autotune", fullgraph=True)
@@ -226,7 +235,7 @@ def main() -> None:
     rows = load_rows()
     print(f"Total rows: {len(rows):,}")
     rows.sort(key=lambda r: len(r.bytecode))
-    rows = rows[:100]
+    rows = rows[:CFG.dataset_size]
 
     for name in CFG.model_names:
         process_model_hf(name, rows)
