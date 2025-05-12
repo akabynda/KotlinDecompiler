@@ -93,7 +93,7 @@ def gen_stats(rows: Iterable[Row], tokenizer) -> tuple[int, float]:
         bc = len(tokenizer(r.bytecode).input_ids)
         kt_lens.append(kt)
         ratios.append(kt / bc if bc else 0)
-    return min(1024, int(max(kt_lens) * 1.2)), round(min(0.5, median(ratios)), 3)
+    return min(1024, int(max(kt_lens) * 2)), round(min(0.5, median(ratios)), 3)
 
 
 def _hf_generate(
@@ -145,14 +145,13 @@ def process_model_hf(name: str, rows: List[Row]) -> None:
         return
 
     print(f"[HF] loading {name}")
-    tokenizer = AutoTokenizer.from_pretrained(name)
+    tokenizer = AutoTokenizer.from_pretrained(name, padding_side='left')
     model = AutoModelForCausalLM.from_pretrained(
         name,
         device_map="auto",
         torch_dtype=torch.float16 if torch.cuda.is_available() else "auto",
         trust_remote_code=True,
         quantization_config=CFG.quant,
-        padding_side='left'
     ).eval()
 
     if tokenizer.pad_token is None:
