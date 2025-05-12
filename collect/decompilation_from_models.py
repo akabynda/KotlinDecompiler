@@ -40,7 +40,6 @@ class Config:
             bnb_4bit_compute_dtype=torch.float16,
             bnb_4bit_quant_type="nf4",
             llm_int8_enable_fp32_cpu_offload=True,
-
         )
         if torch.cuda.is_available()
         else None
@@ -94,7 +93,7 @@ def gen_stats(rows: Iterable[Row], tokenizer) -> tuple[int, float]:
         bc = len(tokenizer(r.bytecode).input_ids)
         kt_lens.append(kt)
         ratios.append(kt / bc if bc else 0)
-    return min(512, int(sum(kt_lens) / len(kt_lens) * 2)), round(min(0.5, median(ratios)), 3)
+    return min(1024, int(max(kt_lens) * 1.2)), round(min(0.5, median(ratios)), 3)
 
 
 def _hf_generate(
@@ -180,6 +179,8 @@ def process_model_hf(name: str, rows: List[Row]) -> None:
     batch_size = model_batch_size(model, CFG.est_scale)
     print("batch size:", batch_size)
     max_new, _ratio = gen_stats(rows, tokenizer)
+
+    print("max_new:", max_new)
 
     buf: list[dict] = []
     prompts, payload = [], []
