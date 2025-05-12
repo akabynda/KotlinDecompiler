@@ -152,6 +152,7 @@ def process_model_hf(name: str, rows: List[Row]) -> None:
         torch_dtype=torch.float16 if torch.cuda.is_available() else "auto",
         trust_remote_code=True,
         quantization_config=CFG.quant,
+        padding_side='left'
     ).eval()
 
     if tokenizer.pad_token is None:
