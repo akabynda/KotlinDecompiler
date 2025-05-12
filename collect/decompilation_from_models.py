@@ -30,7 +30,8 @@ DTYPE = torch.float16 if DEVICE == "cuda" else torch.float32
 MAX_RATIO = 0.3
 NUM_VARIANTS = 1
 MAX_NEW_TOKENS_LIMIT = 4056
-quant_config = BitsAndBytesConfig(load_in_4bit=True)
+FLUSH_EVERY = 1000
+QUANT_CONFIG = BitsAndBytesConfig(load_in_4bit=True)
 
 
 def extract_kotlin(text: str) -> str:
@@ -87,13 +88,13 @@ for model_name in MODEL_NAMES:
             model_name,
             device_map="auto",
             torch_dtype=DTYPE,
-            quantization_config=quant_config
+            quantization_config=QUANT_CONFIG
         ).eval()
     )
 
     with out_file.open("a", buffering=1, encoding="utf-8") as fout:
-
-        for row in dataset:
+        buffer = []
+        for i, row in enumerate(dataset):
             key = row["kt_path"]
             if key in done_ids:
                 continue
@@ -131,7 +132,19 @@ for model_name in MODEL_NAMES:
                 "kt_path": row["kt_path"],
                 col: kotlin
             }
-            fout.write(json.dumps(result, ensure_ascii=False) + "\n")
+            buffer.append(result)
+
+            if len(buffer) >= FLUSH_EVERY:
+                for item in buffer:
+                    fout.write(json.dumps(item, ensure_ascii=False) + "\n")
+                fout.flush()
+                buffer.clear()
+
+        if buffer:
+            for item in buffer:
+                fout.write(json.dumps(item, ensure_ascii=False) + "\n")
+            fout.flush()
+            buffer.clear()
 
     del model
     if DEVICE == "cuda":
