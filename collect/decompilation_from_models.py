@@ -62,7 +62,7 @@ class Config:
             bnb_4bit_use_double_quant=True,
             bnb_4bit_compute_dtype=torch.float16,
             bnb_4bit_quant_type="nf4",
-            llm_int8_enable_fp32_cpu_offload=True,
+            llm_int8_enable_fp32_cpu_offload=False,
         )
         if torch.cuda.is_available()
         else None
@@ -155,6 +155,25 @@ def _hf_generate(
     return tokenizer.batch_decode(out[:, input_len:], skip_special_tokens=True)
 
 
+def load_model(name):
+    try:
+        return AutoModelForCausalLM.from_pretrained(
+            name,
+            device_map="auto",
+            torch_dtype=torch.float16 if torch.cuda.is_available() else None,
+            trust_remote_code=True,
+            quantization_config=CFG.quant,
+        )
+    except ValueError as e:
+        print(f"4-bit quant failed for {name}: {e}\n   Falling back to 8-bit…")
+        return AutoModelForCausalLM.from_pretrained(
+            name,
+            device_map="auto",
+            torch_dtype=torch.float16 if torch.cuda.is_available() else None,
+            trust_remote_code=True,
+        )
+
+
 def process_model_hf(name: str, rows: List[Row]) -> None:
     col = name.split("/")[-1]
     outfile = CFG.out_dir / f"{col}.jsonl"
@@ -169,13 +188,7 @@ def process_model_hf(name: str, rows: List[Row]) -> None:
 
     print(f"[HF] loading {name}")
     tokenizer = AutoTokenizer.from_pretrained(name, padding_side='left')
-    model = AutoModelForCausalLM.from_pretrained(
-        name,
-        device_map="auto",
-        torch_dtype=torch.float16 if torch.cuda.is_available() else "auto",
-        trust_remote_code=True,
-        quantization_config=CFG.quant,
-    ).eval()
+    model = load_model(name).eval()
 
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
