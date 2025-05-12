@@ -226,6 +226,7 @@ def main() -> None:
     rows = load_rows()
     print(f"Total rows: {len(rows):,}")
     rows.sort(key=lambda r: len(r.bytecode))
+    rows = rows[:100]
 
     for name in CFG.model_names:
         process_model_hf(name, rows)
