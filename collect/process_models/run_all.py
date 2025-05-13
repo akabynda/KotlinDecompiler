@@ -30,11 +30,10 @@ if __name__ == "__main__":
         print(f"\n=== Running model: {model} ===")
         result = subprocess.run(
             [python_executable, "process_model.py", model],
-            capture_output=True,
-            text=True
+            stdout=sys.stdout,
+            stderr=sys.stderr,
         )
         if result.returncode != 0:
             print(f"Error processing {model}, return code: {result.returncode}")
-            print("STDOUT:", result.stdout)
-            print("STDERR:", result.stderr)
+
         clear_hf_cache()
