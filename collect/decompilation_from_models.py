@@ -10,12 +10,13 @@ import torch
 from datasets import load_dataset
 from tqdm.auto import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from numpy import percentile
 
 Row = namedtuple("Row", ("kt_path", "kt_source", "bytecode"))
 
 
 class Config:
-    dataset_name: str = "akabynda/KStack-clean-bytecode"
+    dataset_name: str = "akabynda/KExercises-bytecode"
     split: str = "train"
     model_names: tuple[str, ...] = (
         "Qwen/Qwen2.5-Coder-1.5B",
@@ -34,7 +35,6 @@ class Config:
         "deepseek-ai/deepseek-coder-6.7b-base",
         "JetBrains/deepseek-coder-6.7B-kexer",
 
-        "Qwen/CodeQwen1.5-7B-Chat",
         "Qwen/Qwen2.5-Coder-7B",
         "Qwen/Qwen2.5-Coder-7B-Instruct",
 
@@ -116,7 +116,8 @@ def gen_stats(rows: Iterable[Row], tokenizer) -> tuple[int, float]:
         bc = len(tokenizer(r.bytecode).input_ids)
         kt_lens.append(kt)
         ratios.append(kt / bc if bc else 0)
-    return min(2048, int(mean(kt_lens) * 2)), round(min(0.5, median(ratios)), 3)
+
+    return min(2048, int(percentile(kt_lens, 90))), round(min(0.5, median(ratios)), 3)
 
 
 def _hf_generate(

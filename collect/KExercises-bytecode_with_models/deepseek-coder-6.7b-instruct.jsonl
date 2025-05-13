@@ -1,0 +1,100 @@
+{"kt_path": "7434/solution_7434.kt", "deepseek-coder-6.7b-instruct": "fun test() {\n    return\n}"}
+{"kt_path": "7824/solution_7824.kt", "deepseek-coder-6.7b-instruct": "fun testCountOddNumbers() {\n    return\n}"}
+{"kt_path": "2614/solution_2614.kt", "deepseek-coder-6.7b-instruct": "fun investigateSituation() {\n    // No code needed as the method is empty\n}"}
+{"kt_path": "4477/solution_4477.kt", "deepseek-coder-6.7b-instruct": "fun getLeadII(): Int {\n    return 0\n}"}
+{"kt_path": "4476/solution_4476.kt", "deepseek-coder-6.7b-instruct": "fun getHeartRate(): Int {\n    return 0\n}"}
+{"kt_path": "8909/solution_8909.kt", "deepseek-coder-6.7b-instruct": "fun parentFunction(i: Int): Int {\n    return i\n}"}
+{"kt_path": "4699/solution_4699.kt", "deepseek-coder-6.7b-instruct": "fun hasLicense(hasLicense: Boolean): Boolean {\n    return hasLicense\n}"}
+{"kt_path": "6126/solution_6126.kt", "deepseek-coder-6.7b-instruct": "fun checkBoolean(value: Boolean): Boolean {\n    return value\n}"}
+{"kt_path": "5226/solution_5226.kt", "deepseek-coder-6.7b-instruct": "fun intersectPrecedenceTuple(): Boolean {\n    return false\n}"}
+{"kt_path": "652/solution_652.kt", "deepseek-coder-6.7b-instruct": "fun checkFloatDivision(a: Float, b: Float): Boolean {\n    return a / b == 1f\n}"}
+{"kt_path": "558/solution_558.kt", "deepseek-coder-6.7b-instruct": "fun function1(a: Int, b: Int): Int {\n    return a xor b\n}"}
+{"kt_path": "13973/solution_13973.kt", "deepseek-coder-6.7b-instruct": "fun divide(a: Int, b: Int): Int {\n    return a / b\n}"}
+{"kt_path": "13972/solution_13972.kt", "deepseek-coder-6.7b-instruct": "fun multiply(a: Int, b: Int): Int {\n    return a * b\n}"}
+{"kt_path": "13970/solution_13970.kt", "deepseek-coder-6.7b-instruct": "fun increaseByOne(x: Int): Int {\n    return x + 1\n}"}
+{"kt_path": "1606/solution_1606.kt", "deepseek-coder-6.7b-instruct": "fun getRemainder(a: Int, b: Int): Int {\n    return a % b\n}"}
+{"kt_path": "3900/solution_3900.kt", "deepseek-coder-6.7b-instruct": "fun multiplyNumbers(a: Int, b: Int): Int {\n    return a * b\n}"}
+{"kt_path": "13864/solution_13864.kt", "deepseek-coder-6.7b-instruct": "fun calculateScore(a: Int, b: Int): Int {\n    return a * b\n}"}
+{"kt_path": "7751/solution_7751.kt", "deepseek-coder-6.7b-instruct": "fun getComplement(n: Int): Int {\n    return 9 - n\n}"}
+{"kt_path": "9566/solution_9566.kt", "deepseek-coder-6.7b-instruct": "fun calculateVelocity(distance: Int, time: Int): Int {\n    return distance / time\n}"}
+{"kt_path": "4903/solution_4903.kt", "deepseek-coder-6.7b-instruct": "fun calculateDayPublished(day: Int): Int {\n    return day + 1\n}"}
+{"kt_path": "11380/solution_11380.kt", "deepseek-coder-6.7b-instruct": "fun determineWallArea(length: Int, width: Int): Int {\n    return length * width\n}"}
+{"kt_path": "1194/solution_1194.kt", "deepseek-coder-6.7b-instruct": "fun whileSubtraction(a: Int, b: Int): Int {\n    var a = a\n    return a\n}"}
+{"kt_path": "7844/solution_7844.kt", "deepseek-coder-6.7b-instruct": "fun divideNumbers(a: Double, b: Double): Double {\n    return a / b\n}"}
+{"kt_path": "599/solution_599.kt", "deepseek-coder-6.7b-instruct": "fun calculateRoomArea(length: Double, width: Double): Double {\n    return length * width\n}"}
+{"kt_path": "8402/solution_8402.kt", "deepseek-coder-6.7b-instruct": "fun calculateNetIncome(income: Float, tax: Float): Float {\n    return income - tax\n}"}
+{"kt_path": "11629/solution_11629.kt", "deepseek-coder-6.7b-instruct": "fun calculateSlope(x1: Double, x2: Double): Double {\n    return (x1 - x2) / (x1 * x2)\n}"}
+{"kt_path": "2587/solution_2587.kt", "deepseek-coder-6.7b-instruct": "fun calculateRoomArea(length: Double, width: Double): Double {\n    return length * width\n}"}
+{"kt_path": "5733/solution_5733.kt", "deepseek-coder-6.7b-instruct": "fun calculateBuildingArea(length: Float, width: Float): Float {\n    return length * width\n}"}
+{"kt_path": "12144/solution_12144.kt", "deepseek-coder-6.7b-instruct": "fun calculateProfits(a: Double, b: Double): Double {\n    return a - b\n}"}
+{"kt_path": "9763/solution_9763.kt", "deepseek-coder-6.7b-instruct": "fun calculateFinalPrice(price: Double, discount: Double): Double {\n    return price - discount\n}"}
+{"kt_path": "11762/solution_11762.kt", "deepseek-coder-6.7b-instruct": "fun calculateRoomArea(length: Double, width: Double): Double {\n    return length * width\n}"}
+{"kt_path": "9178/solution_9178.kt", "deepseek-coder-6.7b-instruct": "fun calculateGravityForce(mass: Double, height: Double): Double {\n    return mass * height\n}"}
+{"kt_path": "8545/solution_8545.kt", "deepseek-coder-6.7b-instruct": "fun calculateConversionRate(a: Int, b: Int): Double {\n    var result = 0.0\n    return result\n}"}
+{"kt_path": "13968/solution_13968.kt", "deepseek-coder-6.7b-instruct": "fun athletePerformanceDistance(a: Double, b: Double): Double {\n    return a / b\n}"}
+{"kt_path": "7841/solution_7841.kt", "deepseek-coder-6.7b-instruct": "fun assignXor(a: Int, b: Int): Int {\n    var result = a xor b\n    return result\n}"}
+{"kt_path": "2909/solution_2909.kt", "deepseek-coder-6.7b-instruct": "fun addNumbers(a: Int, b: Int): Int {\n    val sum = a + b\n    return sum\n}"}
+{"kt_path": "302/solution_302.kt", "deepseek-coder-6.7b-instruct": "fun calculateXor(a: Int, b: Int): Int {\n    var result = a xor b\n    return result\n}"}
+{"kt_path": "12753/solution_12753.kt", "deepseek-coder-6.7b-instruct": "fun trimLumber(x: Int, y: Int): Int {\n    val z = x - y\n    return z\n}"}
+{"kt_path": "5694/solution_5694.kt", "deepseek-coder-6.7b-instruct": "fun calculateAge(currentYear: Int, birthYear: Int): Int {\n    val age = currentYear - birthYear\n    return age\n}"}
+{"kt_path": "7772/solution_7772.kt", "deepseek-coder-6.7b-instruct": "fun increaseSpeed(speed: Int, increase: Int): Int {\n    var speed = speed\n    speed += increase\n    return speed\n}"}
+{"kt_path": "13321/solution_13321.kt", "deepseek-coder-6.7b-instruct": "fun xorOperation(a: Int, b: Int): Int {\n    var result = a xor b\n    return result\n}"}
+{"kt_path": "3882/solution_3882.kt", "deepseek-coder-6.7b-instruct": "fun calcTotalHours(a: Int, b: Int): Int {\n    var totalHours = a * b\n    return totalHours\n}"}
+{"kt_path": "7919/solution_7919.kt", "deepseek-coder-6.7b-instruct": "fun addOrOperation(a: Int, b: Int): Int {\n    var c = a + b\n    return c\n}"}
+{"kt_path": "640/solution_640.kt", "deepseek-coder-6.7b-instruct": "fun multiplyAndAssign(a: Int, b: Int): Int {\n    var c = a * b\n    return c\n}"}
+{"kt_path": "797/solution_797.kt", "deepseek-coder-6.7b-instruct": "fun calculateTax(income: Float, taxRate: Float): Float {\n    val tax = income * taxRate\n    return tax\n}"}
+{"kt_path": "3049/solution_3049.kt", "deepseek-coder-6.7b-instruct": "fun calculateVolume(length: Int, width: Int, height: Int): Int {\n    return length * width * height\n}"}
+{"kt_path": "6128/solution_6128.kt", "deepseek-coder-6.7b-instruct": "fun absoluteValue(value: Int) = Math.abs(value)"}
+{"kt_path": "5969/solution_5969.kt", "deepseek-coder-6.7b-instruct": "fun getNegativeIndex(n: Int, m: Int): Int {\n    val index = n - m\n    return index\n}"}
+{"kt_path": "1224/solution_1224.kt", "deepseek-coder-6.7b-instruct": "fun subtractIntegers(a: Int, b: Int): Int {\n    val result = a - b\n    return result\n}"}
+{"kt_path": "1810/solution_1810.kt", "deepseek-coder-6.7b-instruct": "fun calculateLandArea(length: Int, width: Int): Int {\n    val area = length * width\n    return area\n}"}
+{"kt_path": "1562/solution_1562.kt", "deepseek-coder-6.7b-instruct": "fun calculateTax(income: Float, taxRate: Float): Float {\n    val tax = income * taxRate\n    return tax\n}"}
+{"kt_path": "2870/solution_2870.kt", "deepseek-coder-6.7b-instruct": "fun calculateFine(speedLimit: Int, yourSpeed: Int): Int {\n    return (yourSpeed - speedLimit) * 10\n}"}
+{"kt_path": "6759/solution_6759.kt", "deepseek-coder-6.7b-instruct": "fun averageSpeed(distance: Float, time: Float): Float {\n    val speed = distance / time\n    return speed\n}"}
+{"kt_path": "2736/solution_2736.kt", "deepseek-coder-6.7b-instruct": "fun calculatePatientAge(currentYear: Int, birthYear: Int): Int {\n    val age = currentYear - birthYear\n    return age\n}"}
+{"kt_path": "4004/solution_4004.kt", "deepseek-coder-6.7b-instruct": "fun calculatePatientAge(currentYear: Int, birthYear: Int): Int {\n    val age = currentYear - birthYear\n    return age\n}"}
+{"kt_path": "12220/solution_12220.kt", "deepseek-coder-6.7b-instruct": "fun updateAndOperator(a: Int, b: Int): Int {\n    var c = a and b\n    return c\n}"}
+{"kt_path": "14509/solution_14509.kt", "deepseek-coder-6.7b-instruct": "fun calculateRoomArea(length: Int, width: Int): Int {\n    val area = length * width\n    return area\n}"}
+{"kt_path": "13481/solution_13481.kt", "deepseek-coder-6.7b-instruct": "fun calculateShutterSpeed(a: Double, b: Int, c: Double): Double {\n    var d = 0.0\n    return d\n}"}
+{"kt_path": "10181/solution_10181.kt", "deepseek-coder-6.7b-instruct": "fun calculateTax(income: Float, taxRate: Float): Float {\n    val tax = income * taxRate\n    return tax\n}"}
+{"kt_path": "3783/solution_3783.kt", "deepseek-coder-6.7b-instruct": "fun calculateVoltageDrop(a: Int, b: Int): Int {\n    val result = a * b\n    return result\n}"}
+{"kt_path": "7670/solution_7670.kt", "deepseek-coder-6.7b-instruct": "fun identityAssignment(): Boolean {\n    var x = 5\n    var y = x\n    return y == 1\n}"}
+{"kt_path": "13453/solution_13453.kt", "deepseek-coder-6.7b-instruct": "fun calculateTax(income: Float, taxRate: Float): Float {\n    val tax = income * taxRate\n    return tax\n}"}
+{"kt_path": "6574/solution_6574.kt", "deepseek-coder-6.7b-instruct": "fun calculateProfit(cost: Float, revenue: Float): Float {\n    val profit = revenue - cost\n    return profit\n}"}
+{"kt_path": "985/solution_985.kt", "deepseek-coder-6.7b-instruct": "fun multiplyAssignAndRepeat(a: Int, b: Int): Int {\n    var c = a * b\n    return c\n}"}
+{"kt_path": "3069/solution_3069.kt", "deepseek-coder-6.7b-instruct": "fun calculateStress(mass: Float, force: Float): Float {\n    val stress = mass / force\n    return stress\n}"}
+{"kt_path": "9567/solution_9567.kt", "deepseek-coder-6.7b-instruct": "fun calculateAcceleration(mass: Int, force: Int, area: Int): Int {\n    return (force - mass) / area\n}"}
+{"kt_path": "9762/solution_9762.kt", "deepseek-coder-6.7b-instruct": "fun calculateDiscount(price: Double): Double {\n    return price * 0.2\n}"}
+{"kt_path": "12787/solution_12787.kt", "deepseek-coder-6.7b-instruct": "fun calculatePower(a: Float, b: Float): Float {\n    val result = a / b\n    return result\n}"}
+{"kt_path": "14674/solution_14674.kt", "deepseek-coder-6.7b-instruct": "fun calculateTaxes(income: Float, taxRate: Float): Float {\n    val tax = income * taxRate\n    return tax\n}"}
+{"kt_path": "144/solution_144.kt", "deepseek-coder-6.7b-instruct": "fun calculateNetIncome(income: Float, tax: Float): Float {\n    val netIncome = income - tax\n    return netIncome\n}"}
+{"kt_path": "224/solution_224.kt", "deepseek-coder-6.7b-instruct": "fun calculateSalary(salary: Double): Long {\n    return Math.round(salary)\n}"}
+{"kt_path": "12602/solution_12602.kt", "deepseek-coder-6.7b-instruct": "fun calculateTotalIncome(a: Int, b: Int): Int {\n    var totalIncome = a + b\n    return totalIncome\n}"}
+{"kt_path": "2061/solution_2061.kt", "deepseek-coder-6.7b-instruct": "fun calculateFurnitureArea(length: Int, width: Int): Int {\n    val area = length * width\n    return area\n}"}
+{"kt_path": "1884/solution_1884.kt", "deepseek-coder-6.7b-instruct": "fun calculateWallArea(length: Float, width: Float): Float {\n    val area = length * width\n    return area\n}"}
+{"kt_path": "5140/solution_5140.kt", "deepseek-coder-6.7b-instruct": "fun calculateNetIncome(income: Float, tax: Float): Float {\n    val netIncome = income - tax\n    return netIncome\n}"}
+{"kt_path": "1945/solution_1945.kt", "deepseek-coder-6.7b-instruct": "fun subtractTaxidermyAnimals(x: Int, y: Int): Int {\n    var result = x - y\n    return result\n}"}
+{"kt_path": "2025/solution_2025.kt", "deepseek-coder-6.7b-instruct": "fun calculateAnimalPopulation(a: Int, b: Int): Int {\n    val c = a - b\n    return c\n}"}
+{"kt_path": "14511/solution_14511.kt", "deepseek-coder-6.7b-instruct": "fun calculateNumberOfLights(a: Int, b: Int): Int {\n    val c = a / b\n    return c\n}"}
+{"kt_path": "13493/solution_13493.kt", "deepseek-coder-6.7b-instruct": "fun calculateDistance(x: Float, y: Float): Float {\n    val result = x * y\n    return result\n}"}
+{"kt_path": "4381/solution_4381.kt", "deepseek-coder-6.7b-instruct": "fun calculateAverageSpeed(distance: Float, time: Float): Float {\n    val averageSpeed = distance / time\n    return averageSpeed\n}"}
+{"kt_path": "9587/solution_9587.kt", "deepseek-coder-6.7b-instruct": "fun bAnd(a: Boolean, b: Boolean): Boolean {\n    return if (a) b else false\n}"}
+{"kt_path": "6576/solution_6576.kt", "deepseek-coder-6.7b-instruct": "fun calculateDividendRatio(a: Float, b: Float): Float {\n    val result = a / b\n    return result\n}"}
+{"kt_path": "11550/solution_11550.kt", "deepseek-coder-6.7b-instruct": "fun calculateAverageSpeed(distance: Float, time: Float): Float {\n    val averageSpeed = distance / time\n    return averageSpeed\n}"}
+{"kt_path": "7386/solution_7386.kt", "deepseek-coder-6.7b-instruct": "fun intersectionAdditionAssignmentOperator(x: Int): Int {\n    var x = x\n    x += 12\n    return x\n}"}
+{"kt_path": "12691/solution_12691.kt", "deepseek-coder-6.7b-instruct": "fun calculateRemainingBudget(budget: Float, expense: Float): Float {\n    val remainingBudget = budget - expense\n    return remainingBudget\n}"}
+{"kt_path": "8209/solution_8209.kt", "deepseek-coder-6.7b-instruct": "fun calculateRequiredMaterials(x: Float, y: Float): Float {\n    val result = x / y\n    return result\n}"}
+{"kt_path": "2049/solution_2049.kt", "deepseek-coder-6.7b-instruct": "fun calculatePrice(a: Double, b: Double, c: Double): Double {\n    return a * b * c\n}"}
+{"kt_path": "586/solution_586.kt", "deepseek-coder-6.7b-instruct": "fun calculateArea(length: Double, width: Double): Double {\n    val area = length * width\n    return area\n}"}
+{"kt_path": "5139/solution_5139.kt", "deepseek-coder-6.7b-instruct": "fun calculateTax(income: Double, taxRate: Double): Double {\n    val tax = income * taxRate\n    return tax\n}"}
+{"kt_path": "7904/solution_7904.kt", "deepseek-coder-6.7b-instruct": "fun checkCurrent(a: Double, b: Double): Double {\n    val result = a / b\n    return result\n}"}
+{"kt_path": "9335/solution_9335.kt", "deepseek-coder-6.7b-instruct": "fun calculateTax(income: Double, taxRate: Double): Double {\n    val tax = income * taxRate\n    return tax\n}"}
+{"kt_path": "2329/solution_2329.kt", "deepseek-coder-6.7b-instruct": "fun calculateTotalCost(quantity: Int, price: Float): Float {\n    val totalCost = quantity * price\n    return totalCost\n}"}
+{"kt_path": "6572/solution_6572.kt", "deepseek-coder-6.7b-instruct": "fun calculateTotalPrice(quantity: Int, price: Float): Float {\n    val totalPrice = quantity * price\n    return totalPrice\n}"}
+{"kt_path": "8071/solution_8071.kt", "deepseek-coder-6.7b-instruct": "fun calculateArea(a: Double, b: Double): Double {\n    val area = a * b\n    return area\n}"}
+{"kt_path": "11310/solution_11310.kt", "deepseek-coder-6.7b-instruct": "fun calculateExpenses(quantity: Int, price: Float): Float {\n    val total = quantity * price\n    return total\n}"}
+{"kt_path": "10435/solution_10435.kt", "deepseek-coder-6.7b-instruct": "fun calculateWeight(weight: Double, age: Int): Double {\n    val newWeight = weight + age.toDouble()\n    return newWeight\n}"}
+{"kt_path": "5594/solution_5594.kt", "deepseek-coder-6.7b-instruct": "fun checkRealPart(x: Int, y: Int): Boolean {\n    return if (x == y) true else false\n}"}
+{"kt_path": "1356/solution_1356.kt", "deepseek-coder-6.7b-instruct": "fun isNone(obj: Any?): Boolean {\n    return obj == null\n}"}
+{"kt_path": "8902/solution_8902.kt", "deepseek-coder-6.7b-instruct": "fun calculatePower(x: Double, y: Double): Double {\n    val result = x * y\n    return result\n}"}
+{"kt_path": "6573/solution_6573.kt", "deepseek-coder-6.7b-instruct": "fun calculateAveragePrice(price: Float, quantity: Int): Float {\n    val averagePrice = price / quantity.toFloat()\n    return averagePrice\n}"}
