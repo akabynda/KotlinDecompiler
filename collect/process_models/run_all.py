@@ -1,7 +1,7 @@
 import subprocess
 import sys
 
-from clear_hf_cache import clear_hf_cache
+from utils.clear_hf_cache import clear_hf_cache
 from shared import Config
 
 if __name__ == "__main__":
