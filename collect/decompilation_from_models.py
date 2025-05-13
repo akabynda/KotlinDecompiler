@@ -165,13 +165,26 @@ def load_model(name):
             quantization_config=CFG.quant,
         )
     except ValueError as e:
-        print(f"4-bit quant failed for {name}: {e}\n   Falling back to 8-bit…")
+        print(f"4-bit quant failed for {name}: {e}\n")
         return AutoModelForCausalLM.from_pretrained(
             name,
             device_map="auto",
             torch_dtype=torch.float16 if torch.cuda.is_available() else None,
             trust_remote_code=True,
         )
+
+
+def unload_model(model):
+    model.to(torch.device("cpu"))
+
+    if hasattr(CFG.quant, "utils") and hasattr(CFG.quant.utils, "free_torch_model"):
+        CFG.quant.utils.free_torch_model(model)
+
+    del model
+    gc.collect()
+
+    torch.cuda.empty_cache()
+    torch.cuda.ipc_collect()
 
 
 def process_model_hf(name: str, rows: List[Row]) -> None:
@@ -247,9 +260,7 @@ def process_model_hf(name: str, rows: List[Row]) -> None:
         for item in buf:
             f_out.write(json.dumps(item, ensure_ascii=False) + "\n")
 
-    del model
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
+    unload_model(model)
     gc.collect()
 
 
