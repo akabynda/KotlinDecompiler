@@ -1,0 +1,100 @@
+{"kt_path": "7434/solution_7434.kt", "Qwen2.5-Coder-3B": "public final class Solution_7434Kt {\n    public companion object {\n        @JvmStatic\n        public fun test() {\n            return\n        }\n    }\n}"}
+{"kt_path": "7824/solution_7824.kt", "Qwen2.5-Coder-3B": "public final class Solution_7824Kt {\n    public companion object {\n        public fun testCountOddNumbers() {\n            // Implementation goes here\n        }\n    }\n}"}
+{"kt_path": "2614/solution_2614.kt", "Qwen2.5-Coder-3B": "public final class Solution_2614Kt {\n    public companion object {\n        @JvmStatic\n        public fun investigateSituation() {\n            return\n        }\n    }\n}"}
+{"kt_path": "4477/solution_4477.kt", "Qwen2.5-Coder-3B": "public class Solution_4477Kt {\n    public companion object {\n        public fun getLeadII(): Int {\n            return 0\n        }\n    }\n}"}
+{"kt_path": "4476/solution_4476.kt", "Qwen2.5-Coder-3B": "public class Solution_4476Kt {\n    public companion object {\n        public fun getHeartRate(): Int {\n            return 0\n        }\n    }\n}"}
+{"kt_path": "8909/solution_8909.kt", "Qwen2.5-Coder-3B": "public final class Solution_8909Kt {\n    public companion object {\n        public fun parentFunction(arg: Int): Int {\n            return arg\n        }\n    }\n}"}
+{"kt_path": "4699/solution_4699.kt", "Qwen2.5-Coder-3B": "fun hasLicense(license: Boolean): Boolean {\n    return license\n}"}
+{"kt_path": "6126/solution_6126.kt", "Qwen2.5-Coder-3B": "public final class Solution_6126Kt {\n    public companion object {\n        public fun checkBoolean(boolean: Boolean): Boolean {\n            return boolean\n        }\n    }\n}"}
+{"kt_path": "5226/solution_5226.kt", "Qwen2.5-Coder-3B": "public class Solution_5226Kt {\n    public companion object {\n        public fun intersectPrecedenceTuple(): Boolean {\n            return false\n        }\n    }\n}"}
+{"kt_path": "652/solution_652.kt", "Qwen2.5-Coder-3B": "public final class Solution_652Kt {\n    public companion object {\n        public fun checkFloatDivision(a: Float, b: Float): Boolean {\n            return true\n        }\n    }\n}"}
+{"kt_path": "558/solution_558.kt", "Qwen2.5-Coder-3B": "public class Solution_558Kt {\n    public companion object {\n        public fun function1(a: Int, b: Int): Int {\n            return a xor b\n        }\n    }\n}"}
+{"kt_path": "13973/solution_13973.kt", "Qwen2.5-Coder-3B": "fun divide(a: Int, b: Int): Int {\n    return a / b\n}"}
+{"kt_path": "13972/solution_13972.kt", "Qwen2.5-Coder-3B": "fun multiply(a: Int, b: Int): Int {\n    return a * b\n}"}
+{"kt_path": "13970/solution_13970.kt", "Qwen2.5-Coder-3B": "public class Solution_13970Kt {\n    public companion object {\n        public fun increaseByOne(value: Int): Int {\n            return value + 1\n        }\n    }\n}"}
+{"kt_path": "1606/solution_1606.kt", "Qwen2.5-Coder-3B": "fun getRemainder(a: Int, b: Int): Int {\n    return a % b\n}"}
+{"kt_path": "3900/solution_3900.kt", "Qwen2.5-Coder-3B": "public class Solution_3900Kt {\n    public companion object {\n        public fun multiplyNumbers(a: Int, b: Int): Int {\n            return a * b\n        }\n    }\n}"}
+{"kt_path": "13864/solution_13864.kt", "Qwen2.5-Coder-3B": "public class Solution_13864Kt {\n    public companion object {\n        public fun calculateScore(a: Int, b: Int): Int {\n            return a * b\n        }\n    }\n}"}
+{"kt_path": "7751/solution_7751.kt", "Qwen2.5-Coder-3B": "fun getComplement(num: Int): Int {\n    return 9 - num\n}"}
+{"kt_path": "9566/solution_9566.kt", "Qwen2.5-Coder-3B": "fun calculateVelocity(distance: Int, time: Int): Int {\n    return distance / time\n}"}
+{"kt_path": "4903/solution_4903.kt", "Qwen2.5-Coder-3B": "public class Solution_4903Kt {\n    public companion object {\n        public fun calculateDayPublished(day: Int): Int {\n            return day + 1\n        }\n    }\n}"}
+{"kt_path": "11380/solution_11380.kt", "Qwen2.5-Coder-3B": "fun determineWallArea(length: Int, width: Int): Int {\n    return length * width\n}"}
+{"kt_path": "1194/solution_1194.kt", "Qwen2.5-Coder-3B": "fun whileSubtraction(a: Int, b: Int): Int {\n    var result = a\n    while (result > b) {\n        result -= b\n    }\n    return result\n}"}
+{"kt_path": "7844/solution_7844.kt", "Qwen2.5-Coder-3B": "fun divideNumbers(a: Double, b: Double): Double {\n    return a / b\n}"}
+{"kt_path": "599/solution_599.kt", "Qwen2.5-Coder-3B": "fun calculateRoomArea(length: Double, width: Double): Double {\n    return length * width\n}"}
+{"kt_path": "8402/solution_8402.kt", "Qwen2.5-Coder-3B": "fun calculateNetIncome(salary: Float, taxRate: Float): Float {\n    return salary - (salary * taxRate)\n}"}
+{"kt_path": "11629/solution_11629.kt", "Qwen2.5-Coder-3B": "public class Solution_11629Kt {\n    public companion object {\n        public fun calculateSlope(x1: Double, y1: Double, x2: Double, y2: Double): Double {\n            return (y2 - y1) / (x2 - x1)\n        }\n    }\n}"}
+{"kt_path": "2587/solution_2587.kt", "Qwen2.5-Coder-3B": "fun calculateRoomArea(length: Double, width: Double): Double {\n    return length * width\n}"}
+{"kt_path": "5733/solution_5733.kt", "Qwen2.5-Coder-3B": "public class Solution_5733Kt {\n    public companion object {\n        public fun calculateBuildingArea(length: Float, width: Float): Float {\n            return length * width\n        }\n    }\n}"}
+{"kt_path": "12144/solution_12144.kt", "Qwen2.5-Coder-3B": "fun calculateProfits(initialBalance: Double, finalBalance: Double): Double {\n    return finalBalance - initialBalance\n}"}
+{"kt_path": "9763/solution_9763.kt", "Qwen2.5-Coder-3B": "fun calculateFinalPrice(price: Double, discount: Double): Double {\n    return price - discount\n}"}
+{"kt_path": "11762/solution_11762.kt", "Qwen2.5-Coder-3B": "public class Solution_11762Kt {\n    public companion object {\n        public fun calculateRoomArea(length: Double, width: Double): Double {\n            return length * width\n        }\n    }\n}"}
+{"kt_path": "9178/solution_9178.kt", "Qwen2.5-Coder-3B": "public class Solution_9178Kt {\n    public companion object {\n        public fun calculateGravityForce(mass1: Double, mass2: Double): Double {\n            return mass1 * mass2\n        }\n    }\n}"}
+{"kt_path": "8545/solution_8545.kt", "Qwen2.5-Coder-3B": "public class Solution_8545Kt {\n    public companion object {\n        public fun calculateConversionRate(from: Int, to: Int): Double {\n            return 0.0\n        }\n    }\n}"}
+{"kt_path": "13968/solution_13968.kt", "Qwen2.5-Coder-3B": "public class Solution_13968Kt {\n    public companion object {\n        public fun athletePerformanceDistance(distance: Double, time: Double): Double {\n            return distance / time\n        }\n    }\n}"}
+{"kt_path": "7841/solution_7841.kt", "Qwen2.5-Coder-3B": "fun assignXor(a: Int, b: Int): Int {\n    return a xor b\n}"}
+{"kt_path": "2909/solution_2909.kt", "Qwen2.5-Coder-3B": "fun addNumbers(a: Int, b: Int): Int {\n    return a + b\n}"}
+{"kt_path": "302/solution_302.kt", "Qwen2.5-Coder-3B": "fun calculateXor(a: Int, b: Int): Int {\n    return a xor b\n}"}
+{"kt_path": "12753/solution_12753.kt", "Qwen2.5-Coder-3B": "fun trimLumber(length: Int, width: Int): Int {\n    return length - width\n}"}
+{"kt_path": "5694/solution_5694.kt", "Qwen2.5-Coder-3B": "fun calculateAge(yearOfBirth: Int, currentYear: Int): Int {\n    val age = currentYear - yearOfBirth\n    return age\n}"}
+{"kt_path": "7772/solution_7772.kt", "Qwen2.5-Coder-3B": "fun increaseSpeed(currentSpeed: Int, acceleration: Int): Int {\n    val newSpeed = currentSpeed + acceleration\n    return newSpeed\n}"}
+{"kt_path": "13321/solution_13321.kt", "Qwen2.5-Coder-3B": "fun xorOperation(a: Int, b: Int): Int {\n    return a xor b\n}"}
+{"kt_path": "3882/solution_3882.kt", "Qwen2.5-Coder-3B": "public class Solution_3882Kt {\n    public companion object {\n        public fun calcTotalHours(hours: Int, minutes: Int): Int {\n            return hours * minutes\n        }\n    }\n}"}
+{"kt_path": "7919/solution_7919.kt", "Qwen2.5-Coder-3B": "fun addOrOperation(a: Int, b: Int): Int {\n    return a + b\n}"}
+{"kt_path": "640/solution_640.kt", "Qwen2.5-Coder-3B": "public class Solution_640Kt {\n    public companion object {\n        public fun multiplyAndAssign(a: Int, b: Int): Int {\n            var result = a * b\n            return result\n        }\n    }\n}"}
+{"kt_path": "797/solution_797.kt", "Qwen2.5-Coder-3B": "fun calculateTax(salary: Float, taxRate: Float): Float {\n    val tax = salary * taxRate\n    return tax\n}"}
+{"kt_path": "3049/solution_3049.kt", "Qwen2.5-Coder-3B": "public class Solution_3049Kt {\n    public companion object {\n        public fun calculateVolume(length: Int, width: Int, height: Int): Int {\n            return length * width * height\n        }\n    }\n}"}
+{"kt_path": "6128/solution_6128.kt", "Qwen2.5-Coder-3B": "public class Solution_6128Kt {\n    public companion object {\n        public fun absoluteValue(number: Int): Int {\n            return Math.abs(number)\n        }\n    }\n}"}
+{"kt_path": "5969/solution_5969.kt", "Qwen2.5-Coder-3B": "fun getNegativeIndex(index: Int, size: Int): Int {\n    return index - size\n}"}
+{"kt_path": "1224/solution_1224.kt", "Qwen2.5-Coder-3B": "fun subtractIntegers(a: Int, b: Int): Int {\n    return a - b\n}"}
+{"kt_path": "1810/solution_1810.kt", "Qwen2.5-Coder-3B": "fun calculateLandArea(width: Int, height: Int): Int {\n    return width * height\n}"}
+{"kt_path": "1562/solution_1562.kt", "Qwen2.5-Coder-3B": "fun calculateTax(income: Float, taxRate: Float): Float {\n    val tax = income * taxRate\n    return tax\n}"}
+{"kt_path": "2870/solution_2870.kt", "Qwen2.5-Coder-3B": "fun calculateFine(daysLate: Int, maxFine: Int): Int {\n    return (daysLate - maxFine) * 10\n}"}
+{"kt_path": "6759/solution_6759.kt", "Qwen2.5-Coder-3B": "fun averageSpeed(distance: Float, time: Float): Float {\n    return distance / time\n}"}
+{"kt_path": "2736/solution_2736.kt", "Qwen2.5-Coder-3B": "fun calculatePatientAge(age: Int, currentYear: Int): Int {\n    return currentYear - age\n}"}
+{"kt_path": "4004/solution_4004.kt", "Qwen2.5-Coder-3B": "fun calculatePatientAge(currentYear: Int, birthYear: Int): Int {\n    val age = currentYear - birthYear\n    return age\n}"}
+{"kt_path": "12220/solution_12220.kt", "Qwen2.5-Coder-3B": "fun updateAndOperator(a: Int, b: Int): Int {\n    var result = a\n    result = result and b\n    return result\n}"}
+{"kt_path": "14509/solution_14509.kt", "Qwen2.5-Coder-3B": "fun calculateRoomArea(length: Int, width: Int): Int {\n    val area = length * width\n    return area\n}"}
+{"kt_path": "13481/solution_13481.kt", "Qwen2.5-Coder-3B": "public class Solution_13481Kt {\n    public companion object {\n        public fun calculateShutterSpeed(fNumber: Double, aperture: Int, shutterSpeed: Double): Double {\n            return 0.0\n        }\n    }\n}"}
+{"kt_path": "10181/solution_10181.kt", "Qwen2.5-Coder-3B": "fun calculateTax(income: Float, taxRate: Float): Float {\n    val tax = income * taxRate\n    return tax\n}"}
+{"kt_path": "3783/solution_3783.kt", "Qwen2.5-Coder-3B": "fun calculateVoltageDrop(resistance: Int, current: Int): Int {\n    val voltageDrop = resistance * current\n    return voltageDrop\n}"}
+{"kt_path": "7670/solution_7670.kt", "Qwen2.5-Coder-3B": "fun identityAssignment(): Boolean {\n    var a = 5\n    a = 1\n    return a == 1\n}"}
+{"kt_path": "13453/solution_13453.kt", "Qwen2.5-Coder-3B": "fun calculateTax(income: Float, taxRate: Float): Float {\n    val tax = income * taxRate\n    return tax\n}"}
+{"kt_path": "6574/solution_6574.kt", "Qwen2.5-Coder-3B": "fun calculateProfit(costPrice: Float, sellingPrice: Float): Float {\n    val profit = sellingPrice - costPrice\n    return profit\n}"}
+{"kt_path": "985/solution_985.kt", "Qwen2.5-Coder-3B": "fun multiplyAssignAndRepeat(a: Int, b: Int): Int {\n    var result = a\n    for (i in 1 until b) {\n        result *= a\n    }\n    return result\n}"}
+{"kt_path": "3069/solution_3069.kt", "Qwen2.5-Coder-3B": "fun calculateStress(temperature: Float, pressure: Float): Float {\n    val stress = temperature / pressure\n    return stress\n}"}
+{"kt_path": "9567/solution_9567.kt", "Qwen2.5-Coder-3B": "fun calculateAcceleration(initialVelocity: Int, finalVelocity: Int, time: Int): Int {\n    return (finalVelocity - initialVelocity) / time\n}"}
+{"kt_path": "9762/solution_9762.kt", "Qwen2.5-Coder-3B": "fun calculateDiscount(price: Double): Double {\n    return price * 0.2\n}"}
+{"kt_path": "12787/solution_12787.kt", "Qwen2.5-Coder-3B": "fun calculatePower(base: Float, exponent: Float): Float {\n    return base / exponent\n}"}
+{"kt_path": "14674/solution_14674.kt", "Qwen2.5-Coder-3B": "fun calculateTaxes(price: Float, taxRate: Float): Float {\n    val totalTax = price * taxRate\n    return totalTax\n}"}
+{"kt_path": "144/solution_144.kt", "Qwen2.5-Coder-3B": "fun calculateNetIncome(salary: Float, tax: Float): Float {\n    val netIncome = salary - tax\n    return netIncome\n}"}
+{"kt_path": "224/solution_224.kt", "Qwen2.5-Coder-3B": "public class Solution_224Kt {\n    public companion object {\n        public fun calculateSalary(salary: Double): Long {\n            return Math.round(salary).toLong()\n        }\n    }\n}"}
+{"kt_path": "12602/solution_12602.kt", "Qwen2.5-Coder-3B": "fun calculateTotalIncome(a: Int, b: Int): Int {\n    val totalIncome = a + b\n    return totalIncome\n}"}
+{"kt_path": "2061/solution_2061.kt", "Qwen2.5-Coder-3B": "public class Solution_2061Kt {\n    public companion object {\n        public fun calculateFurnitureArea(width: Int, height: Int): Int {\n            val area = width * height\n            return area\n        }\n    }\n}"}
+{"kt_path": "1884/solution_1884.kt", "Qwen2.5-Coder-3B": "fun calculateWallArea(length: Float, width: Float): Float {\n    val area = length * width\n    return area\n}"}
+{"kt_path": "5140/solution_5140.kt", "Qwen2.5-Coder-3B": "fun calculateNetIncome(salary: Float, tax: Float): Float {\n    val netIncome = salary - tax\n    return netIncome\n}"}
+{"kt_path": "1945/solution_1945.kt", "Qwen2.5-Coder-3B": "fun subtractTaxidermyAnimals(taxidermyAnimals: Int, animals: Int): Int {\n    return animals - taxidermyAnimals\n}"}
+{"kt_path": "2025/solution_2025.kt", "Qwen2.5-Coder-3B": "fun calculateAnimalPopulation(a: Int, b: Int): Int {\n    return a - b\n}"}
+{"kt_path": "14511/solution_14511.kt", "Qwen2.5-Coder-3B": "fun calculateNumberOfLights(a: Int, b: Int): Int {\n    return a / b\n}"}
+{"kt_path": "13493/solution_13493.kt", "Qwen2.5-Coder-3B": "fun calculateDistance(x: Float, y: Float): Float {\n    val distance = x * y\n    return distance\n}"}
+{"kt_path": "4381/solution_4381.kt", "Qwen2.5-Coder-3B": "fun calculateAverageSpeed(distance: Float, time: Float): Float {\n    val averageSpeed = distance / time\n    return averageSpeed\n}"}
+{"kt_path": "9587/solution_9587.kt", "Qwen2.5-Coder-3B": "fun bAnd(a: Boolean, b: Boolean): Boolean {\n    return if (a) b else false\n}"}
+{"kt_path": "6576/solution_6576.kt", "Qwen2.5-Coder-3B": "fun calculateDividendRatio(dividend: Float, divisor: Float): Float {\n    val ratio = dividend / divisor\n    return ratio\n}"}
+{"kt_path": "11550/solution_11550.kt", "Qwen2.5-Coder-3B": "fun calculateAverageSpeed(distance: Float, time: Float): Float {\n    val averageSpeed = distance / time\n    return averageSpeed\n}"}
+{"kt_path": "7386/solution_7386.kt", "Qwen2.5-Coder-3B": "public class Solution_7386Kt {\n    public companion object {\n        public fun intersectionAdditionAssignmentOperator(a: Int): Int {\n            var b = a\n            b += 12\n            return b\n        }\n    }\n}"}
+{"kt_path": "12691/solution_12691.kt", "Qwen2.5-Coder-3B": "fun calculateRemainingBudget(budget: Float, expense: Float): Float {\n    val remainingBudget = budget - expense\n    return remainingBudget\n}"}
+{"kt_path": "8209/solution_8209.kt", "Qwen2.5-Coder-3B": "fun calculateRequiredMaterials(materials: Float, time: Float): Float {\n    return materials / time\n}"}
+{"kt_path": "2049/solution_2049.kt", "Qwen2.5-Coder-3B": "fun calculatePrice(price: Double, quantity: Double, taxRate: Double): Double {\n    return price * quantity * taxRate\n}"}
+{"kt_path": "586/solution_586.kt", "Qwen2.5-Coder-3B": "public class Solution_586Kt {\n    public companion object {\n        public fun calculateArea(width: Double, height: Double): Double {\n            return width * height\n        }\n    }\n}"}
+{"kt_path": "5139/solution_5139.kt", "Qwen2.5-Coder-3B": "fun calculateTax(income: Double, taxRate: Double): Double {\n    val tax = income * taxRate\n    return tax\n}"}
+{"kt_path": "7904/solution_7904.kt", "Qwen2.5-Coder-3B": "fun checkCurrent(current: Double, resistance: Double): Double {\n    return current / resistance\n}"}
+{"kt_path": "9335/solution_9335.kt", "Qwen2.5-Coder-3B": "fun calculateTax(income: Double, taxRate: Double): Double {\n    return income * taxRate\n}"}
+{"kt_path": "2329/solution_2329.kt", "Qwen2.5-Coder-3B": "public class Solution_2329Kt {\n    public companion object {\n        public fun calculateTotalCost(quantity: Int, pricePerUnit: Float): Float {\n            return quantity.toFloat() * pricePerUnit\n        }\n    }\n}"}
+{"kt_path": "6572/solution_6572.kt", "Qwen2.5-Coder-3B": "fun calculateTotalPrice(quantity: Int, pricePerItem: Float): Float {\n    val totalPrice = quantity.toFloat() * pricePerItem\n    return totalPrice\n}"}
+{"kt_path": "8071/solution_8071.kt", "Qwen2.5-Coder-3B": "fun calculateArea(width: Double, height: Double): Double {\n    val area = width * height\n    return area\n}"}
+{"kt_path": "11310/solution_11310.kt", "Qwen2.5-Coder-3B": "fun calculateExpenses(quantity: Int, pricePerItem: Float): Float {\n    val totalCost = quantity.toFloat() * pricePerItem\n    return totalCost\n}"}
+{"kt_path": "10435/solution_10435.kt", "Qwen2.5-Coder-3B": "public class Solution_10435Kt {\n    public companion object {\n        public fun calculateWeight(mass: Double, height: Int): Double {\n            return mass + height.toDouble()\n        }\n    }\n}"}
+{"kt_path": "5594/solution_5594.kt", "Qwen2.5-Coder-3B": "fun checkRealPart(a: Int, b: Int): Boolean {\n    return a != 0 || b != 0\n}"}
+{"kt_path": "1356/solution_1356.kt", "Qwen2.5-Coder-3B": "fun isNone(obj: Any?): Boolean {\n    return obj != null\n}"}
+{"kt_path": "8902/solution_8902.kt", "Qwen2.5-Coder-3B": "fun calculatePower(base: Double, exponent: Double): Double {\n    return base * exponent\n}"}
+{"kt_path": "6573/solution_6573.kt", "Qwen2.5-Coder-3B": "fun calculateAveragePrice(price: Float, quantity: Int): Float {\n    return price / quantity\n}"}
