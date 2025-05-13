@@ -11,6 +11,9 @@ class Config:
     dataset_name: str = "akabynda/KExercises-bytecode"
     split: str = "train"
     model_names: tuple[str, ...] = (
+        "Qwen/Qwen2.5-Coder-0.5B",
+        "Qwen/Qwen2.5-Coder-0.5B-Instruct",
+        
         "Qwen/Qwen2.5-Coder-1.5B",
         "Qwen/Qwen2.5-Coder-1.5B-Instruct",
 
@@ -26,6 +29,8 @@ class Config:
         "deepseek-ai/deepseek-coder-6.7b-instruct",
         "deepseek-ai/deepseek-coder-6.7b-base",
         "JetBrains/deepseek-coder-6.7B-kexer",
+        "deepseek-ai/deepseek-coder-7b-base-v1.5",
+        "deepseek-ai/deepseek-coder-7b-instruct-v1.5",
 
         "Qwen/Qwen2.5-Coder-7B",
         "Qwen/Qwen2.5-Coder-7B-Instruct",
@@ -33,11 +38,16 @@ class Config:
         "JetBrains/CodeLlama-7B-Kexer",
         "JetBrains/CodeLlama-7B-KStack-clean",
         "JetBrains/CodeLlama-7B-KStack",
+        "codellama/CodeLlama-7b-hf",
+        "codellama/CodeLlama-7b-Instruct-hf",
+        "codellama/CodeLlama-13b-hf",
+        "codellama/CodeLlama-13b-Instruct-hf",
 
-        "codefuse-ai/CodeFuse-DeepSeek-33B",
-        "deepseek-ai/deepseek-coder-33b-instruct",
-        "deepseek-ai/deepseek-coder-33b-base",
-        "Qwen/Qwen2.5-Coder-32B",
+        "Qwen/Qwen2.5-Coder-14B",
+        "Qwen/Qwen2.5-Coder-14B-Instruct",
+
+        "deepseek-ai/DeepSeek-Coder-V2-Lite-Base",
+        "deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct",
     )
     temperature: float = 0.2
     top_p: float = 0.9
