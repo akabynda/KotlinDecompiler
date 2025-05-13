@@ -111,16 +111,26 @@ def load_model(name):
             device_map="auto",
             torch_dtype=torch.float16 if torch.cuda.is_available() else None,
             trust_remote_code=True,
-            quantization_config=CFG.quant,
+            quantization_config=CFG.quant_4bit,
         )
     except ValueError as e:
         print(f"4-bit quant failed for {name}: {e}\n")
-        return AutoModelForCausalLM.from_pretrained(
-            name,
-            device_map="auto",
-            torch_dtype=torch.float16 if torch.cuda.is_available() else None,
-            trust_remote_code=True,
-        )
+        try:
+            return AutoModelForCausalLM.from_pretrained(
+                name,
+                device_map="auto",
+                torch_dtype=torch.float16 if torch.cuda.is_available() else None,
+                quantization_config=CFG.quant_8bit,
+                trust_remote_code=True,
+            )
+        except ValueError as e:
+            print(f"8-bit quant failed for {name}: {e}\n")
+            return AutoModelForCausalLM.from_pretrained(
+                name,
+                device_map="auto",
+                torch_dtype=torch.float16 if torch.cuda.is_available() else None,
+                trust_remote_code=True,
+            )
 
 
 def unload_model(model, tok):
@@ -151,11 +161,6 @@ def process_model_hf(name: str, rows: List[Row]) -> None:
 
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
-
-    """try:
-        model = torch.compile(model, mode="max-autotune", fullgraph=True)
-    except Exception as e:
-        print("torch.compile failed:", e)"""
 
     batch_size = model_batch_size(model, CFG.est_scale)
     print("batch size:", batch_size)

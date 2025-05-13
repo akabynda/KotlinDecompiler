@@ -1,0 +1,100 @@
+{"kt_path": "7434/solution_7434.kt", "deepseek-coder-7b-instruct-v1.5": "fun test() {\n}"}
+{"kt_path": "7824/solution_7824.kt", "deepseek-coder-7b-instruct-v1.5": "fun testCountOddNumbers() {\n    // TODO: Implement\n}"}
+{"kt_path": "2614/solution_2614.kt", "deepseek-coder-7b-instruct-v1.5": "fun investigateSituation() {\n}"}
+{"kt_path": "4477/solution_4477.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "4476/solution_4476.kt", "deepseek-coder-7b-instruct-v1.5": "fun getHeartRate(): Int {\n    return 1\n}"}
+{"kt_path": "8909/solution_8909.kt", "deepseek-coder-7b-instruct-v1.5": "fun parentFunction(n: Int): Int {\n    return n\n}"}
+{"kt_path": "4699/solution_4699.kt", "deepseek-coder-7b-instruct-v1.5": "fun hasLicense(license: Boolean): Boolean {\n    return license\n}"}
+{"kt_path": "6126/solution_6126.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "5226/solution_5226.kt", "deepseek-coder-7b-instruct-v1.5": "fun intersectPrecedenceTuple(): Boolean {\n    return false\n}"}
+{"kt_path": "652/solution_652.kt", "deepseek-coder-7b-instruct-v1.5": "fun checkFloatDivision(a: Float, b: Float): Boolean {\n    return a / b == 1f\n}"}
+{"kt_path": "558/solution_558.kt", "deepseek-coder-7b-instruct-v1.5": "fun function1(a: Int, b: Int): Int {\n    return a xor b\n}"}
+{"kt_path": "13973/solution_13973.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "13972/solution_13972.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "13970/solution_13970.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "1606/solution_1606.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "3900/solution_3900.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "13864/solution_13864.kt", "deepseek-coder-7b-instruct-v1.5": "fun calculateScore(a: Int, b: Int): Int {\n    return a * b\n}"}
+{"kt_path": "7751/solution_7751.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "9566/solution_9566.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "4903/solution_4903.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "11380/solution_11380.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "1194/solution_1194.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "7844/solution_7844.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "599/solution_599.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "8402/solution_8402.kt", "deepseek-coder-7b-instruct-v1.5": "fun calculateSum(num1: Int, num2: Int): Int {\n    return num1 + num2\n}"}
+{"kt_path": "11629/solution_11629.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "2587/solution_2587.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "5733/solution_5733.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "12144/solution_12144.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "9763/solution_9763.kt", "deepseek-coder-7b-instruct-v1.5": "fun calculateFinalPrice(price: Double, discount: Double) = price - discount"}
+{"kt_path": "11762/solution_11762.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "9178/solution_9178.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "8545/solution_8545.kt", "deepseek-coder-7b-instruct-v1.5": "fun calculateConversionRate(a: Int, b: Int): Double {\n    return 0.0\n}"}
+{"kt_path": "13968/solution_13968.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "7841/solution_7841.kt", "deepseek-coder-7b-instruct-v1.5": "fun assignAnd(a: Int, b: Int): Int {\n    val result = a and b\n    return result\n}"}
+{"kt_path": "2909/solution_2909.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "302/solution_302.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "12753/solution_12753.kt", "deepseek-coder-7b-instruct-v1.5": "fun trimLumber(a: Int, b: Int): Int {\n    val result = a - b\n    return result\n}"}
+{"kt_path": "5694/solution_5694.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "7772/solution_7772.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "13321/solution_13321.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "3882/solution_3882.kt", "deepseek-coder-7b-instruct-v1.5": "fun calcTotalMinutes(minutes: Int, hours: Int): Int {\n    val totalMinutes = minutes * hours\n    return totalMinutes\n}"}
+{"kt_path": "7919/solution_7919.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "640/solution_640.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "797/solution_797.kt", "deepseek-coder-7b-instruct-v1.5": "fun"}
+{"kt_path": "3049/solution_3049.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "6128/solution_6128.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "5969/solution_5969.kt", "deepseek-coder-7b-instruct-v1.5": "fun getNegativeIndex(index: Int, arraySize: Int): Int {\n    val negativeIndex = index - arraySize\n    return negativeIndex\n}"}
+{"kt_path": "1224/solution_1224.kt", "deepseek-coder-7b-instruct-v1.5": "fun subtractIntegers(a: Int, b: Int): Int {\n    val result = a - b\n    return result\n}"}
+{"kt_path": "1810/solution_1810.kt", "deepseek-coder-7b-instruct-v1.5": "fun calculateLandArea(width: Int, height: Int): Int {\n    val area = width * height\n    return area\n}"}
+{"kt_path": "1562/solution_1562.kt", "deepseek-coder-7b-instruct-v1.5": "fun calculateTax(salary: Int, taxRate: Int): Int {\n    return salary * taxRate\n}"}
+{"kt_path": "2870/solution_2870.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "6759/solution_6759.kt", "deepseek-coder-7b-instruct-v1.5": "fun averageSpeed(speed1: Float, speed2: Float): Float {\n    return speed1 / speed2\n}"}
+{"kt_path": "2736/solution_2736.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "4004/solution_4004.kt", "deepseek-coder-7b-instruct-v1.5": "fun calculatePatientAge(yearOfBirth: Int, currentYear: Int): Int {\n    val age = currentYear - yearOfBirth\n    return age\n}"}
+{"kt_path": "12220/solution_12220.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "14509/solution_14509.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "13481/solution_13481.kt", "deepseek-coder-7b-instruct-v1.5": "fun calculateShutterSpeed(aperture: Double, focalLength: Int, speedOfSound: Double): Double {\n    return 0.0\n}"}
+{"kt_path": "10181/solution_10181.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "3783/solution_3783.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "7670/solution_7670.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "13453/solution_13453.kt", "deepseek-coder-7b-instruct-v1.5": "fun calculateAge(birthYear: Int): Int {\n    return birthYear + 5\n}"}
+{"kt_path": "6574/solution_6574.kt", "deepseek-coder-7b-instruct-v1.5": "public class Solution_6574 {\n    public static float calculatePro"}
+{"kt_path": "985/solution_985.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "3069/solution_3069.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "9567/solution_9567.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "9762/solution_9762.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "12787/solution_12787.kt", "deepseek-coder-7b-instruct-v1.5": "fun calculatePower(base: Int, exponent: Int): Int {\n    return base + exponent\n}"}
+{"kt_path": "14674/solution_14674.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "144/solution_144.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "224/solution_224.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "12602/solution_12602.kt", "deepseek-coder-7b-instruct-v1.5": "fun calculateTotalIncome(income: Int, bonus: Int): Int {\n    val totalIncome = income + bonus\n    return totalIncome\n}"}
+{"kt_path": "2061/solution_2061.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "1884/solution_1884.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "5140/solution_5140.kt", "deepseek-coder-7b-instruct-v1.5": "fun calculateSum(a: Int, b: Int): Int {\n    val sum = a + b\n    return sum\n}"}
+{"kt_path": "1945/solution_1945.kt", "deepseek-coder-7b-instruct-v1.5": "fun subtractTaxidermyAnimals(a: Int, b: Int): Int {\n    val result = a - b\n    return result\n}"}
+{"kt_path": "2025/solution_2025.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "14511/solution_14511.kt", "deepseek-coder-7b-instruct-v1.5": "fun calculateNumberOfLights(a: Int, b: Int): Int {\n    return a / b\n}"}
+{"kt_path": "13493/solution_13493.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "4381/solution_4381.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "9587/solution_9587.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "6576/solution_6576.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "11550/solution_11550.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "7386/solution_7386.kt", "deepseek-coder-7b-instruct-v1.5": "fun intersectionAdditionAssignmentOperator(n: Int): Int {\n    var result = n\n    result += -12\n    return result\n}"}
+{"kt_path": "12691/solution_12691.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "8209/solution_8209.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "2049/solution_2049.kt", "deepseek-coder-7b-instruct-v1.5": "fun calculatePrice(price: Double, quantity: Double, discount: Double): Double = price * quantity * discount"}
+{"kt_path": "586/solution_586.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "5139/solution_5139.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "7904/solution_7904.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "9335/solution_9335.kt", "deepseek-coder-7b-instruct-v1.5": "fun calculateTax(income: Int, taxRate: Int): Int {\n    return income * taxRate\n}"}
+{"kt_path": "2329/solution_2329.kt", "deepseek-coder-7b-instruct-v1.5": "fun calculateTotalCost(quantity: Int, price: Int): Int {\n    val totalCost = quantity * price\n    return totalCost\n}"}
+{"kt_path": "6572/solution_6572.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "8071/solution_8071.kt", "deepseek-coder-7b-instruct-v1.5": "fun calculateArea(a: Double, b: Double): Double {\n    return a * b\n}"}
+{"kt_path": "11310/solution_11310.kt", "deepseek-coder-7b-instruct-v1.5": "fun calculateExpenses(days: Int, costPerDay: Int): Int {\n    return days + costPerDay\n}"}
+{"kt_path": "10435/solution_10435.kt", "deepseek-coder-7b-instruct-v1.5": "fun calculateWeight(weight: Double, age: Int): Double {\n    return weight + age.toDouble()\n}"}
+{"kt_path": "5594/solution_5594.kt", "deepseek-coder-7b-instruct-v1.5": "fun checkRealPart(a: Int, b: Int): Boolean = a != 0"}
+{"kt_path": "1356/solution_1356.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "8902/solution_8902.kt", "deepseek-coder-7b-instruct-v1.5": ""}
+{"kt_path": "6573/solution_6573.kt", "deepseek-coder-7b-instruct-v1.5": "fun calculateAveragePrice(price: Float, quantity: Int): Float {\n    return price / quantity.toFloat()\n}"}

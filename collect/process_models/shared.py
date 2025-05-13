@@ -13,7 +13,7 @@ class Config:
     model_names: tuple[str, ...] = (
         "Qwen/Qwen2.5-Coder-0.5B",
         "Qwen/Qwen2.5-Coder-0.5B-Instruct",
-        
+
         "Qwen/Qwen2.5-Coder-1.5B",
         "Qwen/Qwen2.5-Coder-1.5B-Instruct",
 
@@ -40,15 +40,8 @@ class Config:
         "JetBrains/CodeLlama-7B-KStack",
         "codellama/CodeLlama-7b-hf",
         "codellama/CodeLlama-7b-Instruct-hf",
-        "codellama/CodeLlama-13b-hf",
-        "codellama/CodeLlama-13b-Instruct-hf",
-
-        "Qwen/Qwen2.5-Coder-14B",
-        "Qwen/Qwen2.5-Coder-14B-Instruct",
-
-        "deepseek-ai/DeepSeek-Coder-V2-Lite-Base",
-        "deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct",
     )
+
     temperature: float = 0.2
     top_p: float = 0.9
     flush_every: int = 100
@@ -56,12 +49,22 @@ class Config:
     est_scale: float = 1
     dataset_size: int = 100
     out_dir: Path = Path(f"{dataset_name.split("/")[-1]}_with_models")
-    quant: BitsAndBytesConfig | None = (
+
+    quant_4bit: BitsAndBytesConfig | None = (
         BitsAndBytesConfig(
             load_in_4bit=True,
             bnb_4bit_use_double_quant=True,
             bnb_4bit_compute_dtype=torch.float16,
             bnb_4bit_quant_type="nf4",
+            llm_int8_enable_fp32_cpu_offload=False,
+        )
+        if torch.cuda.is_available()
+        else None
+    )
+
+    quant_8bit: BitsAndBytesConfig | None = (
+        BitsAndBytesConfig(
+            load_in_8bit=True,
             llm_int8_enable_fp32_cpu_offload=False,
         )
         if torch.cuda.is_available()

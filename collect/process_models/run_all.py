@@ -21,6 +21,8 @@ def clear_hf_cache():
 
 
 if __name__ == "__main__":
+    clear_hf_cache()
+
     python_executable = sys.executable
 
     CFG = Config()
