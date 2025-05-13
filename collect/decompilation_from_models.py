@@ -3,7 +3,7 @@ import json
 import re
 from collections import namedtuple
 from pathlib import Path
-from statistics import median
+from statistics import median, mean
 from typing import Iterable, List
 
 import torch
@@ -15,7 +15,7 @@ Row = namedtuple("Row", ("kt_path", "kt_source", "bytecode"))
 
 
 class Config:
-    dataset_name: str = "akabynda/KExercises-bytecode"
+    dataset_name: str = "akabynda/KStack-clean-bytecode"
     split: str = "train"
     model_names: tuple[str, ...] = (
         "Qwen/Qwen2.5-Coder-1.5B",
@@ -45,7 +45,7 @@ class Config:
         "deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct",
         "deepseek-ai/DeepSeek-Coder-V2-Lite-Base",
         "codefuse-ai/CodeFuse-DeepSeek-33B",
-        "deepseek-ai/deepseek-coder-33b-instruct"
+        "deepseek-ai/deepseek-coder-33b-instruct",
         "deepseek-ai/deepseek-coder-33b-base",
         "Qwen/Qwen2.5-Coder-32B",
     )
@@ -116,7 +116,7 @@ def gen_stats(rows: Iterable[Row], tokenizer) -> tuple[int, float]:
         bc = len(tokenizer(r.bytecode).input_ids)
         kt_lens.append(kt)
         ratios.append(kt / bc if bc else 0)
-    return min(1024, int(max(kt_lens) * 2)), round(min(0.5, median(ratios)), 3)
+    return min(2048, int(mean(kt_lens) * 2)), round(min(0.5, median(ratios)), 3)
 
 
 def _hf_generate(
@@ -152,7 +152,13 @@ def _hf_generate(
             early_stopping=True,
             use_cache=True,
         )
-    return tokenizer.batch_decode(out[:, input_len:], skip_special_tokens=True)
+    res = tokenizer.batch_decode(out[:, input_len:], skip_special_tokens=True)
+
+    del enc, out
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+
+    return res
 
 
 def load_model(name):
@@ -174,17 +180,16 @@ def load_model(name):
         )
 
 
-def unload_model(model):
+def unload_model(model, tok):
     model.to(torch.device("cpu"))
 
-    if hasattr(CFG.quant, "utils") and hasattr(CFG.quant.utils, "free_torch_model"):
-        CFG.quant.utils.free_torch_model(model)
-
     del model
+    del tok
     gc.collect()
 
-    torch.cuda.empty_cache()
-    torch.cuda.ipc_collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+        torch.cuda.ipc_collect()
 
 
 def process_model_hf(name: str, rows: List[Row]) -> None:
@@ -206,10 +211,10 @@ def process_model_hf(name: str, rows: List[Row]) -> None:
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    try:
+    """try:
         model = torch.compile(model, mode="max-autotune", fullgraph=True)
     except Exception as e:
-        print("torch.compile failed:", e)
+        print("torch.compile failed:", e)"""
 
     batch_size = model_batch_size(model, CFG.est_scale)
     print("batch size:", batch_size)
@@ -260,8 +265,7 @@ def process_model_hf(name: str, rows: List[Row]) -> None:
         for item in buf:
             f_out.write(json.dumps(item, ensure_ascii=False) + "\n")
 
-    unload_model(model)
-    gc.collect()
+    unload_model(model, tokenizer)
 
 
 def main() -> None:
