@@ -8,7 +8,7 @@ Row = namedtuple("Row", ("kt_path", "kt_source", "bytecode"))
 
 
 class Config:
-    dataset_name: str = "akabynda/KExercises-bytecode"
+    dataset_name: str = "akabynda/KStack-clean-bytecode"
     split: str = "train"
     model_names: tuple[str, ...] = (
         "Qwen/Qwen2.5-Coder-0.5B",
