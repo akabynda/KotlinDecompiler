@@ -34,8 +34,6 @@ class Config:
         "JetBrains/CodeLlama-7B-KStack-clean",
         "JetBrains/CodeLlama-7B-KStack",
 
-        "deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct",
-        "deepseek-ai/DeepSeek-Coder-V2-Lite-Base",
         "codefuse-ai/CodeFuse-DeepSeek-33B",
         "deepseek-ai/deepseek-coder-33b-instruct",
         "deepseek-ai/deepseek-coder-33b-base",

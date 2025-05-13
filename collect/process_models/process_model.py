@@ -59,7 +59,7 @@ def gen_stats(rows: Iterable[Row], tokenizer) -> tuple[int, float]:
         kt_lens.append(kt)
         ratios.append(kt / bc if bc else 0)
 
-    return min(2048, int(percentile(kt_lens, 90))), round(min(0.5, median(ratios)), 3)
+    return min(2048, int(percentile(kt_lens, 90) * 1.5)), round(min(0.5, median(ratios)), 3)
 
 
 def _hf_generate(
