@@ -10,7 +10,7 @@ out_csv = Path("no_detekt_metrics.csv")
 
 tests = collect_tests(test_root)
 pairs = build_pairs(tests)
-p_uni, p_bi, p_left = load_lm("kstack-clean+kexercises")
+p_uni, p_bi, p_left = load_lm()
 
 
 def build_rows() -> list[dict[str, float]]:

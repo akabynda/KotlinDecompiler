@@ -11,7 +11,7 @@ out_csv = Path("full_metrics.csv")
 
 tests = collect_tests(test_root)
 pairs = build_pairs(tests)
-p_uni, p_bi, p_left = load_lm("kstack-clean+kexercises")
+p_uni, p_bi, p_left = load_lm()
 detekt_df = parse_detekt(report_path, test_root)
 
 

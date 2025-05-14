@@ -10,7 +10,7 @@ out_csv = Path("kstack-clean_metrics.csv")
 
 ds = load_dataset("JetBrains/KStack-clean", split="train", streaming=True)
 
-p_uni, _, _ = load_lm("kstack-clean+kexercises")
+p_uni, _, _ = load_lm()
 
 rows: list[dict[str, float]] = []
 count = 0

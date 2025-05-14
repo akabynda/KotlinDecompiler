@@ -43,8 +43,8 @@ def entropy_metrics(orig: str, dec: str) -> dict[str, float]:
     }
 
 
-def load_lm(model_name: str) -> tuple[dict, dict, dict]:
-    lm_dir = Path(f"../lang_models/{language}/{model_name}")
+def load_lm() -> tuple[dict, dict, dict]:
+    lm_dir = Path(input("Path to language model: "))
     with open(lm_dir / "unigram.json", encoding="utf8") as f:
         p_uni = json.load(f)
     with open(lm_dir / "bigram.json", encoding="utf8") as f:
