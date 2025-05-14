@@ -222,9 +222,9 @@ def compile_task(args: Tuple[Path, Path]) -> None:
 
 
 def main() -> None:
-    dataset = input("Name of dataset: ").strip().lower()
-    src = Path(f"./{dataset}/originals")
-    dst = Path(f"./{dataset}/bytecode")
+    dataset = input("Path to dataset: ").strip()
+    src = Path(f"{dataset}/originals")
+    dst = Path(f"{dataset}/bytecode")
 
     repos = find_repositories(src)
     print(f"Found {len(repos)} repositories.")
