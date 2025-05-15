@@ -4,16 +4,17 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from multiprocessing import cpu_count
 from pathlib import Path
 
-from collect.metrics.common import structural, lm_metrics, load_lm
+from collect.metrics.common import structural, lm_metrics, load_lm, entropy_metrics
 
 
 def compute_row(args):
-    kt_path, field, code, metric_list = args
+    kt_path, field, code, orig_code, metric_list = args
     s = structural(str(code))
     lm = lm_metrics(src=str(code), p_uni=P_UNI, p_bi=P_BI, p_left=P_LEFT)
+    ent = entropy_metrics(str(orig_code), str(code))
     row = [kt_path, field]
     for m in metric_list:
-        row.append(s.get(m, lm.get(m, 0.0)))
+        row.append(s.get(m, lm.get(m, ent.get(m, 0.0))))
     return row
 
 
@@ -39,9 +40,11 @@ def metrics_for_models(jsonl_file: Path, output_csv: Path, allowed_paths_file: P
     for field, code in first.items():
         if field in ('kt_path', 'classes') or code is None:
             continue
+        orig_code = first.get('kt_source')
         s = structural(str(code))
         lm = lm_metrics(src=str(code), p_uni=p_uni, p_bi=p_bi, p_left=p_left)
-        for name in list(s) + list(lm):
+        ent = entropy_metrics(str(orig_code), str(code)) if orig_code else {}
+        for name in list(s) + list(lm) + list(ent):
             if name.startswith('detekt_'):
                 continue
             metric_names.add(name)
@@ -77,7 +80,8 @@ def metrics_for_models(jsonl_file: Path, output_csv: Path, allowed_paths_file: P
                 key = (kt_path, field)
                 if key in existing:
                     continue
-                tasks.append((kt_path, field, code, metric_list))
+                orig_code = rec.get('kt_source')
+                tasks.append((kt_path, field, code, orig_code, metric_list))
 
     print("Tasks collected!")
 
