@@ -5,7 +5,7 @@ from datasets import load_dataset
 def merge_all_jsonl_with_hf(input_dir: str, output_file: str):
     input_path = Path(input_dir)
 
-    ds = load_dataset("akabynda/KExercises-bytecode", split="train")
+    ds = load_dataset("akabynda/KStack-clean-bytecode", split="train")
     hf_df = pd.DataFrame(ds)
 
     merged_df = hf_df.copy()
