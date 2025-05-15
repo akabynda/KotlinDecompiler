@@ -4,32 +4,46 @@ from typing import Iterable
 import matplotlib.pyplot as plt
 import pandas as pd
 
+skip = ["kt_path", "model"]
+reference = "kt_source"
+
+
+# skip = ["Test", "Category"]
+# reference = "Original"
+
 
 def list_metrics(columns: Iterable[str]) -> list[str]:
-    skip = {"Test", "Category"}
     return [c for c in columns if c not in skip]
 
 
 def build_category_summary(df: pd.DataFrame) -> pd.DataFrame:
-    cats = df["Category"].unique()
+    cats = df[skip[1]].unique()
     metrics = list_metrics(df.columns)
     data = {
-        "Category": [],
+        skip[1]: [],
         **{m: [] for m in metrics},
     }
     for cat in cats:
-        sub = df.loc[df["Category"] == cat, metrics]
-        data["Category"].append(cat)
+        sub = df.loc[df[skip[1]] == cat, metrics]
+        data[skip[1]].append(cat)
         for m in metrics:
             data[m].append(sub[m].mean())
-    return pd.DataFrame(data).set_index("Category")
+    return pd.DataFrame(data).set_index(skip[1])
 
 
 def save_charts(summary: pd.DataFrame, out_dir: Path) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     for metric in summary.columns:
+        if reference not in summary.index:
+            print(f"Reference '{reference}' not found for metric '{metric}', skipping...")
+            continue
+        ref_value = summary.loc[reference, metric]
+        sorted_summary = summary.copy()
+        sorted_summary["distance"] = (sorted_summary[metric] - ref_value).abs()
+        sorted_summary = sorted_summary.sort_values("distance").drop(columns="distance")
+
         plt.figure(figsize=(10, 4))
-        summary[metric].plot(kind="bar")
+        sorted_summary[metric].plot(kind="bar")
         plt.title(metric)
         plt.ylabel("Average value")
         plt.xticks(rotation=45, ha="right")
@@ -39,7 +53,7 @@ def save_charts(summary: pd.DataFrame, out_dir: Path) -> None:
 
 
 if __name__ == "__main__":
-    df = pd.read_csv(input("Path to full_metrics.csv:"))
+    df = pd.read_csv(input("Path to metrics.csv:"))
     summary = build_category_summary(df)
     charts_dir = Path("charts")
     charts_dir.mkdir(parents=True, exist_ok=True)

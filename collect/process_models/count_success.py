@@ -11,7 +11,7 @@ def count_success() -> None:
 
     fields = [
         p.name for p in data_root.iterdir()
-        if p.is_dir() and (p / "originals").is_dir() and p.name != "kt_source"
+        if p.is_dir() and (p / "originals").is_dir()
     ]
 
     results = []
@@ -48,13 +48,10 @@ def count_success() -> None:
         writer.writerows(results)
     print(f"Repository counts saved to {counts_csv}")
 
-    compiled_csv = data_root / "compiled_repos.csv"
-    with compiled_csv.open("w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerow(["field", "kt_paths"])
-        for field, paths in compiled_info.items():
-            writer.writerow([field, json.dumps(paths, ensure_ascii=False)])
-    print(f"Compiled kt_path lists saved to {compiled_csv}")
+    compiled_json = data_root / "compiled_repos.json"
+    with compiled_json.open("w", encoding="utf-8") as file:
+        json.dump(compiled_info, file, ensure_ascii=False, indent=2)
+    print(f"Compiled kt_path lists saved to {compiled_json}")
 
     fields_sorted = [x[0] for x in results]
     counts_sorted = [x[1] for x in results]
