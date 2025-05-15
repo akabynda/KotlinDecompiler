@@ -53,9 +53,9 @@ def save_charts(summary: pd.DataFrame, out_dir: Path) -> None:
 
 
 if __name__ == "__main__":
-    df = pd.read_csv(input("Path to metrics.csv:"))
+    df = pd.read_csv(input("Path to metrics.csv: "))
     summary = build_category_summary(df)
-    charts_dir = Path("charts")
+    charts_dir = Path(input("Path to charts dir: "))
     charts_dir.mkdir(parents=True, exist_ok=True)
     (charts_dir / "summary.csv").write_text(summary.to_csv())
     save_charts(summary, charts_dir)
