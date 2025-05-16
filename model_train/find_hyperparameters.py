@@ -99,7 +99,7 @@ def init_worker(u, b, l):
 
 
 def objective(trial):
-    r = trial.suggest_categorical("r", [8, 16])
+    r = trial.suggest_categorical("r", [8, 16, 32])
     seq_len = trial.suggest_categorical("seq_len", [2048, 3072, 5120])
     lr = trial.suggest_categorical("lr", [1e-4, 1e-5, 1e-6])
     grad_acc = trial.suggest_categorical("grad_acc", [4, 8, 16])
