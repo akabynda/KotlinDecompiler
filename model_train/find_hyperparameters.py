@@ -16,20 +16,8 @@ from transformers import (AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfi
                           TrainingArguments, Trainer, set_seed)
 
 from collect.metrics.common import structural, lm_metrics, load_lm, entropy_metrics
-
-AUTHOR_NAME = "Qwen"
-MODEL_NAME = "Qwen2.5-Coder-1.5B-Instruct"
-MODEL_PATH = AUTHOR_NAME + "/" + MODEL_NAME
-STUDY_NAME = f"KExercises+KStack-clean_{MODEL_NAME}_search"
-RUNS_DIR = Path(STUDY_NAME) / "runs"
-DB_URI = f"sqlite:///{STUDY_NAME}.db"
-RAW_DS_PATH = "KExercises+KStack-clean"
-TRAIN_SUBSET_SIZE = 400
-VAL_SUBSET_SIZE = TRAIN_SUBSET_SIZE // 10
-TEST_SAMPLE = VAL_SUBSET_SIZE // 2
-VAL_SPLIT = 0.05
-GLOBAL_SEED = 228
-METRIC_TIMEOUT = 30
+from model_train.config import GLOBAL_SEED, MODEL_PATH, METRIC_TIMEOUT, RAW_DS_PATH, VAL_SPLIT, TRAIN_SUBSET_SIZE, \
+    TEST_SAMPLE, VAL_SUBSET_SIZE, RUNS_DIR, DB_URI, STUDY_NAME
 
 set_seed(GLOBAL_SEED)
 random.seed(GLOBAL_SEED)
