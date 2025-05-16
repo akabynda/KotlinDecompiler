@@ -5,7 +5,6 @@ import random
 import re
 from concurrent.futures import ThreadPoolExecutor
 from multiprocessing import cpu_count
-from pathlib import Path
 
 import datasets
 import numpy as np
