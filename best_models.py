@@ -39,10 +39,14 @@ def compute_distances(row: pd.Series, ref_vec: pd.Series, coverage: float) -> pd
     v = row[FEATURES].values
     cov = max(coverage, COV_EPS)
     return pd.Series({
-        'euclidean': euclidean(v, ref_vec) / cov,
-        'manhattan': cityblock(v, ref_vec) / cov,
-        'cosine': cosine(v, ref_vec) / cov,
-        'chebyshev': chebyshev(v, ref_vec) / cov
+        'euclidean_cov': euclidean(v, ref_vec) / cov,
+        'manhattan_cov': cityblock(v, ref_vec) / cov,
+        'cosine_cov': cosine(v, ref_vec) / cov,
+        'chebyshev_cov': chebyshev(v, ref_vec) / cov,
+        'euclidean': euclidean(v, ref_vec),
+        'manhattan': cityblock(v, ref_vec),
+        'cosine': cosine(v, ref_vec),
+        'chebyshev': chebyshev(v, ref_vec)
     })
 
 
