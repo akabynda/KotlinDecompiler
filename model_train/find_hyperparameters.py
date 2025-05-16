@@ -10,6 +10,7 @@ import datasets
 import numpy as np
 import optuna
 import torch
+from datasets import tqdm
 from peft import LoraConfig, get_peft_model
 from transformers import (AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig,
                           TrainingArguments, Trainer, set_seed)
@@ -44,19 +45,6 @@ BASE_VAL = split_ds["test"].shuffle(seed=GLOBAL_SEED).select(range(VAL_SUBSET_SI
 p_uni, p_bi, p_left = load_lm()
 
 
-def make_collate(seq_len):
-    def collate(features):
-        batch = tok.pad(features, return_tensors="pt")
-        batch["input_ids"] = batch["input_ids"][:, :seq_len]
-        batch["attention_mask"] = batch["attention_mask"][:, :seq_len]
-        labels = batch["input_ids"].clone()
-        labels[labels == tok.pad_token_id] = -100
-        batch["labels"] = labels
-        return batch
-
-    return collate
-
-
 def extract_kotlin(text: str) -> str:
     for pat in (
             r"```[^\n]*kotlin[^\n]*\n([\s\S]*?)(?:```|\Z)",
@@ -86,16 +74,11 @@ def compute_row(args):
     kt_path, field, code, orig_code, metric_list = args
     try:
         s = structural(str(code))
-        lm = lm_metrics(src=str(code), p_uni=P_UNI, p_bi=P_BI, p_left=P_LEFT)
+        lm = lm_metrics(src=str(code), p_uni=p_uni, p_bi=p_bi, p_left=p_left)
         ent = entropy_metrics(str(orig_code), str(code))
         return [kt_path, field] + [s.get(m, lm.get(m, ent.get(m, 0.0))) for m in metric_list]
     except Exception:
         return None
-
-
-def init_worker(u, b, l):
-    global P_UNI, P_BI, P_LEFT
-    P_UNI, P_BI, P_LEFT = u, b, l
 
 
 def objective(trial):
@@ -120,7 +103,7 @@ def objective(trial):
         device_map="auto",
     )
 
-    print(model)
+    # print(model)
 
     model.enable_input_require_grads()
     model.gradient_checkpointing_enable()
@@ -155,12 +138,6 @@ def objective(trial):
         data_collator=data_collator
     )
     trainer.train()
-    del trainer
-    torch.cuda.empty_cache()
-    gc.collect()
-    del train_ds, val_ds
-    torch.cuda.empty_cache()
-    gc.collect()
 
     out_dir = run_dir / "model"
     print("Saving model…", flush=True)
@@ -193,7 +170,7 @@ def objective(trial):
                     f.write(json.dumps({
                         "kt_path": rec["kt_path"],
                         "our": extract_kotlin(gen_code),
-                        "kt_source": rec["text"].split("<|im_end|>\n")[-2]
+                        "kt_source": extract_kotlin(rec["text"].split("<|im_end|>\n")[-2])
                     }) + "\n")
                     f.flush()
 
@@ -213,7 +190,19 @@ def objective(trial):
 
     with gen_jsonl.open("r", encoding="utf-8") as infile:
         first_line = json.loads(infile.readline())
-    metric_list = sorted({n for n in structural(str(first_line["our"])) if not n.startswith("detekt_")})
+
+    metric_names = set()
+    for field, code in first_line.items():
+        if field == 'kt_path' or code is None or code == "":
+            continue
+        orig_code = first_line.get('kt_source')
+        s = structural(str(code))
+        lm = lm_metrics(src=str(code), p_uni=p_uni, p_bi=p_bi, p_left=p_left)
+        ent = entropy_metrics(str(orig_code), str(code)) if orig_code else {}
+        for name in list(s) + list(lm) + list(ent):
+            metric_names.add(name)
+
+    metric_list = list(metric_names)
 
     tasks = []
     with gen_jsonl.open("r", encoding="utf-8") as infile:
@@ -229,9 +218,9 @@ def objective(trial):
         writer.writerow(["kt_path", "model"] + metric_list)
         with ThreadPoolExecutor(max_workers=cpu_count() - 1) as ex:
             futures = [ex.submit(compute_row, t) for t in tasks]
-            for fut in futures:
+            for fut in tqdm(futures):
                 try:
-                    row = fut.result(timeout=METRIC_TIMEOUT)
+                    row = fut.result()
                     if row:
                         writer.writerow(row)
                 except Exception:
@@ -260,8 +249,11 @@ def objective(trial):
 
     total_cases = len(test_subset)
     covered_cases = len(vals_by_model["our"][feats[0]])
-    coverage = covered_cases / total_cases if total_cases else 1.0
-    adjusted_dist = chebyshev_dist / max(coverage, 1e-3)
+    coverage = covered_cases / total_cases if total_cases else 0
+    if coverage == 0 or np.isnan(chebyshev_dist):
+        adjusted_dist = float('inf')
+    else:
+        adjusted_dist = chebyshev_dist / coverage
 
     trial.report(adjusted_dist, step=0)
 
