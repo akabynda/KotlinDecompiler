@@ -1,9 +1,11 @@
 import csv
+import gc
 import json
 import random
-from concurrent.futures import ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from multiprocessing import cpu_count
 from pathlib import Path
+from typing import re
 
 import datasets
 import numpy as np
@@ -16,8 +18,8 @@ from transformers import (AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfi
 
 from collect.metrics.common import structural, lm_metrics, load_lm, entropy_metrics
 
-AUTHOR_NAME = "deepseek-ai"
-MODEL_NAME = "deepseek-coder-1.3b-instruct"
+AUTHOR_NAME = "Qwen"
+MODEL_NAME = "Qwen2.5-Coder-1.5B-Instruct"
 MODEL_PATH = AUTHOR_NAME + "/" + MODEL_NAME
 STUDY_NAME = f"KExercises+KStack-clean_{MODEL_NAME}_search"
 RUNS_DIR = Path(STUDY_NAME) / "runs"
@@ -47,17 +49,29 @@ raw_ds = datasets.load_from_disk(RAW_DS_PATH)
 tok_ds = raw_ds.map(
     lambda b: tok(b["text"], truncation=True, max_length=6144),
     batched=True,
-    remove_columns=["text", "kt_path"]
+    batch_size=1024,
+    remove_columns=["text", "kt_path"],
+    num_proc=cpu_count(),
+    load_from_cache_file=False
 )
 
 split_ds = tok_ds["train"].train_test_split(test_size=VAL_SPLIT, seed=GLOBAL_SEED)
-BASE_TRAIN = split_ds["train"]
-BASE_VAL = split_ds["test"]
-
-BASE_TRAIN = BASE_TRAIN.select(random.sample(range(len(BASE_TRAIN)), min(len(BASE_TRAIN), TRAIN_SUBSET_SIZE)))
-BASE_VAL = BASE_VAL.select(random.sample(range(len(BASE_VAL)), min(len(BASE_VAL), VAL_SUBSET_SIZE)))
+BASE_TRAIN = split_ds["train"].shuffle(seed=GLOBAL_SEED).select(range(TRAIN_SUBSET_SIZE))
+BASE_VAL = split_ds["test"].shuffle(seed=GLOBAL_SEED).select(range(VAL_SUBSET_SIZE))
 
 p_uni, p_bi, p_left = load_lm()
+
+
+def extract_kotlin(text: str) -> str:
+    for pat in (
+            r"```[^\n]*kotlin[^\n]*\n([\s\S]*?)(?:```|\Z)",
+            r"```[^\n]*\n([\s\S]*?)(?:```|\Z)",
+            r"### Kotlin\n([\s\S]*?)(?:\n###|\Z)",
+    ):
+        m = re.search(pat, text, re.I | re.M)
+        if m:
+            return m.group(1).strip()
+    return ""
 
 
 def make_collate(seq_len):
@@ -115,6 +129,9 @@ def objective(trial):
     model = get_peft_model(model, LoraConfig(
         r=r, lora_alpha=2 * r, lora_dropout=0.05,
         bias="none", target_modules=["q_proj", "k_proj", "v_proj", "o_proj"]))
+
+    model = torch.compile(model)
+
     run_dir = RUNS_DIR / f"trial_{trial.number}"
     args = TrainingArguments(
         output_dir=str(run_dir),
@@ -122,6 +139,7 @@ def objective(trial):
         gradient_accumulation_steps=grad_acc,
         num_train_epochs=epochs,
         fp16=True,
+        tf32=True,
         learning_rate=lr,
         lr_scheduler_type="cosine",
         warmup_ratio=0.05,
@@ -131,6 +149,9 @@ def objective(trial):
         save_strategy="no",
         seed=GLOBAL_SEED,
         report_to="none",
+        dataloader_pin_memory=True,
+        dataloader_num_workers=4,
+        optim="adamw_torch_fused",
     )
     trainer = Trainer(
         model=model,
@@ -140,6 +161,9 @@ def objective(trial):
         data_collator=make_collate(seq_len),
     )
     trainer.train()
+    del trainer
+    torch.cuda.empty_cache()
+    gc.collect()
 
     out_dir = run_dir / "model"
     print("Saving model…", flush=True)
@@ -148,18 +172,33 @@ def objective(trial):
 
     test_subset = random.sample(list(raw_ds["test"]), min(TEST_SAMPLE, len(raw_ds["test"])))
     gen_jsonl = out_dir / "test_gen.jsonl"
+
+    print("Generating test cases…", flush=True)
+    prompts = [rec["text"][:rec["text"].find("<|im_start|>assistant")] for rec in test_subset]
+    inputs = tok(prompts, return_tensors="pt", padding=True, truncation=True).to(model.device)
+
+    outputs = model.generate(
+        **inputs,
+        max_new_tokens=seq_len,
+        top_p=1,
+        temperature=0,
+        pad_token_id=tok.eos_token_id,
+        eos_token_id=tok.eos_token_id,
+    )
+
     with gen_jsonl.open("w", encoding="utf-8") as f:
-        print("Generating test cases…", flush=True)
-        for rec in tqdm(test_subset, desc="gen"):
-            cut = rec["text"].find("<|im_start|>assistant")
-            prompt = rec["text"][:cut]
-            out_ids = model.generate(**tok(prompt, return_tensors="pt").to(model.device),
-                                     max_new_tokens=seq_len)
-            gen_code = tok.decode(out_ids[0], skip_special_tokens=False)
-            f.write(json.dumps({"kt_path": rec["kt_path"],
-                                "our": gen_code,
-                                "kt_source": rec["text"].split("<|im_end|>\n")[-2]}) + "\n")
-        print("Generation done", flush=True)
+        for rec, out_ids in zip(test_subset, outputs):
+            gen_code = tok.decode(out_ids, skip_special_tokens=False)
+            f.write(json.dumps({
+                "kt_path": rec["kt_path"],
+                "our": extract_kotlin(gen_code),
+                "kt_source": rec["text"].split("<|im_end|>\n")[-2]
+            }) + "\n")
+    print("Generation done", flush=True)
+
+    del inputs, outputs
+    torch.cuda.empty_cache()
+    gc.collect()
 
     with gen_jsonl.open("r", encoding="utf-8") as infile:
         first_line = json.loads(infile.readline())
@@ -177,9 +216,7 @@ def objective(trial):
     with csv_path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["kt_path", "model"] + metric_list)
-        with ProcessPoolExecutor(max_workers=cpu_count() - 2,
-                                 initializer=init_worker,
-                                 initargs=(p_uni, p_bi, p_left)) as ex:
+        with ThreadPoolExecutor(max_workers=cpu_count() - 1) as ex:
             futures = [ex.submit(compute_row, t) for t in tasks]
             for fut in futures:
                 try:
@@ -222,7 +259,8 @@ if __name__ == '__main__':
     optuna.logging.set_verbosity(optuna.logging.INFO)
     study = optuna.create_study(study_name=STUDY_NAME, direction="minimize",
                                 storage=DB_URI, load_if_exists=True,
-                                sampler=optuna.samplers.TPESampler(seed=GLOBAL_SEED))
+                                sampler=optuna.samplers.TPESampler(seed=GLOBAL_SEED, multivariate=True, group=True),
+                                pruner=optuna.pruners.MedianPruner(n_warmup_steps=0, n_min_trials=5))
     study.optimize(objective,
                    n_trials=20,
                    # timeout=12 * 3600
