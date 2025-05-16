@@ -16,8 +16,10 @@ from transformers import (AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfi
 
 from collect.metrics.common import structural, lm_metrics, load_lm, entropy_metrics
 
+AUTHOR_NAME = "deepseek-ai"
 MODEL_NAME = "deepseek-coder-1.3b-instruct"
-STUDY_NAME = "KExercises+KStack-clean_Qwen2.5-Coder-3B-Instruct_search"
+MODEL_PATH = AUTHOR_NAME + "/" + MODEL_NAME
+STUDY_NAME = f"KExercises+KStack-clean_{MODEL_NAME}_search"
 RUNS_DIR = Path(STUDY_NAME) / "runs"
 DB_URI = f"sqlite:///{STUDY_NAME}.db"
 RAW_DS_PATH = "KExercises+KStack-clean"
@@ -38,7 +40,7 @@ bnb_cfg = BitsAndBytesConfig(
     bnb_4bit_compute_dtype=torch.float16,
 )
 
-tok = AutoTokenizer.from_pretrained(MODEL_NAME, use_fast=False)
+tok = AutoTokenizer.from_pretrained(MODEL_PATH)
 tok.pad_token = tok.eos_token
 raw_ds = datasets.load_from_disk(RAW_DS_PATH)
 
@@ -103,7 +105,7 @@ def objective(trial):
                           remove_columns=BASE_VAL.column_names)
 
     model = AutoModelForCausalLM.from_pretrained(
-        MODEL_NAME,
+        MODEL_PATH,
         quantization_config=bnb_cfg,
         trust_remote_code=True,
         device_map="auto",
@@ -223,6 +225,6 @@ if __name__ == '__main__':
                                 sampler=optuna.samplers.TPESampler(seed=GLOBAL_SEED))
     study.optimize(objective,
                    n_trials=20,
-                   #timeout=12 * 3600
+                   # timeout=12 * 3600
                    )
     print("Лучшие гиперы:", study.best_params, "score:", study.best_value)
