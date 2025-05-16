@@ -16,7 +16,7 @@ def make_example(rec):
         "<|im_end|>\n"
         "<|im_start|>assistant\n"
     )
-    target = rec["kt_source"].rstrip() + "\n<|im_end|>\n"
+    target = f"```kotlin\n{rec['kt_source'].rstrip()}\n```\n<|im_end|>\n"
     return {"text": prompt + target, "kt_path": rec["kt_path"]}
 
 
