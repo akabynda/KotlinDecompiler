@@ -16,7 +16,7 @@ from transformers import (AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfi
 
 from collect.metrics.common import structural, lm_metrics, load_lm, entropy_metrics
 
-MODEL_NAME = "Qwen/Qwen2.5-Coder-3B-Instruct"
+MODEL_NAME = "deepseek-coder-1.3b-instruct"
 STUDY_NAME = "KExercises+KStack-clean_Qwen2.5-Coder-3B-Instruct_search"
 RUNS_DIR = Path(STUDY_NAME) / "runs"
 DB_URI = f"sqlite:///{STUDY_NAME}.db"
@@ -90,7 +90,7 @@ def init_worker(u, b, l):
 def objective(trial):
     r = trial.suggest_categorical("r", [8, 16, 32])
     seq_len = trial.suggest_categorical("seq_len", [2048, 3072, 6144])
-    lr = trial.suggest_categorical("lr", [1e-5, 2e-5, 3e-5])
+    lr = trial.suggest_categorical("lr", [1e-4, 1e-5, 1e-6])
     grad_acc = trial.suggest_categorical("grad_acc", [4, 8, 16])
     epochs = trial.suggest_categorical("epochs", [1, 2, 3, 4, 6])
     clip = trial.suggest_categorical("clip", [0.1, 0.3, 0.5, 1.0])
@@ -221,5 +221,8 @@ if __name__ == '__main__':
     study = optuna.create_study(study_name=STUDY_NAME, direction="minimize",
                                 storage=DB_URI, load_if_exists=True,
                                 sampler=optuna.samplers.TPESampler(seed=GLOBAL_SEED))
-    study.optimize(objective, n_trials=20, timeout=12 * 3600)
+    study.optimize(objective,
+                   n_trials=20,
+                   #timeout=12 * 3600
+                   )
     print("Лучшие гиперы:", study.best_params, "score:", study.best_value)
