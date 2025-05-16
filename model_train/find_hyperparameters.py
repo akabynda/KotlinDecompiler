@@ -2,16 +2,15 @@ import csv
 import gc
 import json
 import random
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 from multiprocessing import cpu_count
 from pathlib import Path
-from typing import re
+import re
 
 import datasets
 import numpy as np
 import optuna
 import torch
-from datasets import tqdm
 from peft import LoraConfig, get_peft_model
 from transformers import (AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig,
                           TrainingArguments, Trainer, set_seed)
@@ -19,7 +18,7 @@ from transformers import (AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfi
 from collect.metrics.common import structural, lm_metrics, load_lm, entropy_metrics
 
 AUTHOR_NAME = "Qwen"
-MODEL_NAME = "Qwen2.5-Coder-1.5B-Instruct"
+MODEL_NAME = "Qwen2.5-Coder-0.5B-Instruct"
 MODEL_PATH = AUTHOR_NAME + "/" + MODEL_NAME
 STUDY_NAME = f"KExercises+KStack-clean_{MODEL_NAME}_search"
 RUNS_DIR = Path(STUDY_NAME) / "runs"
