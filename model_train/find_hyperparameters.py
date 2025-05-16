@@ -28,12 +28,12 @@ bnb_cfg = BitsAndBytesConfig(
     bnb_4bit_compute_dtype=torch.float16,
 )
 
-tok = AutoTokenizer.from_pretrained(MODEL_PATH)
+tok = AutoTokenizer.from_pretrained(MODEL_PATH, padding_side='left')
 tok.pad_token = tok.eos_token
 raw_ds = datasets.load_from_disk(RAW_DS_PATH)
 
 tok_ds = raw_ds.map(
-    lambda b: tok(b["text"], truncation=True, max_length=6144),
+    lambda b: tok(b["text"], truncation=True, max_length=5120),
     remove_columns=["text", "kt_path"]
 )
 
@@ -99,8 +99,8 @@ def init_worker(u, b, l):
 
 
 def objective(trial):
-    r = trial.suggest_categorical("r", [8, 16, 32])
-    seq_len = trial.suggest_categorical("seq_len", [2048, 3072, 6144])
+    r = trial.suggest_categorical("r", [8, 16])
+    seq_len = trial.suggest_categorical("seq_len", [2048, 3072, 5120])
     lr = trial.suggest_categorical("lr", [1e-4, 1e-5, 1e-6])
     grad_acc = trial.suggest_categorical("grad_acc", [4, 8, 16])
     epochs = trial.suggest_categorical("epochs", [1, 2, 3, 4, 6])
@@ -158,6 +158,9 @@ def objective(trial):
     del trainer
     torch.cuda.empty_cache()
     gc.collect()
+    del train_ds, val_ds
+    torch.cuda.empty_cache()
+    gc.collect()
 
     out_dir = run_dir / "model"
     print("Saving model…", flush=True)
@@ -167,32 +170,46 @@ def objective(trial):
     test_subset = random.sample(list(raw_ds["test"]), min(TEST_SAMPLE, len(raw_ds["test"])))
     gen_jsonl = out_dir / "test_gen.jsonl"
 
+    batch_size = 4
     print("Generating test cases…", flush=True)
-    prompts = [rec["text"][:rec["text"].find("<|im_start|>assistant")] for rec in test_subset]
-    inputs = tok(prompts, return_tensors="pt", padding=True, truncation=True).to(model.device)
+    for i in range(0, len(test_subset), batch_size):
+        batch = test_subset[i:i + batch_size]
+        prompts = [rec["text"][:rec["text"].find("<|im_start|>assistant")] for rec in batch]
+        inputs = tok(prompts, return_tensors="pt", padding=True, truncation=True).to(model.device)
 
-    with torch.inference_mode(), torch.amp.autocast("cuda"):
-        outputs = model.generate(
-            **inputs,
-            max_new_tokens=seq_len,
-            do_sample=False,
-            pad_token_id=tok.eos_token_id,
-            eos_token_id=tok.eos_token_id,
-        )
+        try:
+            with torch.inference_mode(), torch.amp.autocast("cuda"):
+                outputs = model.generate(
+                    **inputs,
+                    max_new_tokens=seq_len,
+                    do_sample=False,
+                    pad_token_id=tok.eos_token_id,
+                    eos_token_id=tok.eos_token_id,
+                )
 
-    with gen_jsonl.open("w", encoding="utf-8") as f:
-        for rec, out_ids in zip(test_subset, outputs):
-            gen_code = tok.decode(out_ids, skip_special_tokens=False)
-            f.write(json.dumps({
-                "kt_path": rec["kt_path"],
-                "our": extract_kotlin(gen_code),
-                "kt_source": rec["text"].split("<|im_end|>\n")[-2]
-            }) + "\n")
+            with gen_jsonl.open("a", encoding="utf-8") as f:
+                for rec, out_ids in zip(batch, outputs):
+                    gen_code = tok.decode(out_ids, skip_special_tokens=False)
+                    f.write(json.dumps({
+                        "kt_path": rec["kt_path"],
+                        "our": extract_kotlin(gen_code),
+                        "kt_source": rec["text"].split("<|im_end|>\n")[-2]
+                    }) + "\n")
+                    f.flush()
+
+        except RuntimeError as e:
+            if 'out of memory' in str(e).lower() and batch_size > 1:
+                print(f"OOM with batch size {batch_size}, reducing...")
+                torch.cuda.empty_cache()
+                batch_size = max(1, batch_size // 2)
+                continue
+            raise
+
+        del inputs, outputs
+        torch.cuda.empty_cache()
+        gc.collect()
+
     print("Generation done", flush=True)
-
-    del inputs, outputs
-    torch.cuda.empty_cache()
-    gc.collect()
 
     with gen_jsonl.open("r", encoding="utf-8") as infile:
         first_line = json.loads(infile.readline())
@@ -219,6 +236,7 @@ def objective(trial):
                         writer.writerow(row)
                 except Exception:
                     continue
+            del futures, tasks
 
     rows = list(csv.reader(csv_path.open()))
     header = rows[0]
@@ -246,6 +264,11 @@ def objective(trial):
     adjusted_dist = chebyshev_dist / max(coverage, 1e-3)
 
     trial.report(adjusted_dist, step=0)
+
+    del model, test_subset, vals_by_model, med_kt_source, med_our
+    torch.cuda.empty_cache()
+    gc.collect()
+
     return adjusted_dist
 
 
