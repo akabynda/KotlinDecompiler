@@ -76,14 +76,13 @@ def process(metrics_path: str, comp_path: str, output_path: str) -> None:
     ).fillna({'repo_count': 0}).astype({'repo_count': int})
 
     df_result = df_result.sort_values(
-        by=['chebyshev', 'repo_count'],
+        by=['chebyshev_cov', 'repo_count'],
         ascending=[True, False]
     )
 
     df_result.to_csv(output_path, index=False)
 
     print(f"Готово! Результат сохранён в: {output_path}")
-    print(df_result[['model', 'repo_count', 'euclidean', 'manhattan', 'cosine', 'chebyshev']].to_string(index=False))
 
 
 def main() -> None:
