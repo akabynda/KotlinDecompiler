@@ -13,7 +13,7 @@ import optuna
 import torch
 from peft import LoraConfig, get_peft_model
 from transformers import (AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig,
-                          TrainingArguments, Trainer, set_seed)
+                          TrainingArguments, Trainer, set_seed, DataCollatorForLanguageModeling)
 
 from collect.metrics.common import structural, lm_metrics, load_lm, entropy_metrics
 
@@ -24,9 +24,9 @@ STUDY_NAME = f"KExercises+KStack-clean_{MODEL_NAME}_search"
 RUNS_DIR = Path(STUDY_NAME) / "runs"
 DB_URI = f"sqlite:///{STUDY_NAME}.db"
 RAW_DS_PATH = "KExercises+KStack-clean"
-TEST_SAMPLE = 20
 TRAIN_SUBSET_SIZE = 400
 VAL_SUBSET_SIZE = TRAIN_SUBSET_SIZE // 10
+TEST_SAMPLE = VAL_SUBSET_SIZE // 2
 VAL_SPLIT = 0.05
 GLOBAL_SEED = 228
 METRIC_TIMEOUT = 30
@@ -55,6 +55,19 @@ BASE_TRAIN = split_ds["train"].shuffle(seed=GLOBAL_SEED).select(range(TRAIN_SUBS
 BASE_VAL = split_ds["test"].shuffle(seed=GLOBAL_SEED).select(range(VAL_SUBSET_SIZE))
 
 p_uni, p_bi, p_left = load_lm()
+
+
+def make_collate(seq_len):
+    def collate(features):
+        batch = tok.pad(features, return_tensors="pt")
+        batch["input_ids"] = batch["input_ids"][:, :seq_len]
+        batch["attention_mask"] = batch["attention_mask"][:, :seq_len]
+        labels = batch["input_ids"].clone()
+        labels[labels == tok.pad_token_id] = -100
+        batch["labels"] = labels
+        return batch
+
+    return collate
 
 
 def extract_kotlin(text: str) -> str:
@@ -119,22 +132,21 @@ def objective(trial):
         trust_remote_code=True,
         device_map="auto",
     )
+
+    print(model)
+
     model.enable_input_require_grads()
     model.gradient_checkpointing_enable()
     model = get_peft_model(model, LoraConfig(
         r=r, lora_alpha=2 * r, lora_dropout=0.05,
-        bias="none", target_modules=["q_proj", "k_proj", "v_proj", "o_proj"]))
-
-    model = torch.compile(model)
+        bias="lora_only", target_modules='all-linear'))
 
     run_dir = RUNS_DIR / f"trial_{trial.number}"
     args = TrainingArguments(
         output_dir=str(run_dir),
-        per_device_train_batch_size=1,
+        per_device_train_batch_size=2,
         gradient_accumulation_steps=grad_acc,
         num_train_epochs=epochs,
-        fp16=True,
-        tf32=True,
         learning_rate=lr,
         lr_scheduler_type="cosine",
         warmup_ratio=0.05,
@@ -143,17 +155,17 @@ def objective(trial):
         logging_steps=50,
         save_strategy="no",
         seed=GLOBAL_SEED,
-        report_to="none",
-        dataloader_pin_memory=True,
-        dataloader_num_workers=4,
         optim="adamw_torch_fused",
     )
+
+    data_collator = make_collate(seq_len)
+
     trainer = Trainer(
         model=model,
         args=args,
         train_dataset=train_ds,
         eval_dataset=val_ds,
-        data_collator=make_collate(seq_len),
+        data_collator=data_collator
     )
     trainer.train()
     del trainer
@@ -172,14 +184,15 @@ def objective(trial):
     prompts = [rec["text"][:rec["text"].find("<|im_start|>assistant")] for rec in test_subset]
     inputs = tok(prompts, return_tensors="pt", padding=True, truncation=True).to(model.device)
 
-    outputs = model.generate(
-        **inputs,
-        max_new_tokens=seq_len,
-        top_p=1,
-        temperature=0,
-        pad_token_id=tok.eos_token_id,
-        eos_token_id=tok.eos_token_id,
-    )
+    with torch.inference_mode(), torch.amp.autocast("cuda"):
+        outputs = model.generate(
+            **inputs,
+            max_new_tokens=seq_len,
+            top_p=1,
+            temperature=0,
+            pad_token_id=tok.eos_token_id,
+            eos_token_id=tok.eos_token_id,
+        )
 
     with gen_jsonl.open("w", encoding="utf-8") as f:
         for rec, out_ids in zip(test_subset, outputs):
