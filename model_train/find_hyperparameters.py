@@ -144,7 +144,7 @@ def objective(trial):
     run_dir = RUNS_DIR / f"trial_{trial.number}"
     args = TrainingArguments(
         output_dir=str(run_dir),
-        per_device_train_batch_size=2,
+        per_device_train_batch_size=1,
         gradient_accumulation_steps=grad_acc,
         num_train_epochs=epochs,
         learning_rate=lr,
