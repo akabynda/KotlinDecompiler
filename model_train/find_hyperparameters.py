@@ -47,11 +47,7 @@ raw_ds = datasets.load_from_disk(RAW_DS_PATH)
 
 tok_ds = raw_ds.map(
     lambda b: tok(b["text"], truncation=True, max_length=6144),
-    batched=True,
-    batch_size=1024,
-    remove_columns=["text", "kt_path"],
-    num_proc=cpu_count(),
-    load_from_cache_file=False
+    remove_columns=["text", "kt_path"]
 )
 
 split_ds = tok_ds["train"].train_test_split(test_size=VAL_SPLIT, seed=GLOBAL_SEED)
