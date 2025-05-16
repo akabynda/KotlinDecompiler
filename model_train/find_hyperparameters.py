@@ -30,7 +30,7 @@ bnb_cfg = BitsAndBytesConfig(
     bnb_4bit_compute_dtype=torch.float16,
 )
 
-tok = AutoTokenizer.from_pretrained(MODEL_PATH, padding_side='left')
+tok = AutoTokenizer.from_pretrained(MODEL_PATH, padding_side='left', use_cache=False)
 tok.pad_token = tok.eos_token
 raw_ds = datasets.load_from_disk(RAW_DS_PATH)
 
@@ -99,7 +99,7 @@ def objective(trial):
 
     model = AutoModelForCausalLM.from_pretrained(
         MODEL_PATH,
-        quantization_config=bnb_cfg,
+        # quantization_config=bnb_cfg,
         trust_remote_code=True,
         device_map="auto",
     )
