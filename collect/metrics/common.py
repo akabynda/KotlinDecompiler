@@ -43,8 +43,8 @@ def entropy_metrics(orig: str, dec: str) -> dict[str, float]:
     }
 
 
-def load_lm() -> tuple[dict, dict, dict]:
-    lm_dir = Path(input("Path to language model: "))
+def load_lm(lm_dir=None) -> tuple[dict, dict, dict]:
+    lm_dir = Path(input("Path to language model: ")) if lm_dir is None else lm_dir
     with open(lm_dir / "unigram.json", encoding="utf8") as f:
         p_uni = json.load(f)
     with open(lm_dir / "bigram.json", encoding="utf8") as f:
@@ -63,6 +63,7 @@ def lm_metrics(p_uni: dict, p_bi: dict, p_left: dict, src: str) -> dict[str, flo
         "LM_CondE": entr.conditional_entropy_lang(p_bi, p_left, src),
     }
 
+
 def lm_metrics_wo_cond_entr(p_uni: dict, src: str) -> dict[str, float]:
     return {
         "LM_CE": entr.cross_entropy_lang(p_uni, src),
@@ -70,6 +71,7 @@ def lm_metrics_wo_cond_entr(p_uni: dict, src: str) -> dict[str, float]:
         "LM_PPL": entr.perplexity_lang(p_uni, src),
         "LM_JSD": entr.jensen_shannon_distance_lang(p_uni, src),
     }
+
 
 def collect_tests(test_root: Path) -> dict[str, dict]:
     tests: dict[str, dict] = {}

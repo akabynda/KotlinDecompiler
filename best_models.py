@@ -9,6 +9,7 @@ FEATURES = [
     'Halstead Distinct Operators', 'Halstead Vocabulary',
     'JSD', 'KL', 'LM_CondE', 'LM_JSD'
 ]
+COV_EPS = 1e-3
 
 
 def load_data(metrics_path: str, comp_path: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
@@ -34,13 +35,14 @@ def compute_reference_vector(df: pd.DataFrame) -> pd.Series:
     return df[df['model'] == 'kt_source'][FEATURES].iloc[0]
 
 
-def compute_distances(row: pd.Series, ref_vec: pd.Series) -> pd.Series:
+def compute_distances(row: pd.Series, ref_vec: pd.Series, coverage: float) -> pd.Series:
     v = row[FEATURES].values
+    cov = max(coverage, COV_EPS)
     return pd.Series({
-        'euclidean': euclidean(v, ref_vec),
-        'manhattan': cityblock(v, ref_vec),
-        'cosine': cosine(v, ref_vec),
-        'chebyshev': chebyshev(v, ref_vec)
+        'euclidean': euclidean(v, ref_vec) / cov,
+        'manhattan': cityblock(v, ref_vec) / cov,
+        'cosine': cosine(v, ref_vec) / cov,
+        'chebyshev': chebyshev(v, ref_vec) / cov
     })
 
 
@@ -51,7 +53,15 @@ def process(metrics_path: str, comp_path: str, output_path: str) -> None:
     df_avg = df_metrics.groupby('model')[FEATURES].median().reset_index()
     ref_vec = compute_reference_vector(df_avg)
 
-    distances = df_avg.apply(lambda row: compute_distances(row, ref_vec), axis=1)
+    total_cases = df_metrics[df_metrics['model'] == 'kt_source'].shape[0]
+    case_counts = df_metrics.groupby('model').size().rename('case_count')
+    df_avg = df_avg.merge(case_counts, on='model')
+
+    distances = df_avg.apply(
+        lambda row: compute_distances(row, ref_vec, row['case_count'] / total_cases),
+        axis=1
+    )
+
     df_with_dist = pd.concat([df_avg, distances], axis=1)
     df_with_dist = df_with_dist[df_with_dist['model'] != 'kt_source']
 
