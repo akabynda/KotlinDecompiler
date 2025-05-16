@@ -18,6 +18,7 @@ from transformers import (AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfi
 from collect.metrics.common import structural, lm_metrics, load_lm, entropy_metrics
 from model_train.config import GLOBAL_SEED, MODEL_PATH, METRIC_TIMEOUT, RAW_DS_PATH, VAL_SPLIT, TRAIN_SUBSET_SIZE, \
     TEST_SAMPLE, VAL_SUBSET_SIZE, RUNS_DIR, DB_URI, STUDY_NAME
+from utils.clear_hf_cache import clear_hf_cache
 
 set_seed(GLOBAL_SEED)
 random.seed(GLOBAL_SEED)
@@ -35,7 +36,7 @@ raw_ds = datasets.load_from_disk(RAW_DS_PATH)
 
 tok_ds = raw_ds.map(
     lambda b: tok(b["text"], truncation=True, max_length=5120),
-    remove_columns=["text", "kt_path"]
+    remove_columns=["text", "kt_path"], use_cache=False
 )
 
 split_ds = tok_ds["train"].train_test_split(test_size=VAL_SPLIT, seed=GLOBAL_SEED)
@@ -260,6 +261,8 @@ def objective(trial):
     del model, test_subset, vals_by_model, med_kt_source, med_our
     torch.cuda.empty_cache()
     gc.collect()
+
+    clear_hf_cache()
 
     return adjusted_dist
 
