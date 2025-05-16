@@ -99,7 +99,7 @@ def objective(trial):
 
     model = AutoModelForCausalLM.from_pretrained(
         MODEL_PATH,
-        # quantization_config=bnb_cfg,
+        quantization_config=bnb_cfg,
         trust_remote_code=True,
         device_map="auto",
         use_cache=False,
