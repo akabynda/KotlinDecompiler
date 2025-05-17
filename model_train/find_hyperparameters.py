@@ -42,6 +42,7 @@ tok_ds = raw_ds.map(
 )
 
 BASE_TRAIN = tok_ds["train"].shuffle(seed=GLOBAL_SEED).select(range(TRAIN_SUBSET_SIZE))
+BASE_TEST = tok_ds["test"].shuffle(seed=GLOBAL_SEED).select(range(VAL_SUBSET_SIZE))
 
 p_uni, p_bi, p_left = load_lm()
 
@@ -134,7 +135,7 @@ def objective(trial):
     model.save_pretrained(out_dir)
     print("Model saved", flush=True)
 
-    test_subset = tok_ds["test"].shuffle(seed=GLOBAL_SEED).select(range(VAL_SUBSET_SIZE))
+    test_subset = raw_ds["test"].shuffle(seed=GLOBAL_SEED).select(range(VAL_SUBSET_SIZE))
     gen_jsonl = out_dir / "test_gen.jsonl"
 
     batch_size = model_batch_size(model)
