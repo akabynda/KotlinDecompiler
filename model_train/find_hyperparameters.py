@@ -42,7 +42,6 @@ tok_ds = raw_ds.map(
 )
 
 BASE_TRAIN = tok_ds["train"].shuffle(seed=GLOBAL_SEED).select(range(TRAIN_SUBSET_SIZE))
-BASE_TEST = tok_ds["test"].shuffle(seed=GLOBAL_SEED).select(range(VAL_SUBSET_SIZE))
 
 p_uni, p_bi, p_left = load_lm()
 
