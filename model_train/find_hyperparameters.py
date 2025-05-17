@@ -87,7 +87,7 @@ def objective(trial):
     seq_len = trial.suggest_categorical("seq_len", [2048, 3072, 5120])
     lr = trial.suggest_categorical("lr", [1e-4, 1e-5, 1e-6])
     grad_acc = trial.suggest_categorical("grad_acc", [4, 8, 16])
-    epochs = trial.suggest_categorical("epochs", [1, 2, 3, 4, 6])
+    epochs = trial.suggest_int("epochs", 1, 4)
     clip = trial.suggest_categorical("clip", [0.1, 0.3, 0.5, 1.0])
 
     train_ds = BASE_TRAIN.map(lambda ex: {"input_ids": ex["input_ids"][:seq_len],
