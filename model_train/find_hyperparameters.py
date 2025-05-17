@@ -2,7 +2,6 @@ import csv
 import gc
 import json
 import random
-import re
 from concurrent.futures import ThreadPoolExecutor
 from multiprocessing import cpu_count
 from pathlib import Path
