@@ -134,7 +134,7 @@ def objective(trial):
     model.save_pretrained(out_dir)
     print("Model saved", flush=True)
 
-    test_subset = raw_ds["test"].shuffle(seed=GLOBAL_SEED).select(range(VAL_SUBSET_SIZE))
+    test_subset = random.sample(list(raw_ds["test"]), min(VAL_SUBSET_SIZE, len(raw_ds["test"])))
     gen_jsonl = out_dir / "test_gen.jsonl"
 
     batch_size = model_batch_size(model)
