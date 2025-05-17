@@ -71,9 +71,10 @@ def compute_row(args):
 
 
 def objective(trial):
-    r = trial.suggest_categorical("r", [8, 16, 32])
+    r = trial.suggest_categorical("r", [8, 16, 32, 64])
+    lora_alpha = trial.suggest_categorical("lora_alpha", [16, 32, 64, 128])
     seq_len = trial.suggest_categorical("seq_len", [2048, 3072, 5120])
-    grad_acc = trial.suggest_categorical("grad_acc", [1, 4])
+    grad_acc = trial.suggest_categorical("grad_acc", [4, 8, 16, 32, 64])
     epochs = trial.suggest_categorical("epochs", [2, 4])
     lr = trial.suggest_categorical("lr", [1e-5, 1e-4])
     lora_dropout = trial.suggest_float("lora_dropout", 0.0, 0.1)
@@ -98,7 +99,7 @@ def objective(trial):
     model.enable_input_require_grads()
     model.gradient_checkpointing_enable()
     model = get_peft_model(model, LoraConfig(
-        r=r, lora_alpha=2*r, lora_dropout=lora_dropout,
+        r=r, lora_alpha=lora_alpha, lora_dropout=lora_dropout,
         bias="lora_only", target_modules='all-linear'))
 
     run_dir = RUNS_DIR / f"trial_{trial.number}"
