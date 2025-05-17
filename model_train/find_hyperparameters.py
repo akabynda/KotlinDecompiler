@@ -5,6 +5,7 @@ import random
 import re
 from concurrent.futures import ThreadPoolExecutor
 from multiprocessing import cpu_count
+from pathlib import Path
 
 import datasets
 import numpy as np
@@ -16,9 +17,11 @@ from transformers import (AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfi
                           TrainingArguments, Trainer, set_seed)
 
 from collect.metrics.common import structural, lm_metrics, load_lm, entropy_metrics
-from model_train.config import GLOBAL_SEED, MODEL_PATH, METRIC_TIMEOUT, RAW_DS_PATH, VAL_SPLIT, TRAIN_SUBSET_SIZE, \
-    TEST_SAMPLE, VAL_SUBSET_SIZE, RUNS_DIR, DB_URI, STUDY_NAME
+from model_train.config import GLOBAL_SEED, RAW_DS_PATH, VAL_SUBSET_SIZE, RUNS_DIR, DB_URI, STUDY_NAME, MODEL, \
+    TRAIN_SUBSET_SIZE, METRIC_TIMEOUT
 from utils.clear_hf_cache import clear_hf_cache
+from utils.extract_kotlin import extract_kotlin
+from utils.model_batch_size import model_batch_size
 
 set_seed(GLOBAL_SEED)
 random.seed(GLOBAL_SEED)
@@ -30,7 +33,7 @@ bnb_cfg = BitsAndBytesConfig(
     bnb_4bit_compute_dtype=torch.float16,
 )
 
-tok = AutoTokenizer.from_pretrained(MODEL_PATH, padding_side='left')
+tok = AutoTokenizer.from_pretrained(MODEL, padding_side='left')
 tok.pad_token = tok.eos_token
 raw_ds = datasets.load_from_disk(RAW_DS_PATH)
 
@@ -39,23 +42,9 @@ tok_ds = raw_ds.map(
     remove_columns=["text", "kt_path"]
 )
 
-split_ds = tok_ds["train"].train_test_split(test_size=VAL_SPLIT, seed=GLOBAL_SEED)
-BASE_TRAIN = split_ds["train"].shuffle(seed=GLOBAL_SEED).select(range(TRAIN_SUBSET_SIZE))
-BASE_VAL = split_ds["test"].shuffle(seed=GLOBAL_SEED).select(range(VAL_SUBSET_SIZE))
+BASE_TRAIN = tok_ds["train"].shuffle(seed=GLOBAL_SEED).select(range(TRAIN_SUBSET_SIZE))
 
 p_uni, p_bi, p_left = load_lm()
-
-
-def extract_kotlin(text: str) -> str:
-    for pat in (
-            r"```[^\n]*kotlin[^\n]*\n([\s\S]*?)(?:```|\Z)",
-            r"```[^\n]*\n([\s\S]*?)(?:```|\Z)",
-            r"### Kotlin\n([\s\S]*?)(?:\n###|\Z)",
-    ):
-        m = re.search(pat, text, re.I | re.M)
-        if m:
-            return m.group(1).strip()
-    return ""
 
 
 def make_collate(seq_len):
@@ -83,22 +72,23 @@ def compute_row(args):
 
 
 def objective(trial):
-    r = trial.suggest_categorical("r", [8, 16, 32])
+    r = trial.suggest_categorical("r", [8, 16, 32, 64])
+    lora_alpha = trial.suggest_categorical("lora_alpha", [r, 2 * r, 4 * r])
     seq_len = trial.suggest_categorical("seq_len", [2048, 3072, 5120])
-    lr = trial.suggest_categorical("lr", [1e-4, 1e-5, 1e-6])
     grad_acc = trial.suggest_categorical("grad_acc", [4, 8, 16])
-    epochs = trial.suggest_int("epochs", 1, 4)
-    clip = trial.suggest_categorical("clip", [0.1, 0.3, 0.5, 1.0])
+    epochs = trial.suggest_int("epochs", 2, 4)
+    lr = trial.suggest_categorical("lr", [1e-5, 1e-4])
+    lora_dropout = trial.suggest_float("lora_dropout", 0.0, 0.1)
+    clip = trial.suggest_float("clip", 0.1, 1.0)
+    weight_decay = trial.suggest_float("weight_decay", 0.0, 0.1)
+    warmup_ratio = trial.suggest_float("warmup_ratio", 0.0, 0.1)
 
     train_ds = BASE_TRAIN.map(lambda ex: {"input_ids": ex["input_ids"][:seq_len],
                                           "attention_mask": ex["attention_mask"][:seq_len]},
                               remove_columns=BASE_TRAIN.column_names)
-    val_ds = BASE_VAL.map(lambda ex: {"input_ids": ex["input_ids"][:seq_len],
-                                      "attention_mask": ex["attention_mask"][:seq_len]},
-                          remove_columns=BASE_VAL.column_names)
 
     model = AutoModelForCausalLM.from_pretrained(
-        MODEL_PATH,
+        MODEL,
         quantization_config=bnb_cfg,
         trust_remote_code=True,
         device_map="auto",
@@ -110,7 +100,7 @@ def objective(trial):
     model.enable_input_require_grads()
     model.gradient_checkpointing_enable()
     model = get_peft_model(model, LoraConfig(
-        r=r, lora_alpha=2 * r, lora_dropout=0.05,
+        r=r, lora_alpha=lora_alpha, lora_dropout=lora_dropout,
         bias="lora_only", target_modules='all-linear'))
 
     run_dir = RUNS_DIR / f"trial_{trial.number}"
@@ -120,10 +110,10 @@ def objective(trial):
         gradient_accumulation_steps=grad_acc,
         num_train_epochs=epochs,
         learning_rate=lr,
-        lr_scheduler_type="cosine",
-        warmup_ratio=0.05,
+        lr_scheduler_type="linear",
+        warmup_ratio=warmup_ratio,
         max_grad_norm=clip,
-        weight_decay=0.0,
+        weight_decay=weight_decay,
         logging_steps=50,
         save_strategy="no",
         seed=GLOBAL_SEED,
@@ -136,7 +126,6 @@ def objective(trial):
         model=model,
         args=args,
         train_dataset=train_ds,
-        eval_dataset=val_ds,
         data_collator=data_collator
     )
     trainer.train()
@@ -146,10 +135,10 @@ def objective(trial):
     model.save_pretrained(out_dir)
     print("Model saved", flush=True)
 
-    test_subset = random.sample(list(raw_ds["test"]), min(TEST_SAMPLE, len(raw_ds["test"])))
+    test_subset = tok_ds["test"].shuffle(seed=GLOBAL_SEED).select(range(VAL_SUBSET_SIZE))
     gen_jsonl = out_dir / "test_gen.jsonl"
 
-    batch_size = 4
+    batch_size = model_batch_size(model)
     print("Generating test cases…", flush=True)
     for i in range(0, len(test_subset), batch_size):
         batch = test_subset[i:i + batch_size]
@@ -222,7 +211,7 @@ def objective(trial):
             futures = [ex.submit(compute_row, t) for t in tasks]
             for fut in tqdm(futures):
                 try:
-                    row = fut.result()
+                    row = fut.result(timeout=METRIC_TIMEOUT)
                     if row:
                         writer.writerow(row)
                 except Exception:
@@ -275,7 +264,8 @@ if __name__ == '__main__':
                                 sampler=optuna.samplers.TPESampler(seed=GLOBAL_SEED, multivariate=True, group=True),
                                 pruner=optuna.pruners.MedianPruner(n_warmup_steps=0, n_min_trials=5))
     study.optimize(objective,
-                   n_trials=20,
-                   # timeout=12 * 3600
+                   n_trials=30,
                    )
+    df = study.trials_dataframe()
+    df.to_csv(Path(f"{STUDY_NAME}/optuna_trials.csv"))
     print("Лучшие гиперы:", study.best_params, "score:", study.best_value)

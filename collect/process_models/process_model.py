@@ -11,6 +11,8 @@ from numpy import percentile
 from tqdm.auto import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from shared import Config, Row
+from utils.extract_kotlin import extract_kotlin
+from utils.model_batch_size import model_batch_size
 
 CFG = Config()
 
@@ -24,31 +26,12 @@ def load_rows() -> list[Row]:
     return [Row(r["kt_path"], r["kt_source"], to_bytecode(r)) for r in ds]
 
 
-def extract_kotlin(text: str) -> str:
-    for pat in (
-            r"```[^\n]*kotlin[^\n]*\n([\s\S]*?)(?:```|\Z)",
-            r"```[^\n]*\n([\s\S]*?)(?:```|\Z)",
-            r"### Kotlin\n([\s\S]*?)(?:\n###|\Z)",
-    ):
-        m = re.search(pat, text, re.I | re.M)
-        if m:
-            return m.group(1).strip()
-    return ""
-
-
 def build_prompt(model_name: str, bytecode: str, tokenizer) -> str:
     head = "Convert the following JVM byte‑code into **Kotlin source**.\nOutput **Kotlin code ONLY**"
     if model_name.startswith("Qwen/"):
         tmpl = [{"role": "user", "content": f"{head}\n\n### Byte‑code\n{bytecode}\n\n### Kotlin"}]
         return tokenizer.apply_chat_template(tmpl, tokenize=False, add_generation_prompt=True)
     return f"### Task\n{head}\n\n### Byte‑code\n{bytecode}\n\n### Kotlin\n"
-
-
-def model_batch_size(model: torch.nn.Module, scale: float) -> int:
-    props = torch.cuda.get_device_properties(0) if torch.cuda.is_available() else None
-    vram = props.total_memory if props else 8 << 30
-    size = sum(p.numel() * p.element_size() for p in model.parameters())
-    return max(1, int(vram / size * scale))
 
 
 def gen_stats(rows: Iterable[Row], tokenizer) -> tuple[int, float]:

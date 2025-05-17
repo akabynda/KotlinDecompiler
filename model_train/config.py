@@ -1,15 +1,12 @@
 from pathlib import Path
 
-AUTHOR_NAME = "Qwen"
-MODEL_NAME = "Qwen2.5-Coder-1.5B-Instruct"
-MODEL_PATH = AUTHOR_NAME + "/" + MODEL_NAME
-STUDY_NAME = f"KExercises+KStack-clean_{MODEL_NAME}_search"
+MODEL = "Qwen/Qwen2.5-Coder-1.5B-Instruct"
+MODEL_NAME = MODEL.split("/")[-1]
+RAW_DS_PATH = "KExercises-KStack-clean-bytecode"
+STUDY_NAME = f"{MODEL_NAME}-{RAW_DS_PATH}-4bit"
 RUNS_DIR = Path(STUDY_NAME) / "runs"
 DB_URI = f"sqlite:///{STUDY_NAME}.db"
-RAW_DS_PATH = "KExercises+KStack-clean"
-TRAIN_SUBSET_SIZE = 400
+TRAIN_SUBSET_SIZE = 200
 VAL_SUBSET_SIZE = TRAIN_SUBSET_SIZE // 10
-TEST_SAMPLE = VAL_SUBSET_SIZE // 2
-VAL_SPLIT = 0.05
 GLOBAL_SEED = 228
 METRIC_TIMEOUT = 30
