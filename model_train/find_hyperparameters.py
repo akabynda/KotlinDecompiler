@@ -74,7 +74,7 @@ def objective(trial):
     r = trial.suggest_categorical("r", [8, 16, 32, 64])
     lora_alpha = trial.suggest_categorical("lora_alpha", [16, 32, 64, 128])
     seq_len = trial.suggest_categorical("seq_len", [2048, 3072, 5120])
-    grad_acc = trial.suggest_categorical("grad_acc", [4, 8, 16, 32, 64])
+    grad_acc = trial.suggest_categorical("grad_acc", [2, 4, 8, 16, 32, 64])
     epochs = trial.suggest_categorical("epochs", [2, 4])
     lr = trial.suggest_categorical("lr", [1e-5, 1e-4])
     lora_dropout = trial.suggest_float("lora_dropout", 0.0, 0.1)
