@@ -302,4 +302,4 @@ if __name__ == '__main__':
                    )
     df = study.trials_dataframe()
     df.to_csv(Path(f"{STUDY_NAME}/optuna_trials.csv"))
-    print("Лучшие гиперы:", study.best_params, "score:", study.best_value)
+    print("Best hypers:", study.best_params, "score:", study.best_value)
