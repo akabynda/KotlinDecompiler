@@ -171,13 +171,15 @@ def objective(trial):
         batch = test_subset[i:i + batch_size]
         prompts = [rec["text"][:rec["text"].find("<|im_start|>assistant")] for rec in batch]
         inputs = tok(prompts, return_tensors="pt", padding=True, truncation=True).to(model.device)
+        prompt_len = inputs["input_ids"].shape[1]
         max_length = seq_len
+        max_new_tokens = max(1, max_length - prompt_len)
 
         try:
             with torch.inference_mode():
                 outputs = model.generate(
                     **inputs,
-                    max_length=max_length,
+                    max_new_tokens=max_new_tokens,
                     do_sample=False,
                     pad_token_id=tok.eos_token_id,
                     eos_token_id=tok.eos_token_id,
