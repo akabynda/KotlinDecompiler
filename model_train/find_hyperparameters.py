@@ -13,7 +13,7 @@ import torch
 from datasets import tqdm
 from peft import LoraConfig, get_peft_model
 from transformers import (AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig,
-                          TrainingArguments, Trainer, set_seed)
+                          TrainingArguments, Trainer, set_seed, DataCollatorForLanguageModeling)
 
 from collect.metrics.common import structural, lm_metrics, load_lm, entropy_metrics
 from model_train.config import GLOBAL_SEED, RAW_DS_PATH, VAL_SUBSET_SIZE, RUNS_DIR, DB_URI, STUDY_NAME, MODEL, \
@@ -37,23 +37,40 @@ tok.pad_token = tok.eos_token
 raw_ds = datasets.load_from_disk(RAW_DS_PATH)
 
 tok_ds = raw_ds.map(
-    lambda b: tok(b["text"], truncation=True, max_length=5120),
+    lambda b: tok(b["text"], truncation=True),
     remove_columns=["text", "kt_path"]
 )
 
 BASE_TRAIN = tok_ds["train"].shuffle(seed=GLOBAL_SEED).select(range(TRAIN_SUBSET_SIZE))
 
+lengths = [len(rec["input_ids"]) for rec in tok_ds["train"]]
+AVG_SEC_LEN = int(np.percentile(lengths, 95))
+print("Average length:", AVG_SEC_LEN)
+
 p_uni, p_bi, p_left = load_lm()
 
 
-def make_collate(seq_len):
+def make_collate(seq_len: int):
     def collate(features):
-        batch = tok.pad(features, return_tensors="pt")
-        batch["input_ids"] = batch["input_ids"][:, :seq_len]
-        batch["attention_mask"] = batch["attention_mask"][:, :seq_len]
+        features = [
+            {
+                "input_ids": f["input_ids"][:seq_len],
+                "attention_mask": f["attention_mask"][:seq_len],
+            }
+            for f in features
+        ]
+
+        batch = tok.pad(
+            features,
+            padding=True,
+            return_tensors="pt"
+        )
+
+        # Маска потерь: только где attention_mask == 0
         labels = batch["input_ids"].clone()
-        labels[labels == tok.pad_token_id] = -100
+        labels[batch["attention_mask"] == 0] = -100
         batch["labels"] = labels
+
         return batch
 
     return collate
@@ -73,7 +90,7 @@ def compute_row(args):
 def objective(trial):
     r = trial.suggest_categorical("r", [8, 16, 32, 64])
     lora_alpha = trial.suggest_categorical("lora_alpha", [16, 32, 64, 128])
-    seq_len = 5120
+    seq_len = AVG_SEC_LEN
     grad_acc = trial.suggest_categorical("grad_acc", [32, 64, 128, 256])
     epochs = 4
     lr = 1e-4
@@ -119,7 +136,12 @@ def objective(trial):
         optim="adamw_torch_fused",
     )
 
-    data_collator = make_collate(seq_len)
+    # data_collator = make_collate(seq_len)
+
+    data_collator = DataCollatorForLanguageModeling(
+        tokenizer=tok,
+        mlm=False
+    )
 
     trainer = Trainer(
         model=model,
@@ -130,28 +152,40 @@ def objective(trial):
     trainer.train()
 
     out_dir = run_dir / "model"
-    print("Saving model…", flush=True)
+    print("Saving model...")
     model.save_pretrained(out_dir)
-    print("Model saved", flush=True)
+    print("Model saved")
+    print("Model's device:", model.device)
 
     test_subset = random.sample(list(raw_ds["test"]), min(VAL_SUBSET_SIZE, len(raw_ds["test"])))
     gen_jsonl = out_dir / "test_gen.jsonl"
 
     batch_size = model_batch_size(model)
-    print("Generating test cases…", flush=True)
-    for i in range(0, len(test_subset), batch_size):
+    print("Calculated batch_size:", batch_size)
+    print("Generating test cases...")
+
+    model.gradient_checkpointing_disable()
+    model.config.use_cache = True
+
+    for i in tqdm(range(0, len(test_subset), batch_size), desc="Generating"):
         batch = test_subset[i:i + batch_size]
         prompts = [rec["text"][:rec["text"].find("<|im_start|>assistant")] for rec in batch]
         inputs = tok(prompts, return_tensors="pt", padding=True, truncation=True).to(model.device)
+        max_length = seq_len
 
         try:
-            with torch.inference_mode(), torch.amp.autocast("cuda"):
+            with torch.inference_mode():
                 outputs = model.generate(
                     **inputs,
-                    max_new_tokens=seq_len,
+                    max_length=max_length,
                     do_sample=False,
                     pad_token_id=tok.eos_token_id,
                     eos_token_id=tok.eos_token_id,
+                    temperature=None,
+                    top_p=None,
+                    top_k=None,
+                    num_beams=1,
+                    use_cache=True
                 )
 
             with gen_jsonl.open("a", encoding="utf-8") as f:
@@ -176,7 +210,7 @@ def objective(trial):
         torch.cuda.empty_cache()
         gc.collect()
 
-    print("Generation done", flush=True)
+    print("Generation done")
 
     with gen_jsonl.open("r", encoding="utf-8") as infile:
         first_line = json.loads(infile.readline())
