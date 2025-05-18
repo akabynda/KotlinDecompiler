@@ -20,7 +20,6 @@ from model_train.config import GLOBAL_SEED, RAW_DS_PATH, VAL_SUBSET_SIZE, RUNS_D
     TRAIN_SUBSET_SIZE, METRIC_TIMEOUT
 from utils.clear_hf_cache import clear_hf_cache
 from utils.extract_kotlin import extract_kotlin
-from utils.model_batch_size import model_batch_size
 
 set_seed(GLOBAL_SEED)
 random.seed(GLOBAL_SEED)
@@ -157,23 +156,24 @@ def objective(trial):
     print("Model saved")
     print("Model's device:", model.device)
 
-    test_subset = random.sample(list(raw_ds["test"]), min(VAL_SUBSET_SIZE, len(raw_ds["test"])))
+    test_records = list(raw_ds["test"])
+    test_records.sort(key=lambda r: len(r["text"]))
+    test_subset = test_records[:min(VAL_SUBSET_SIZE, len(test_records))]
+
     gen_jsonl = out_dir / "test_gen.jsonl"
 
-    batch_size = model_batch_size(model)
-    print("Calculated batch_size:", batch_size)
+    batch_size = 4
+    print("Batch size:", batch_size)
     print("Generating test cases...")
-
-    model.gradient_checkpointing_disable()
-    model.config.use_cache = True
 
     for i in tqdm(range(0, len(test_subset), batch_size), desc="Generating"):
         batch = test_subset[i:i + batch_size]
         prompts = [rec["text"][:rec["text"].find("<|im_start|>assistant")] for rec in batch]
         inputs = tok(prompts, return_tensors="pt", padding=True, truncation=True).to(model.device)
-        prompt_len = inputs["input_ids"].shape[1]
-        max_length = seq_len
-        max_new_tokens = max(1, max_length - prompt_len)
+        targets = [rec["text"][rec["text"].find("<|im_start|>assistant"):] for rec in batch]
+        expected = tok(targets, return_tensors="pt", padding=True, truncation=True)
+        exp_lens = expected["attention_mask"].sum(dim=1)
+        max_new_tokens = int(exp_lens.max().item()) * 1.2
 
         try:
             with torch.inference_mode():
@@ -186,8 +186,7 @@ def objective(trial):
                     temperature=None,
                     top_p=None,
                     top_k=None,
-                    num_beams=1,
-                    use_cache=True
+                    num_beams=1
                 )
 
             with gen_jsonl.open("a", encoding="utf-8") as f:

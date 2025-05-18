@@ -1,17 +1,16 @@
 import gc
 import json
-import re
 import sys
-from statistics import median
-from typing import Iterable, List
+from typing import List
 
 import torch
 from datasets import load_dataset
-from numpy import percentile
 from tqdm.auto import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
+
 from shared import Config, Row
 from utils.extract_kotlin import extract_kotlin
+from utils.gen_len_stats import gen_len_stats
 from utils.model_batch_size import model_batch_size
 
 CFG = Config()
@@ -32,17 +31,6 @@ def build_prompt(model_name: str, bytecode: str, tokenizer) -> str:
         tmpl = [{"role": "user", "content": f"{head}\n\n### Byte‑code\n{bytecode}\n\n### Kotlin"}]
         return tokenizer.apply_chat_template(tmpl, tokenize=False, add_generation_prompt=True)
     return f"### Task\n{head}\n\n### Byte‑code\n{bytecode}\n\n### Kotlin\n"
-
-
-def gen_stats(rows: Iterable[Row], tokenizer) -> tuple[int, float]:
-    kt_lens, ratios = [], []
-    for r in rows:
-        kt = len(tokenizer(r.kt_source).input_ids)
-        bc = len(tokenizer(r.bytecode).input_ids)
-        kt_lens.append(kt)
-        ratios.append(kt / bc if bc else 0)
-
-    return min(2048, int(percentile(kt_lens, 90) * 1.5)), round(min(0.5, median(ratios)), 3)
 
 
 def _hf_generate(
@@ -147,7 +135,7 @@ def process_model_hf(name: str, rows: List[Row]) -> None:
 
     batch_size = model_batch_size(model, CFG.est_scale)
     print("batch size:", batch_size)
-    max_new, _ratio = gen_stats(rows, tokenizer)
+    max_new, _ratio = gen_len_stats(rows, tokenizer)
 
     print("max_new:", max_new)
 
