@@ -173,7 +173,7 @@ def objective(trial):
         targets = [rec["text"][rec["text"].find("<|im_start|>assistant"):] for rec in batch]
         expected = tok(targets, return_tensors="pt", padding=True, truncation=True)
         exp_lens = expected["attention_mask"].sum(dim=1)
-        max_new_tokens = int(exp_lens.max().item()) * 1.2
+        max_new_tokens = int(exp_lens.max().item()) * 1.4
 
         try:
             with torch.inference_mode():
