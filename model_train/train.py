@@ -20,7 +20,7 @@ from transformers import (
 
 from model_train import config
 from model_train.config import SEQ_LEN_PERCENTILE, WEIGHT_DECAY, CLIP_NORM, LEARNING_RATE, TRAIN_EPOCHS, GRAD_ACC, \
-    LORA_CFG
+    LORA_CFG, WARMUP
 from utils.clear_hf_cache import clear_hf_cache
 
 MODEL: str = config.MODEL
@@ -91,7 +91,7 @@ training_args = TrainingArguments(
     num_train_epochs=TRAIN_EPOCHS,
     learning_rate=LEARNING_RATE,
     lr_scheduler_type="linear",
-    warmup_ratio=0.1,
+    warmup_ratio=WARMUP,
     max_grad_norm=CLIP_NORM,
     weight_decay=WEIGHT_DECAY,
     logging_steps=100,

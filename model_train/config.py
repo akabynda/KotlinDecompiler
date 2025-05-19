@@ -13,7 +13,8 @@ METRIC_TIMEOUT = 30
 TRAIN_EPOCHS = 4
 GRAD_ACC = 32
 SEQ_LEN_PERCENTILE = 95
-LORA_CFG = dict(r=32, lora_alpha=128, lora_dropout=0.07, bias="lora_only", target_modules="all-linear")
-CLIP_NORM = 0.75
+LORA_CFG = dict(r=32, lora_alpha=128, lora_dropout=0.06, bias="lora_only", target_modules="all-linear")
+CLIP_NORM = 0.67
 WEIGHT_DECAY = 0.03
 LEARNING_RATE = 1e-4
+WARMUP = 0.05
