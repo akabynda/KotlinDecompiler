@@ -19,20 +19,14 @@ from transformers import (
 )
 
 from model_train import config
+from model_train.config import SEQ_LEN_PERCENTILE, WEIGHT_DECAY, CLIP_NORM, LEARNING_RATE, TRAIN_EPOCHS, GRAD_ACC, \
+    LORA_CFG
 from utils.clear_hf_cache import clear_hf_cache
 
 MODEL: str = config.MODEL
 RAW_DS_PATH: Path = Path(config.RAW_DS_PATH)
 GLOBAL_SEED: int = config.GLOBAL_SEED
 RUN_DIR: Path = Path(config.RUNS_DIR) / "full_finetune"
-
-TRAIN_EPOCHS = 4
-GRAD_ACC = 32
-SEQ_LEN_PERCENTILE = 95
-LORA_CFG = dict(r=32, lora_alpha=128, lora_dropout=0.07, bias="lora_only", target_modules="all-linear")
-CLIP_NORM = 0.75
-WEIGHT_DECAY = 0.03
-LEARNING_RATE = 1e-4
 
 set_seed(GLOBAL_SEED)
 random.seed(GLOBAL_SEED)
