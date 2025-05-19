@@ -83,6 +83,7 @@ def efa(
 
     return fa, loadings
 
+
 if __name__ == "__main__":
     df = pd.read_csv(Path(input("Path to metrics.csv:")))
-    efa(df, scale=True, n_factors="auto", kmo_warn = 0.6, method="ml", rotation="promax", )
+    efa(df, scale=True, n_factors="auto", kmo_warn=0.6, method="ml", rotation="promax", )

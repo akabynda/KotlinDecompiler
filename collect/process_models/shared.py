@@ -1,7 +1,7 @@
 from collections import namedtuple
 from pathlib import Path
-import torch
 
+import torch
 from transformers import BitsAndBytesConfig
 
 Row = namedtuple("Row", ("kt_path", "kt_source", "bytecode"))

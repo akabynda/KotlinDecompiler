@@ -16,7 +16,7 @@ from transformers import (AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfi
                           TrainingArguments, Trainer, set_seed, DataCollatorForLanguageModeling)
 
 from collect.metrics.common import structural, lm_metrics, load_lm, entropy_metrics
-from model_train.config import GLOBAL_SEED, RAW_DS_PATH, VAL_SUBSET_SIZE, RUNS_DIR, DB_URI, STUDY_NAME, MODEL, \
+from train.config import GLOBAL_SEED, RAW_DS_PATH, VAL_SUBSET_SIZE, RUNS_DIR, DB_URI, STUDY_NAME, MODEL, \
     TRAIN_SUBSET_SIZE, METRIC_TIMEOUT
 from utils.clear_hf_cache import clear_hf_cache
 from utils.extract_kotlin import extract_kotlin
