@@ -53,14 +53,11 @@ print("Loading dataset from", RAW_DS_PATH)
 raw_ds = datasets.load_from_disk(str(RAW_DS_PATH))
 
 print("Tokenizing ...")
-keep_cols = [c for c in raw_ds["train"].column_names if c != "text"]
-
 tok_ds = raw_ds.map(
     lambda b: tok(b["text"], truncation=True),
-    remove_columns=keep_cols,
-    batched=True,
-    num_proc=4,
+    remove_columns=["text", "kt_path"]
 )
+
 
 print("Computing target sequence length percentile ...")
 lengths = [len(rec["input_ids"]) for rec in tok_ds["train"]]
