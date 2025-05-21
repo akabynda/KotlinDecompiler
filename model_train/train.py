@@ -20,10 +20,11 @@ from transformers import (
 
 from global_config import GLOBAL_SEED
 from model_train import config
-from model_train.config import DATASET
+from model_train.config import DATASET, SEQ_LEN_PERCENTILE, LORA_CFG, GRAD_ACC, TRAIN_EPOCHS, LEARNING_RATE, CLIP_NORM, \
+    WEIGHT_DECAY
 from model_train.config import WARMUP
-from utils.make_example import make_example
 from utils.clear_hf_cache import clear_hf_cache
+from utils.make_example import make_example
 
 MODEL: str = config.MODEL
 GLOBAL_SEED: int = GLOBAL_SEED
@@ -35,14 +36,6 @@ raw_ds = DatasetDict({
     split: raw_ds[split].map(make_example)
     for split in raw_ds
 })
-
-TRAIN_EPOCHS = 4
-GRAD_ACC = 32
-SEQ_LEN_PERCENTILE = 95
-LORA_CFG = dict(r=32, lora_alpha=128, lora_dropout=0.07, bias="lora_only", target_modules="all-linear")
-CLIP_NORM = 0.75
-WEIGHT_DECAY = 0.03
-LEARNING_RATE = 1e-4
 
 set_seed(GLOBAL_SEED)
 random.seed(GLOBAL_SEED)

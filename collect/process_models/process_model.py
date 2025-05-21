@@ -8,7 +8,7 @@ from datasets import load_dataset
 from tqdm.auto import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-from shared import Config, Row
+from collect.process_models.shared import Config, Row
 from utils.extract_kotlin import extract_kotlin
 from utils.gen_len_stats import gen_len_stats
 from utils.model_batch_size import model_batch_size

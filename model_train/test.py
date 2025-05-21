@@ -16,7 +16,6 @@ MODEL_DIR = Path(RUNS_DIR) / "full_finetune" / "model"
 TOKENIZER_DIR = Path(RUNS_DIR) / "full_finetune" / "tokenizer"
 NUM_EXAMPLES = 100
 BATCH_SIZE = 4
-MAX_NEW_RATIO = 1.5
 OUT_PATH = Path("generated_test_results_1.jsonl")
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
@@ -27,7 +26,7 @@ model = AutoModelForCausalLM.from_pretrained(MODEL_DIR).to(DEVICE).eval()
 if tokenizer.pad_token is None:
     tokenizer.pad_token = tokenizer.eos_token
 
-ds = load_dataset(DATASET)["test"].select(range(NUM_EXAMPLES))
+ds = load_dataset(DATASET)["test"][:NUM_EXAMPLES]
 rows = [Row(r["kt_path"], r["kt_source"], to_bytecode(r)) for r in ds]
 max_new_tokens = get_max_new(rows, tokenizer)
 ds = ds.map(make_example)
