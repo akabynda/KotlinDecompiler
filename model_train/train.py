@@ -4,7 +4,6 @@ import gc
 import random
 from pathlib import Path
 
-import datasets
 import numpy as np
 import torch
 from datasets import load_dataset, DatasetDict
@@ -19,11 +18,10 @@ from transformers import (
     set_seed,
 )
 
-from model_train import config
-from model_train.config import SEQ_LEN_PERCENTILE, WEIGHT_DECAY, CLIP_NORM, LEARNING_RATE, TRAIN_EPOCHS, GRAD_ACC, \
-    LORA_CFG, WARMUP
 from global_config import GLOBAL_SEED
+from model_train import config
 from model_train.config import DATASET
+from model_train.config import WARMUP
 from utils.clear_hf_cache import clear_hf_cache
 
 MODEL: str = config.MODEL
@@ -50,6 +48,7 @@ def make_example(rec):
         "bytecode": bc,
         "kt_source": rec["kt_source"]
     }
+
 
 raw_ds = load_dataset(DATASET)
 
@@ -86,7 +85,6 @@ tok_ds = raw_ds.map(
     lambda b: tok(b["text"], truncation=True),
     remove_columns=["text", "kt_path"]
 )
-
 
 print("Computing target sequence length percentile ...")
 lengths = [len(rec["input_ids"]) for rec in tok_ds["train"]]
