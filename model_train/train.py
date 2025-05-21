@@ -37,6 +37,8 @@ raw_ds = DatasetDict({
     for split in raw_ds
 })
 
+print(raw_ds)
+
 set_seed(GLOBAL_SEED)
 random.seed(GLOBAL_SEED)
 

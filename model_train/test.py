@@ -27,13 +27,9 @@ INITIAL_BATCH_SIZE = 4
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 tokenizer = AutoTokenizer.from_pretrained(MODEL_DIR / "tokenizer", padding_side="left")
-base_model = AutoModelForCausalLM.from_pretrained(
-    MODEL,
-    device_map="auto",
-    quantization_config=bnb_cfg,
-    trust_remote_code=True
-)
-model = PeftModel.from_pretrained(base_model, MODEL_DIR / "model").eval()
+
+model = AutoModelForCausalLM.from_pretrained(MODEL_DIR / "merged_model", device_map="auto", trust_remote_code=True)
+
 tokenizer.pad_token = tokenizer.pad_token or tokenizer.eos_token
 
 raw_rows = load_dataset(DATASET, split="test")
