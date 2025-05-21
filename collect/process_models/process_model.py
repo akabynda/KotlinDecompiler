@@ -153,6 +153,7 @@ def process_model_hf(name: str, rows: List[Row]) -> None:
                     tokenizer,
                     prompts,
                     max_new=max_new,
+                    do_sample=False
                 )
                 for r, ans in zip(payload, answers):
                     buf.append({"kt_path": r.kt_path, col: extract_kotlin(ans)})
@@ -170,6 +171,7 @@ def process_model_hf(name: str, rows: List[Row]) -> None:
                 tokenizer,
                 prompts,
                 max_new=max_new,
+                do_sample=False
             )
             for r, ans in zip(payload, answers):
                 buf.append({"kt_path": r.kt_path, col: extract_kotlin(ans)})

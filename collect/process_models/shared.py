@@ -42,8 +42,8 @@ class Config:
         "codellama/CodeLlama-7b-Instruct-hf",
     )
 
-    temperature: float = 0.2
-    top_p: float = 0.9
+    # temperature: float = 0.2
+    # top_p: float = 0.9
     flush_every: int = 100
     num_variants: int = 1
     est_scale: float = 1
