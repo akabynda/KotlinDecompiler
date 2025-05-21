@@ -11,13 +11,10 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from collect.process_models.shared import Config, Row
 from utils.extract_kotlin import extract_kotlin
 from utils.gen_len_stats import gen_len_stats
+from utils.make_example import to_bytecode
 from utils.model_batch_size import model_batch_size
 
 CFG = Config()
-
-
-def to_bytecode(row) -> str:
-    return "\n".join(cls["javap"] for cls in row["classes"])
 
 
 def load_rows() -> list[Row]:

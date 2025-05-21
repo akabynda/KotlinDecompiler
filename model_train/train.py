@@ -24,7 +24,7 @@ from model_train.config import DATASET, SEQ_LEN_PERCENTILE, LORA_CFG, GRAD_ACC, 
     WEIGHT_DECAY
 from model_train.config import WARMUP
 from utils.clear_hf_cache import clear_hf_cache
-from utils.make_example import make_example
+from utils.make_example import make_example, wrap_as_row
 
 MODEL: str = config.MODEL
 GLOBAL_SEED: int = GLOBAL_SEED
@@ -33,7 +33,7 @@ RUN_DIR: Path = Path(config.RUNS_DIR) / "full_finetune"
 raw_ds = load_dataset(DATASET)
 
 raw_ds = DatasetDict({
-    split: raw_ds[split].map(make_example)
+    split: raw_ds[split].map(lambda ex: make_example(wrap_as_row(ex)))
     for split in raw_ds
 })
 
