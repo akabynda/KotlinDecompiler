@@ -16,6 +16,7 @@ from transformers import (AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfi
                           TrainingArguments, Trainer, set_seed, DataCollatorForLanguageModeling)
 
 from collect.metrics.common import structural, lm_metrics, load_lm, entropy_metrics
+from collect.process_models.process_model import to_bytecode
 from collect.process_models.shared import Row
 from global_config import GLOBAL_SEED
 from train.config import VAL_SUBSET_SIZE, RUNS_DIR, DB_URI, STUDY_NAME, MODEL, \
@@ -23,6 +24,7 @@ from train.config import VAL_SUBSET_SIZE, RUNS_DIR, DB_URI, STUDY_NAME, MODEL, \
 from utils.clear_hf_cache import clear_hf_cache
 from utils.extract_kotlin import extract_kotlin
 from utils.gen_len_stats import get_max_new
+from utils.make_example import make_example
 
 set_seed(GLOBAL_SEED)
 random.seed(GLOBAL_SEED)
@@ -38,27 +40,7 @@ tok = AutoTokenizer.from_pretrained(MODEL, padding_side='left')
 tok.pad_token = tok.eos_token
 raw_ds = datasets.load_dataset(DATASET)
 
-
-def make_example(rec):
-    bc = "\n\n".join(f"// {c['class_path']}\n{c['javap'].rstrip()}" for c in rec["classes"])
-    prompt = (
-        "<|im_start|>system\n"
-        "Convert the following JVM byte-code into **Kotlin source code**.\n"
-        "Output Kotlin code only. Do not add any explanations.\n"
-        "<|im_end|>\n"
-        "<|im_start|>user\n"
-        f"{bc}\n"
-        "<|im_end|>\n"
-        "<|im_start|>assistant\n"
-    )
-    target = f"```kotlin\n{rec['kt_source'].rstrip()}\n```\n<|im_end|>\n"
-    return {
-        "text": prompt + target,
-        "kt_path": rec["kt_path"],
-        "bytecode": bc,
-        "kt_source": rec["kt_source"]
-    }
-
+rows_for_stats = [Row(r["kt_path"], r["kt_source"], to_bytecode(r)) for r in raw_ds["train"]]
 
 raw_ds = DatasetDict({
     split: raw_ds[split].map(make_example)
@@ -118,12 +100,6 @@ def compute_row(args):
 def objective(trial):
     r = trial.suggest_categorical("r", [8, 16, 32, 64])
     lora_alpha = trial.suggest_categorical("lora_alpha", [16, 32, 64, 128])
-    rows_for_stats = [
-        Row(kt_path=ex["kt_path"],
-            kt_source=ex["text"].split("<|im_start|>assistant")[1].split("<|im_end|>")[0].strip(),
-            bytecode=ex.get("bytecode", ""))
-        for ex in raw_ds["train"]
-    ]
     max_new_tokens = get_max_new(rows_for_stats, tok)
     seq_len = AVG_SEC_LEN
     grad_acc = trial.suggest_categorical("grad_acc", [32, 64, 128, 256])

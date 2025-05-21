@@ -1,14 +1,16 @@
-from pathlib import Path
 import gc
 import json
-import torch
-from datasets import load_from_disk
-from collect.process_models.shared import Row
+from pathlib import Path
 
+import torch
+from datasets import load_dataset
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-from model_train.config import RUNS_DIR, RAW_DS_PATH
+from collect.process_models.process_model import to_bytecode
+from collect.process_models.shared import Row
+from model_train.config import RUNS_DIR, DATASET
 from utils.gen_len_stats import get_max_new
+from utils.make_example import make_example
 
 MODEL_DIR = Path(RUNS_DIR) / "full_finetune" / "model"
 TOKENIZER_DIR = Path(RUNS_DIR) / "full_finetune" / "tokenizer"
@@ -25,7 +27,10 @@ model = AutoModelForCausalLM.from_pretrained(MODEL_DIR).to(DEVICE).eval()
 if tokenizer.pad_token is None:
     tokenizer.pad_token = tokenizer.eos_token
 
-ds = load_from_disk(RAW_DS_PATH)["test"].select(range(NUM_EXAMPLES))
+ds = load_dataset(DATASET)["test"].select(range(NUM_EXAMPLES))
+rows = [Row(r["kt_path"], r["kt_source"], to_bytecode(r)) for r in ds]
+max_new_tokens = get_max_new(rows, tokenizer)
+ds = ds.map(make_example)
 
 
 def get_prompt(rec):
@@ -40,15 +45,6 @@ def get_expected_length(rec):
 
 prompts = [get_prompt(r) for r in ds]
 kt_paths = [r["kt_path"] for r in ds]
-rows = [
-    Row(
-        kt_path=r["kt_path"],
-        kt_source=r["text"].split("<|im_start|>assistant")[1].split("<|im_end|>")[0].strip(),
-        bytecode=r.get("bytecode", "")
-    )
-    for r in ds
-]
-max_new_tokens = get_max_new(rows, tokenizer)
 
 with OUT_PATH.open("w", encoding="utf-8") as out_file:
     i = 0
