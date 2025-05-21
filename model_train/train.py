@@ -66,19 +66,20 @@ train_ds = tok_ds["train"].map(
 
 print("Loading model", MODEL)
 model = AutoModelForCausalLM.from_pretrained(
-    MODEL,
-    quantization_config=BitsAndBytesConfig(
-        load_in_4bit=True,
-        bnb_4bit_quant_type="nf4",
-        bnb_4bit_use_double_quant=True,
-        bnb_4bit_compute_dtype=torch.float16
-    ),
-    trust_remote_code=True,
-    device_map="auto",
-    use_cache=False,
-)
+        MODEL,
+        quantization_config=BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_use_double_quant=True,
+            bnb_4bit_compute_dtype=torch.float16
+        ),
+        trust_remote_code=True,
+        device_map="auto",
+        use_cache=False,
+    )
 
-model = get_peft_model(prepare_model_for_kbit_training(model), LoraConfig(**LORA_CFG))
+model = prepare_model_for_kbit_training(model)
+model = get_peft_model(model, LoraConfig(**LORA_CFG))
 
 RUN_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -112,7 +113,7 @@ trainer.train()
 
 print("Saving model & tokenizer ...")
 (model_save := RUN_DIR / "model").mkdir(parents=True, exist_ok=True)
-model.save_pretrained(model_save)
+model.save_pretrained(str(model_save), save_adapter=True)
 
 tok.save_pretrained(RUN_DIR / "tokenizer")
 

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-MODEL = "deepseek-ai/deepseek-coder-1.3b-instruct"
+MODEL = "Qwen/Qwen2.5-Coder-0.5B-Instruct"
 MODEL_NAME = MODEL.split("/")[-1]
 DATASET = "akabynda/KExercises-KStack-clean-bytecode"
 STUDY_NAME = f"{MODEL_NAME}-{DATASET.split("/")[-1]}-4bit-lora"
@@ -12,8 +12,8 @@ METRIC_TIMEOUT = 30
 TRAIN_EPOCHS = 4
 GRAD_ACC = 32
 SEQ_LEN_PERCENTILE = 95
-LORA_CFG = dict(r=32, lora_alpha=128, lora_dropout=0.05, bias="lora_only", target_modules="all-linear")
+LORA_CFG = dict(r=16, lora_alpha=8, lora_dropout=0.05, bias="none", target_modules="all-linear", init_lora_weights="gaussian")
 CLIP_NORM = 0.7
 WEIGHT_DECAY = 0.05
 LEARNING_RATE = 1e-4
-WARMUP = 0.05
+WARMUP = 0.1

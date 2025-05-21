@@ -11,7 +11,7 @@ import numpy as np
 import optuna
 import torch
 from datasets import tqdm, DatasetDict
-from peft import LoraConfig, get_peft_model
+from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 from transformers import (
     AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig,
     TrainingArguments, Trainer, set_seed,
@@ -69,11 +69,11 @@ def make_model(r, alpha, dropout):
         device_map="auto",
         use_cache=False,
     )
-    base.enable_input_require_grads()
-    base.gradient_checkpointing_enable()
+    base = prepare_model_for_kbit_training(base)
+
     return get_peft_model(base, LoraConfig(
         r=r, lora_alpha=alpha, lora_dropout=dropout,
-        bias="lora_only", target_modules='all-linear'
+        bias="none", target_modules='all-linear', init_lora_weights="gaussian"
     ))
 
 
@@ -180,10 +180,10 @@ def evaluate_metrics(csv_path):
 
 
 def objective(trial):
-    r = trial.suggest_categorical("r", [8, 16, 32, 64])
-    alpha = trial.suggest_categorical("lora_alpha", [16, 32, 64, 128])
+    r = trial.suggest_categorical("r", [8, 16])
+    alpha = trial.suggest_categorical("lora_alpha", [16, 32])
     dropout = trial.suggest_float("lora_dropout", 0.0, 0.1)
-    grad_acc = trial.suggest_categorical("grad_acc", [32, 64, 128, 256])
+    grad_acc = trial.suggest_categorical("grad_acc", [32, 64])
     clip = trial.suggest_float("clip", 0.1, 1.0)
     wd = trial.suggest_float("weight_decay", 0.0, 0.1)
     epochs, lr, warmup = 4, 1e-4, 0.1
