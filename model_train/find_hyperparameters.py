@@ -11,8 +11,10 @@ import numpy as np
 import optuna
 import torch
 from datasets import tqdm, DatasetDict
+from peft import LoraConfig, get_peft_model
 from transformers import (
-    AutoTokenizer, AutoModelForCausalLM, TrainingArguments, Trainer, set_seed,
+    AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig,
+    TrainingArguments, Trainer, set_seed,
     DataCollatorForLanguageModeling
 )
 
@@ -54,15 +56,25 @@ AVG_SEC_LEN = int(np.percentile([len(r["input_ids"]) for r in tok_ds["train"]], 
 p_uni, p_bi, p_left = load_lm()
 
 
-def make_model():
-    model = AutoModelForCausalLM.from_pretrained(
+def make_model(r, alpha, dropout):
+    base = AutoModelForCausalLM.from_pretrained(
         MODEL,
+        quantization_config=BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_use_double_quant=True,
+            bnb_4bit_compute_dtype=torch.float16
+        ),
         trust_remote_code=True,
         device_map="auto",
         use_cache=False,
     )
-    model.gradient_checkpointing_enable()
-    return model
+    base.enable_input_require_grads()
+    base.gradient_checkpointing_enable()
+    return get_peft_model(base, LoraConfig(
+        r=r, lora_alpha=alpha, lora_dropout=dropout,
+        bias="lora_only", target_modules='all-linear'
+    ))
 
 
 def generate_test_cases(model, tokenizer, test_records, out_path, max_new_tokens):
@@ -168,17 +180,19 @@ def evaluate_metrics(csv_path):
 
 
 def objective(trial):
+    r = trial.suggest_categorical("r", [8, 16, 32, 64])
+    alpha = trial.suggest_categorical("lora_alpha", [16, 32, 64, 128])
+    dropout = trial.suggest_float("lora_dropout", 0.0, 0.1)
     grad_acc = trial.suggest_categorical("grad_acc", [32, 64, 128, 256])
     clip = trial.suggest_float("clip", 0.1, 1.0)
     wd = trial.suggest_float("weight_decay", 0.0, 0.1)
-    warmup = trial.suggest_categorical("warmup", [0.05, 0.1])
-    epochs, lr = 4, 1e-4
+    epochs, lr, warmup = 4, 1e-4, 0.1
 
     max_new = get_max_new(rows_for_stats, tok)
     seq_len = AVG_SEC_LEN
     run_dir = RUNS_DIR / f"trial_{trial.number}"
 
-    model = make_model()
+    model = make_model(r, alpha, dropout)
 
     train_ds = BASE_TRAIN.map(lambda ex: {
         "input_ids": ex["input_ids"][:seq_len],
