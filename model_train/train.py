@@ -7,18 +7,19 @@ from pathlib import Path
 import numpy as np
 import torch
 from datasets import load_dataset, DatasetDict
+from peft import prepare_model_for_kbit_training, get_peft_model
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
     DataCollatorForLanguageModeling,
     Trainer,
     TrainingArguments,
-    set_seed,
+    set_seed, BitsAndBytesConfig,
 )
 
 from global_config import GLOBAL_SEED
 from model_train import config
-from model_train.config import DATASET, SEQ_LEN_PERCENTILE, GRAD_ACC, TRAIN_EPOCHS, LEARNING_RATE, CLIP_NORM, \
+from model_train.config import DATASET, LORA_CFG, SEQ_LEN_PERCENTILE, GRAD_ACC, TRAIN_EPOCHS, LEARNING_RATE, CLIP_NORM, \
     WEIGHT_DECAY
 from model_train.config import WARMUP
 from utils.clear_hf_cache import clear_hf_cache
@@ -34,8 +35,6 @@ raw_ds = DatasetDict({
     split: raw_ds[split].map(lambda ex: make_example(wrap_as_row(ex)))
     for split in raw_ds
 })
-
-print(raw_ds)
 
 set_seed(GLOBAL_SEED)
 random.seed(GLOBAL_SEED)
@@ -67,14 +66,21 @@ train_ds = tok_ds["train"].map(
 
 print("Loading model", MODEL)
 model = AutoModelForCausalLM.from_pretrained(
-    MODEL,
-    trust_remote_code=True,
-    device_map="auto",
-    use_cache=False,
-)
+        MODEL,
+        quantization_config=BitsAndBytesConfig(
+            load_in_4bit=True,
+            bnb_4bit_quant_type="nf4",
+            bnb_4bit_use_double_quant=True,
+            bnb_4bit_compute_dtype=torch.float16
+        ),
+        trust_remote_code=True,
+        device_map="auto",
+        use_cache=False,
+    )
 
-model.enable_input_require_grads()
-model.gradient_checkpointing_enable()
+model = prepare_model_for_kbit_training(model)
+
+model = get_peft_model(model, LORA_CFG)
 
 RUN_DIR.mkdir(parents=True, exist_ok=True)
 
