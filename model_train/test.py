@@ -4,12 +4,11 @@ from pathlib import Path
 
 import torch
 from datasets import load_dataset, Dataset, tqdm
-from peft import PeftModel
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 
 from collect.process_models.process_model import to_bytecode
 from collect.process_models.shared import Row
-from model_train.config import RUNS_DIR, DATASET, MODEL
+from model_train.config import RUNS_DIR, DATASET
 from utils.gen_len_stats import get_max_new
 from utils.make_example import make_example
 
@@ -67,7 +66,7 @@ def generate_batch(prompts, paths):
     for path, output in zip(paths, outputs):
         text = tokenizer.decode(output[input_len:], skip_special_tokens=True)
         model_name = text.split("<|im_end|>")[0].strip()
-        results.append({"kt_path": path, "model_name": model_name})
+        results.append({"kt_path": path, "model": model_name})
     return results
 
 
