@@ -81,6 +81,8 @@ model = AutoModelForCausalLM.from_pretrained(
 model = prepare_model_for_kbit_training(model)
 model = get_peft_model(model, LoraConfig(**LORA_CFG))
 
+model.print_trainable_parameters()
+
 RUN_DIR.mkdir(parents=True, exist_ok=True)
 
 training_args = TrainingArguments(
