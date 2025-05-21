@@ -10,16 +10,19 @@ import datasets
 import numpy as np
 import optuna
 import torch
-from datasets import tqdm
+from datasets import tqdm, DatasetDict
 from peft import LoraConfig, get_peft_model
 from transformers import (AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig,
                           TrainingArguments, Trainer, set_seed, DataCollatorForLanguageModeling)
 
 from collect.metrics.common import structural, lm_metrics, load_lm, entropy_metrics
-from train.config import GLOBAL_SEED, RAW_DS_PATH, VAL_SUBSET_SIZE, RUNS_DIR, DB_URI, STUDY_NAME, MODEL, \
-    TRAIN_SUBSET_SIZE, METRIC_TIMEOUT
+from collect.process_models.shared import Row
+from global_config import GLOBAL_SEED
+from train.config import VAL_SUBSET_SIZE, RUNS_DIR, DB_URI, STUDY_NAME, MODEL, \
+    TRAIN_SUBSET_SIZE, METRIC_TIMEOUT, DATASET
 from utils.clear_hf_cache import clear_hf_cache
 from utils.extract_kotlin import extract_kotlin
+from utils.gen_len_stats import get_max_new
 
 set_seed(GLOBAL_SEED)
 random.seed(GLOBAL_SEED)
@@ -33,7 +36,34 @@ bnb_cfg = BitsAndBytesConfig(
 
 tok = AutoTokenizer.from_pretrained(MODEL, padding_side='left')
 tok.pad_token = tok.eos_token
-raw_ds = datasets.load_from_disk(RAW_DS_PATH)
+raw_ds = datasets.load_dataset(DATASET)
+
+
+def make_example(rec):
+    bc = "\n\n".join(f"// {c['class_path']}\n{c['javap'].rstrip()}" for c in rec["classes"])
+    prompt = (
+        "<|im_start|>system\n"
+        "Convert the following JVM byte-code into **Kotlin source code**.\n"
+        "Output Kotlin code only. Do not add any explanations.\n"
+        "<|im_end|>\n"
+        "<|im_start|>user\n"
+        f"{bc}\n"
+        "<|im_end|>\n"
+        "<|im_start|>assistant\n"
+    )
+    target = f"```kotlin\n{rec['kt_source'].rstrip()}\n```\n<|im_end|>\n"
+    return {
+        "text": prompt + target,
+        "kt_path": rec["kt_path"],
+        "bytecode": bc,
+        "kt_source": rec["kt_source"]
+    }
+
+
+raw_ds = DatasetDict({
+    split: raw_ds[split].map(make_example)
+    for split in raw_ds
+})
 
 tok_ds = raw_ds.map(
     lambda b: tok(b["text"], truncation=True),
@@ -44,7 +74,6 @@ BASE_TRAIN = tok_ds["train"].shuffle(seed=GLOBAL_SEED).select(range(TRAIN_SUBSET
 
 lengths = [len(rec["input_ids"]) for rec in tok_ds["train"]]
 AVG_SEC_LEN = int(np.percentile(lengths, 95))
-print("Average length:", AVG_SEC_LEN)
 
 p_uni, p_bi, p_left = load_lm()
 
@@ -89,6 +118,13 @@ def compute_row(args):
 def objective(trial):
     r = trial.suggest_categorical("r", [8, 16, 32, 64])
     lora_alpha = trial.suggest_categorical("lora_alpha", [16, 32, 64, 128])
+    rows_for_stats = [
+        Row(kt_path=ex["kt_path"],
+            kt_source=ex["text"].split("<|im_start|>assistant")[1].split("<|im_end|>")[0].strip(),
+            bytecode=ex.get("bytecode", ""))
+        for ex in raw_ds["train"]
+    ]
+    max_new_tokens = get_max_new(rows_for_stats, tok)
     seq_len = AVG_SEC_LEN
     grad_acc = trial.suggest_categorical("grad_acc", [32, 64, 128, 256])
     epochs = 4
@@ -170,10 +206,6 @@ def objective(trial):
         batch = test_subset[i:i + batch_size]
         prompts = [rec["text"][:rec["text"].find("<|im_start|>assistant")] for rec in batch]
         inputs = tok(prompts, return_tensors="pt", padding=True, truncation=True).to(model.device)
-        targets = [rec["text"][rec["text"].find("<|im_start|>assistant"):] for rec in batch]
-        expected = tok(targets, return_tensors="pt", padding=True, truncation=True)
-        exp_lens = expected["attention_mask"].sum(dim=1)
-        max_new_tokens = int(exp_lens.max().item() * 1.4)
 
         try:
             with torch.inference_mode():

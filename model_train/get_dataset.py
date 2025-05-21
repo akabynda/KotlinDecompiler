@@ -1,6 +1,9 @@
-import random
+from pathlib import Path
 
-from datasets import load_dataset, DatasetDict, Dataset
+from datasets import load_dataset, Dataset
+
+from global_config import GLOBAL_SEED
+from model_train.config import RAW_DS_PATH
 
 
 def make_example(rec):
@@ -21,15 +24,14 @@ def make_example(rec):
 
 
 all_recs = []
-for name in ["akabynda/KExercises-bytecode", "akabynda/KStack-clean-bytecode"]:
+for name in ["akabynda/KExercises-KStack-clean-bytecode"]:
     for r in load_dataset(name, split="train", streaming=True):
         all_recs.append(make_example(r))
 
-random.shuffle(all_recs)
-cut = int(len(all_recs) * 0.9)
+ds = Dataset.from_list(all_recs)
 
-ds = DatasetDict({
-    "train": Dataset.from_list(all_recs[:cut]),
-    "test": Dataset.from_list(all_recs[cut:]),
-})
-ds.save_to_disk("KExercises-KStack-clean-bytecode")
+ds = ds.shuffle(seed=GLOBAL_SEED)
+ds_split = ds.train_test_split(test_size=0.1, seed=GLOBAL_SEED)
+
+output_path = Path(RAW_DS_PATH)
+ds_split.save_to_disk(str(output_path))

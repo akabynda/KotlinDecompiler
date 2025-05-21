@@ -7,6 +7,7 @@ from pathlib import Path
 import datasets
 import numpy as np
 import torch
+from datasets import load_dataset, DatasetDict
 from peft import LoraConfig, get_peft_model
 from transformers import (
     AutoModelForCausalLM,
@@ -21,12 +22,49 @@ from transformers import (
 from model_train import config
 from model_train.config import SEQ_LEN_PERCENTILE, WEIGHT_DECAY, CLIP_NORM, LEARNING_RATE, TRAIN_EPOCHS, GRAD_ACC, \
     LORA_CFG, WARMUP
+from global_config import GLOBAL_SEED
+from model_train.config import DATASET
 from utils.clear_hf_cache import clear_hf_cache
 
 MODEL: str = config.MODEL
-RAW_DS_PATH: Path = Path(config.RAW_DS_PATH)
-GLOBAL_SEED: int = config.GLOBAL_SEED
+GLOBAL_SEED: int = GLOBAL_SEED
 RUN_DIR: Path = Path(config.RUNS_DIR) / "full_finetune"
+
+
+def make_example(rec):
+    bc = "\n\n".join(f"// {c['class_path']}\n{c['javap'].rstrip()}" for c in rec["classes"])
+    prompt = (
+        "<|im_start|>system\n"
+        "Convert the following JVM byte-code into **Kotlin source code**.\n"
+        "Output Kotlin code only. Do not add any explanations.\n"
+        "<|im_end|>\n"
+        "<|im_start|>user\n"
+        f"{bc}\n"
+        "<|im_end|>\n"
+        "<|im_start|>assistant\n"
+    )
+    target = f"```kotlin\n{rec['kt_source'].rstrip()}\n```\n<|im_end|>\n"
+    return {
+        "text": prompt + target,
+        "kt_path": rec["kt_path"],
+        "bytecode": bc,
+        "kt_source": rec["kt_source"]
+    }
+
+raw_ds = load_dataset(DATASET)
+
+raw_ds = DatasetDict({
+    split: raw_ds[split].map(make_example)
+    for split in raw_ds
+})
+
+TRAIN_EPOCHS = 4
+GRAD_ACC = 32
+SEQ_LEN_PERCENTILE = 95
+LORA_CFG = dict(r=32, lora_alpha=128, lora_dropout=0.07, bias="lora_only", target_modules="all-linear")
+CLIP_NORM = 0.75
+WEIGHT_DECAY = 0.03
+LEARNING_RATE = 1e-4
 
 set_seed(GLOBAL_SEED)
 random.seed(GLOBAL_SEED)
@@ -42,9 +80,6 @@ print(f"Loading tokenizer for {MODEL} ...")
 tok = AutoTokenizer.from_pretrained(MODEL, padding_side="left")
 if tok.pad_token is None:
     tok.pad_token = tok.eos_token
-
-print("Loading dataset from", RAW_DS_PATH)
-raw_ds = datasets.load_from_disk(str(RAW_DS_PATH))
 
 print("Tokenizing ...")
 tok_ds = raw_ds.map(

@@ -39,9 +39,10 @@ def _hf_generate(
         prompts: List[str],
         *,
         max_new: int,
-        temperature: float,
-        top_p: float,
-        variants: int,
+        do_sample: bool = False,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        top_k: float | None = None,
 ) -> List[str]:
     enc = tokenizer(
         prompts,
@@ -57,14 +58,13 @@ def _hf_generate(
         out = model.generate(
             **enc,
             max_length=max_length,
-            do_sample=True,
-            temperature=temperature,
-            top_p=top_p,
+            do_sample=do_sample,
             pad_token_id=tokenizer.eos_token_id,
             eos_token_id=tokenizer.eos_token_id,
-            num_return_sequences=variants,
-            early_stopping=True,
-            use_cache=True,
+            temperature=temperature,
+            top_p=top_p,
+            top_k=top_k,
+            num_beams=1
         )
     res = tokenizer.batch_decode(out[:, input_len:], skip_special_tokens=True)
 
@@ -153,9 +153,6 @@ def process_model_hf(name: str, rows: List[Row]) -> None:
                     tokenizer,
                     prompts,
                     max_new=max_new,
-                    temperature=CFG.temperature,
-                    top_p=CFG.top_p,
-                    variants=CFG.num_variants,
                 )
                 for r, ans in zip(payload, answers):
                     buf.append({"kt_path": r.kt_path, col: extract_kotlin(ans)})
@@ -173,9 +170,6 @@ def process_model_hf(name: str, rows: List[Row]) -> None:
                 tokenizer,
                 prompts,
                 max_new=max_new,
-                temperature=CFG.temperature,
-                top_p=CFG.top_p,
-                variants=CFG.num_variants,
             )
             for r, ans in zip(payload, answers):
                 buf.append({"kt_path": r.kt_path, col: extract_kotlin(ans)})
