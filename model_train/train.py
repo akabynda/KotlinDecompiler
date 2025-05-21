@@ -7,11 +7,9 @@ from pathlib import Path
 import numpy as np
 import torch
 from datasets import load_dataset, DatasetDict
-from peft import LoraConfig, get_peft_model
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
-    BitsAndBytesConfig,
     DataCollatorForLanguageModeling,
     Trainer,
     TrainingArguments,
@@ -20,7 +18,7 @@ from transformers import (
 
 from global_config import GLOBAL_SEED
 from model_train import config
-from model_train.config import DATASET, SEQ_LEN_PERCENTILE, LORA_CFG, GRAD_ACC, TRAIN_EPOCHS, LEARNING_RATE, CLIP_NORM, \
+from model_train.config import DATASET, SEQ_LEN_PERCENTILE, GRAD_ACC, TRAIN_EPOCHS, LEARNING_RATE, CLIP_NORM, \
     WEIGHT_DECAY
 from model_train.config import WARMUP
 from utils.clear_hf_cache import clear_hf_cache
@@ -39,13 +37,6 @@ raw_ds = DatasetDict({
 
 set_seed(GLOBAL_SEED)
 random.seed(GLOBAL_SEED)
-
-bnb_cfg = BitsAndBytesConfig(
-    load_in_4bit=True,
-    bnb_4bit_quant_type="nf4",
-    bnb_4bit_use_double_quant=True,
-    bnb_4bit_compute_dtype=torch.float16,
-)
 
 print(f"Loading tokenizer for {MODEL} ...")
 tok = AutoTokenizer.from_pretrained(MODEL, padding_side="left")
@@ -75,7 +66,6 @@ train_ds = tok_ds["train"].map(
 print("Loading model", MODEL)
 model = AutoModelForCausalLM.from_pretrained(
     MODEL,
-    quantization_config=bnb_cfg,
     trust_remote_code=True,
     device_map="auto",
     use_cache=False,
@@ -83,9 +73,6 @@ model = AutoModelForCausalLM.from_pretrained(
 
 model.enable_input_require_grads()
 model.gradient_checkpointing_enable()
-
-print("Applying LoRA adapters ...")
-model = get_peft_model(model, LoraConfig(**LORA_CFG))
 
 RUN_DIR.mkdir(parents=True, exist_ok=True)
 

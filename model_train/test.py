@@ -4,12 +4,11 @@ from pathlib import Path
 
 import torch
 from datasets import load_dataset, Dataset, tqdm
-from peft import PeftModel
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 
 from collect.process_models.process_model import to_bytecode
 from collect.process_models.shared import Row
-from model_train.config import RUNS_DIR, DATASET, MODEL
+from model_train.config import RUNS_DIR, DATASET
 from utils.gen_len_stats import get_max_new
 from utils.make_example import make_example
 
@@ -27,13 +26,9 @@ INITIAL_BATCH_SIZE = 4
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 tokenizer = AutoTokenizer.from_pretrained(MODEL_DIR / "tokenizer", padding_side="left")
-base_model = AutoModelForCausalLM.from_pretrained(
-    MODEL,
-    device_map="auto",
-    quantization_config=bnb_cfg,
-    trust_remote_code=True
-)
-model = PeftModel.from_pretrained(base_model, MODEL_DIR / "model").eval()
+model = AutoModelForCausalLM.from_pretrained(MODEL_DIR / "model", device_map="auto",
+                                             quantization_config=bnb_cfg,
+                                             trust_remote_code=True).eval()
 tokenizer.pad_token = tokenizer.pad_token or tokenizer.eos_token
 
 raw_rows = load_dataset(DATASET, split="test")
@@ -71,7 +66,7 @@ def generate_batch(prompts, paths):
     for path, output in zip(paths, outputs):
         text = tokenizer.decode(output[input_len:], skip_special_tokens=True)
         model_name = text.split("<|im_end|>")[0].strip()
-        results.append({"kt_path": path, "model_name": model_name})
+        results.append({"kt_path": path, "model": model_name})
     return results
 
 
