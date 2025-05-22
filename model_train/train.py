@@ -74,7 +74,7 @@ model = AutoModelForCausalLM.from_pretrained(
             bnb_4bit_compute_dtype=torch.float16
         ),
         trust_remote_code=True,
-        device_map={"": torch.cuda.current_device()},
+        device_map="auto",
         use_cache=False,
     )
 
