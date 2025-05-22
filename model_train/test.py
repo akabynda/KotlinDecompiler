@@ -9,6 +9,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from collect.process_models.process_model import to_bytecode
 from collect.process_models.shared import Row
 from model_train.config import RUNS_DIR, DATASET, STUDY_NAME
+from utils.extract_kotlin import extract_kotlin
 from utils.gen_len_stats import get_max_new
 from utils.make_example import make_example
 
@@ -65,8 +66,8 @@ def generate_batch(prompts, paths):
     results = []
     for path, output in zip(paths, outputs):
         text = tokenizer.decode(output[input_len:], skip_special_tokens=True)
-        model_name = text.split("<|im_end|>")[0].strip()
-        results.append({"kt_path": path, f"{STUDY_NAME}": model_name})
+        result = text.split("<|im_end|>")[0].strip()
+        results.append({"kt_path": path, f"{STUDY_NAME}": extract_kotlin(result)})
     return results
 
 
