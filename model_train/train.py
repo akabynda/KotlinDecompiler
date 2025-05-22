@@ -17,7 +17,7 @@ from transformers import (
     set_seed, BitsAndBytesConfig,
 )
 
-from ..global_config import GLOBAL_SEED
+from global_config import GLOBAL_SEED
 from model_train import config
 from model_train.config import DATASET, LORA_CFG, SEQ_LEN_PERCENTILE, GRAD_ACC, TRAIN_EPOCHS, LEARNING_RATE, CLIP_NORM, \
     WEIGHT_DECAY
