@@ -66,7 +66,7 @@ def generate_batch(prompts, paths):
     for path, output in zip(paths, outputs):
         text = tokenizer.decode(output[input_len:], skip_special_tokens=True)
         model_name = text.split("<|im_end|>")[0].strip()
-        results.append({"kt_path": path, "model": model_name})
+        results.append({"kt_path": path, f"{STUDY_NAME}": model_name})
     return results
 
 
