@@ -3,11 +3,15 @@ from pathlib import Path
 import pandas as pd
 from datasets import load_dataset
 
+from collect.process_models.shared import Config
+
+CFG = Config()
+
 
 def merge_all_jsonl_with_hf(input_dir: str, output_file: str):
     input_path = Path(input_dir)
 
-    ds = load_dataset("akabynda/KStack-clean-bytecode", split="train")
+    ds = load_dataset(CFG.dataset_name, split=CFG.split)
     hf_df = pd.DataFrame(ds)
 
     merged_df = hf_df.copy()
