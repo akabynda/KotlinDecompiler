@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 from typing import Iterable, Dict, Any
 
+
 def load_jsonl(jsonl_file: Path) -> Iterable[Dict[str, Any]]:
     with jsonl_file.open('r', encoding='utf-8') as f:
         for line in f:

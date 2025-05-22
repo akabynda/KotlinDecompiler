@@ -1,15 +1,15 @@
 from collections import namedtuple
 from pathlib import Path
-import torch
 
+import torch
 from transformers import BitsAndBytesConfig
 
 Row = namedtuple("Row", ("kt_path", "kt_source", "bytecode"))
 
 
 class Config:
-    dataset_name: str = "akabynda/KStack-clean-bytecode"
-    split: str = "train"
+    dataset_name: str = "akabynda/KExercises-KStack-clean-bytecode"
+    split: str = "test"
     model_names: tuple[str, ...] = (
         "Qwen/Qwen2.5-Coder-0.5B",
         "Qwen/Qwen2.5-Coder-0.5B-Instruct",
@@ -42,8 +42,8 @@ class Config:
         "codellama/CodeLlama-7b-Instruct-hf",
     )
 
-    temperature: float = 0.2
-    top_p: float = 0.9
+    # temperature: float = 0.2
+    # top_p: float = 0.9
     flush_every: int = 100
     num_variants: int = 1
     est_scale: float = 1

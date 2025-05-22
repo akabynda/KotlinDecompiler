@@ -1,39 +1,25 @@
 import gc
 import json
-import re
 import sys
-from statistics import median
-from typing import Iterable, List
+from typing import List
 
 import torch
 from datasets import load_dataset
-from numpy import percentile
 from tqdm.auto import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from shared import Config, Row
+
+from collect.process_models.shared import Config, Row
+from utils.extract_kotlin import extract_kotlin
+from utils.gen_len_stats import gen_len_stats
+from utils.make_example import to_bytecode
+from utils.model_batch_size import model_batch_size
 
 CFG = Config()
-
-
-def to_bytecode(row) -> str:
-    return "\n".join(cls["javap"] for cls in row["classes"])
 
 
 def load_rows() -> list[Row]:
     ds = load_dataset(CFG.dataset_name, split=CFG.split, streaming=False)
     return [Row(r["kt_path"], r["kt_source"], to_bytecode(r)) for r in ds]
-
-
-def extract_kotlin(text: str) -> str:
-    for pat in (
-            r"```[^\n]*kotlin[^\n]*\n([\s\S]*?)(?:```|\Z)",
-            r"```[^\n]*\n([\s\S]*?)(?:```|\Z)",
-            r"### Kotlin\n([\s\S]*?)(?:\n###|\Z)",
-    ):
-        m = re.search(pat, text, re.I | re.M)
-        if m:
-            return m.group(1).strip()
-    return ""
 
 
 def build_prompt(model_name: str, bytecode: str, tokenizer) -> str:
@@ -44,33 +30,16 @@ def build_prompt(model_name: str, bytecode: str, tokenizer) -> str:
     return f"### Task\n{head}\n\n### Byte‑code\n{bytecode}\n\n### Kotlin\n"
 
 
-def model_batch_size(model: torch.nn.Module, scale: float) -> int:
-    props = torch.cuda.get_device_properties(0) if torch.cuda.is_available() else None
-    vram = props.total_memory if props else 8 << 30
-    size = sum(p.numel() * p.element_size() for p in model.parameters())
-    return max(1, int(vram / size * scale))
-
-
-def gen_stats(rows: Iterable[Row], tokenizer) -> tuple[int, float]:
-    kt_lens, ratios = [], []
-    for r in rows:
-        kt = len(tokenizer(r.kt_source).input_ids)
-        bc = len(tokenizer(r.bytecode).input_ids)
-        kt_lens.append(kt)
-        ratios.append(kt / bc if bc else 0)
-
-    return min(2048, int(percentile(kt_lens, 90) * 1.5)), round(min(0.5, median(ratios)), 3)
-
-
 def _hf_generate(
         model: torch.nn.Module,
         tokenizer,
         prompts: List[str],
         *,
         max_new: int,
-        temperature: float,
-        top_p: float,
-        variants: int,
+        do_sample: bool = False,
+        temperature: float | None = None,
+        top_p: float | None = None,
+        top_k: float | None = None,
 ) -> List[str]:
     enc = tokenizer(
         prompts,
@@ -86,14 +55,13 @@ def _hf_generate(
         out = model.generate(
             **enc,
             max_length=max_length,
-            do_sample=True,
-            temperature=temperature,
-            top_p=top_p,
+            do_sample=do_sample,
             pad_token_id=tokenizer.eos_token_id,
             eos_token_id=tokenizer.eos_token_id,
-            num_return_sequences=variants,
-            early_stopping=True,
-            use_cache=True,
+            temperature=temperature,
+            top_p=top_p,
+            top_k=top_k,
+            num_beams=1
         )
     res = tokenizer.batch_decode(out[:, input_len:], skip_special_tokens=True)
 
@@ -164,7 +132,7 @@ def process_model_hf(name: str, rows: List[Row]) -> None:
 
     batch_size = model_batch_size(model, CFG.est_scale)
     print("batch size:", batch_size)
-    max_new, _ratio = gen_stats(rows, tokenizer)
+    max_new, _ratio = gen_len_stats(rows, tokenizer)
 
     print("max_new:", max_new)
 
@@ -182,9 +150,7 @@ def process_model_hf(name: str, rows: List[Row]) -> None:
                     tokenizer,
                     prompts,
                     max_new=max_new,
-                    temperature=CFG.temperature,
-                    top_p=CFG.top_p,
-                    variants=CFG.num_variants,
+                    do_sample=False
                 )
                 for r, ans in zip(payload, answers):
                     buf.append({"kt_path": r.kt_path, col: extract_kotlin(ans)})
@@ -202,9 +168,7 @@ def process_model_hf(name: str, rows: List[Row]) -> None:
                 tokenizer,
                 prompts,
                 max_new=max_new,
-                temperature=CFG.temperature,
-                top_p=CFG.top_p,
-                variants=CFG.num_variants,
+                do_sample=False
             )
             for r, ans in zip(payload, answers):
                 buf.append({"kt_path": r.kt_path, col: extract_kotlin(ans)})

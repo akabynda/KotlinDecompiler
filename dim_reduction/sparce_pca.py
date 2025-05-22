@@ -111,8 +111,8 @@ if __name__ == "__main__":
 
     n_list = list(range(14, 24))
     alpha_list = list()
-    for i in range(1,201):
-        alpha_list.append(i*0.1)
+    for i in range(1, 201):
+        alpha_list.append(i * 0.1)
 
     best_n, best_alpha = grid_search_spca(
         df,
@@ -135,4 +135,3 @@ if __name__ == "__main__":
     dropped = loadings.index[(loadings == 0).all(axis=1)].tolist()
     print("\nПризнаки со всеми нулевыми нагрузками (можно исключить):")
     print(", ".join(dropped) if dropped else "‑")
-
