@@ -8,7 +8,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 
 from collect.process_models.process_model import to_bytecode
 from collect.process_models.shared import Row
-from model_train.config import RUNS_DIR, DATASET
+from model_train.config import RUNS_DIR, DATASET, STUDY_NAME
 from utils.gen_len_stats import get_max_new
 from utils.make_example import make_example
 
@@ -20,7 +20,7 @@ bnb_cfg = BitsAndBytesConfig(
 )
 
 MODEL_DIR = Path(RUNS_DIR) / "full_finetune"
-OUT_PATH = Path("generated_test_results_1.jsonl")
+OUT_PATH = Path(f"{STUDY_NAME}.jsonl")
 NUM_EXAMPLES = 100
 INITIAL_BATCH_SIZE = 4
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
