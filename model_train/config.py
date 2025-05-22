@@ -1,6 +1,6 @@
 from pathlib import Path
 
-MODEL = "deepseek-ai/deepseek-coder-1.3b-instruct"
+MODEL = "Qwen/Qwen2.5-Coder-0.5B-Instruct"
 MODEL_NAME = MODEL.split("/")[-1]
 DATASET = "akabynda/KExercises-KStack-clean-bytecode"
 STUDY_NAME = f"{MODEL_NAME}-{DATASET.split("/")[-1]}-4bit-lora"
