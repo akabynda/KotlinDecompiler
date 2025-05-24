@@ -4,12 +4,14 @@ from typing import Iterable
 import matplotlib.pyplot as plt
 import pandas as pd
 
-# skip = ["kt_path", "model"]
-# reference = "kt_source"
+from charts.build_heatmap import save_heatmap
+
+skip = ["kt_path", "model"]
+reference = "kt_source"
 
 
-skip = ["Test", "Category"]
-reference = "Original"
+# skip = ["Test", "Category"]
+# reference = "Original"
 
 
 def list_metrics(columns: Iterable[str]) -> list[str]:
@@ -54,13 +56,11 @@ def save_charts(summary: pd.DataFrame, out_dir: Path) -> None:
 
 if __name__ == "__main__":
     df = pd.read_csv(input("Path to metrics.csv: "))
-    df[skip[1]] = df[skip[1]].replace(
-        "Qwen2.5-Coder-0.5B-Instruct-KExercises-KStack-clean-bytecode-4bit-lora",
-        "Qwen2.5-Coder-0.5B-Instruct-Finetuned"
-    )
     summary = build_category_summary(df)
+    summary.index = [i.replace("KExercises-KStack-clean-bytecode-4bit-lora", "Finetuned") for i in summary.index]
     charts_dir = Path(input("Path to charts dir: "))
     charts_dir.mkdir(parents=True, exist_ok=True)
     (charts_dir / "summary.csv").write_text(summary.to_csv())
     save_charts(summary, charts_dir)
+    save_heatmap(summary, charts_dir)
     print(f"Charts and summary saved to {charts_dir.absolute()}")
