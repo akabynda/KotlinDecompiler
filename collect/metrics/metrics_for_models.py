@@ -99,5 +99,5 @@ if __name__ == "__main__":
     jsonl_path = Path(input("Path to merged .jsonl file: ").strip())
     allowed_paths_path = Path(input("Path to allowed_paths JSON file: ").strip())
     out_csv = Path(input("Path to output: "))
-    metrics_for_models(jsonl_path, out_csv, allowed_paths_path, workers=cpu_count() - 4)
+    metrics_for_models(jsonl_path, out_csv, allowed_paths_path, workers=cpu_count() - 6)
     print(f"Metrics streaming complete. Results in {out_csv}")

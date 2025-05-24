@@ -56,6 +56,8 @@ def count_success() -> None:
     fields_sorted = [x[0] for x in results]
     counts_sorted = [x[1] for x in results]
 
+    fields_sorted = [f.replace("KExercises-KStack-clean-bytecode-4bit-lora", "Finetuned") for f in fields_sorted]
+
     plt.figure(figsize=(12, 6))
     plt.bar(fields_sorted, counts_sorted)
     plt.xticks(rotation=45, ha="right")
