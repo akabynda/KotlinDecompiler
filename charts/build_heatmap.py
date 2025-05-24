@@ -10,7 +10,6 @@ FEATURES = [
     'JSD', 'KL', 'LM_CondE', 'LM_JSD'
 ]
 
-
 def save_heatmap(summary: pd.DataFrame, out_dir: Path) -> None:
     selected_metrics = [m for m in FEATURES if m in summary.columns]
     if not selected_metrics:
@@ -23,8 +22,8 @@ def save_heatmap(summary: pd.DataFrame, out_dir: Path) -> None:
 
     plt.figure(figsize=(12, 8))
     sns.heatmap(subset, annot=True, cmap="YlGnBu", cbar_kws={'label': 'Average value'})
-    plt.title("Heatmap of Selected Metrics by Model")
-    plt.ylabel("Model")
+    plt.title("Heatmap of Selected Metrics by Method")
+    plt.ylabel("Method")
     plt.xlabel("Metric")
     plt.tight_layout()
 

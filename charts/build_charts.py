@@ -6,12 +6,12 @@ import pandas as pd
 
 from charts.build_heatmap import save_heatmap
 
-skip = ["kt_path", "model"]
-reference = "kt_source"
+# skip = ["kt_path", "model"]
+# reference = "kt_source"
 
 
-# skip = ["Test", "Category"]
-# reference = "Original"
+skip = ["Test", "Category"]
+reference = "Original"
 
 
 def list_metrics(columns: Iterable[str]) -> list[str]:
