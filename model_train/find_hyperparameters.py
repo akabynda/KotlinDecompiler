@@ -162,8 +162,8 @@ def evaluate_metrics(csv_path):
     rows = list(csv.reader(csv_path.open()))
     header = rows[0]
     idx = {name: i for i, name in enumerate(header)}
-    feats = ['CE', 'CondE', 'Conditional Complexity', 'Halstead Distinct Operators',
-             'Halstead Vocabulary', 'JSD', 'KL', 'LM_CondE', 'LM_JSD']
+    feats = ['CondE', 'Conditional Complexity', 'Halstead Distinct Operators', 'JSD', 'KL', 'LM_CE', 'LM_CondE',
+             'LM_KL']
     vals = {m: {f: [] for f in feats} for m in ["kt_source", "our"]}
 
     for row in rows[1:]:

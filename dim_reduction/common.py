@@ -54,10 +54,26 @@ def drop_high_corr(df_in: pd.DataFrame, removed: List[str], thresh: float = 0.99
             if row in to_drop or col in to_drop:
                 continue
             if upper.at[row, col] > thresh:
-                if "detekt" in row:
-                    to_drop.add(row)
-                else:
-                    to_drop.add(col)
+                to_drop.add(row)
+    if to_drop:
+        removed.extend(to_drop)
+        df_out.drop(columns=list(to_drop), inplace=True)
+    return df_out
+
+
+def drop_high_corr_maximum_removal(df_in: pd.DataFrame, removed: List[str], thresh: float = 0.995) -> pd.DataFrame:
+    df_out = df_in.copy()
+    corr = df_out.corr().abs()
+    upper = corr.where(np.triu(np.ones_like(corr), k=1).astype(bool))
+    to_drop: set[str] = set()
+
+    for col in upper.columns:
+        for row in upper.index:
+            if row in to_drop or col in to_drop:
+                continue
+            if upper.at[row, col] > thresh:
+                to_drop.add(max(row, col))
+
     if to_drop:
         removed.extend(to_drop)
         df_out.drop(columns=list(to_drop), inplace=True)

@@ -4,11 +4,9 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-FEATURES = [
-    'CE', 'CondE', 'Conditional Complexity',
-    'Halstead Distinct Operators', 'Halstead Vocabulary',
-    'JSD', 'KL', 'LM_CondE', 'LM_JSD'
-]
+FEATURES = ['CondE', 'Conditional Complexity', 'Halstead Distinct Operators', 'JSD', 'KL', 'LM_CE', 'LM_CondE', 'LM_KL']
+
+
 
 def save_heatmap(summary: pd.DataFrame, out_dir: Path) -> None:
     selected_metrics = [m for m in FEATURES if m in summary.columns]

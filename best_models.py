@@ -4,11 +4,7 @@ from typing import Tuple
 import pandas as pd
 from scipy.spatial.distance import euclidean, cityblock, cosine, chebyshev
 
-FEATURES = [
-    'CE', 'CondE', 'Conditional Complexity',
-    'Halstead Distinct Operators', 'Halstead Vocabulary',
-    'JSD', 'KL', 'LM_CondE', 'LM_JSD'
-]
+FEATURES = ['CondE', 'Conditional Complexity', 'Halstead Distinct Operators', 'JSD', 'KL', 'LM_CE', 'LM_CondE', 'LM_KL']
 COV_EPS = 1e-3
 
 
