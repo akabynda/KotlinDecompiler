@@ -20,8 +20,8 @@ def save_heatmap(summary: pd.DataFrame, out_dir: Path) -> None:
 
     plt.figure(figsize=(12, 8))
     sns.heatmap(subset, annot=True, cmap="YlGnBu", cbar_kws={'label': 'Average value'})
-    plt.title("Heatmap of Selected Metrics by Method")
-    plt.ylabel("Method")
+    plt.title("Heatmap of Selected Metrics by Model")
+    plt.ylabel("Model")
     plt.xlabel("Metric")
     plt.tight_layout()
 

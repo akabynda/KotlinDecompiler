@@ -6,12 +6,12 @@ import pandas as pd
 
 from charts.build_heatmap import save_heatmap
 
-# skip = ["kt_path", "model"]
-# reference = "kt_source"
+skip = ["kt_path", "model"]
+reference = "kt_source"
 
 
-skip = ["Test", "Category"]
-reference = "Original"
+# skip = ["Test", "Category"]
+# reference = "Original"
 
 
 def list_metrics(columns: Iterable[str]) -> list[str]:
@@ -56,6 +56,9 @@ def save_charts(summary: pd.DataFrame, out_dir: Path) -> None:
 
 if __name__ == "__main__":
     df = pd.read_csv(input("Path to metrics.csv: "))
+
+    df = df[~df["model"].str.contains("KExercises-KStack-clean-bytecode-4bit-lora")]
+
     summary = build_category_summary(df)
     summary.index = [i.replace("KExercises-KStack-clean-bytecode-4bit-lora", "Finetuned") for i in summary.index]
     charts_dir = Path(input("Path to charts dir: "))
