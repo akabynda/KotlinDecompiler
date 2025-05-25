@@ -8,16 +8,11 @@ from sklearn.preprocessing import MinMaxScaler
 
 def numeric_df(df_in: pd.DataFrame, removed: List[str]) -> pd.DataFrame:
     df_out = df_in.select_dtypes(include="number").copy()
-    drop_cols = [col for col in ("Test", "Category") if col in df_out.columns]
+
+    drop_cols = [col for col in ("Test", "Category", "kt_path", "model") if col in df_out.columns]
     df_out.drop(columns=drop_cols, inplace=True, errors="ignore")
     removed.extend(drop_cols)
 
-    const_cols = df_out.columns[df_out.var(ddof=0) == 0].tolist()
-    if const_cols:
-        removed.extend(const_cols)
-        df_out.drop(columns=const_cols, inplace=True)
-
-    print("Удалены константные признаки", const_cols)
     return df_out
 
 
