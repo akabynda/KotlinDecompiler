@@ -43,72 +43,48 @@ def drop_low_variance(df_in: pd.DataFrame,
     return df_out
 
 
+def drop_high_corr_recursive(df_in: pd.DataFrame, upper: pd.DataFrame, thresh: float,
+                             to_drop: set[str] = None, path: List[str] = None,
+                             best_result: dict = None) -> dict:
+    if to_drop is None:
+        to_drop = set()
+    if path is None:
+        path = []
+    if best_result is None:
+        best_result = {'max_dropped': 0, 'to_drop': set()}
+
+    for row in upper.index:
+        for col in upper.columns:
+            if upper.at[row, col] > thresh and row not in to_drop and col not in to_drop:
+                new_to_drop_1 = to_drop.copy()
+                new_to_drop_1.add(row)
+                drop_high_corr_recursive(df_in, upper, thresh, new_to_drop_1, path + [f"drop {row}"], best_result)
+
+                new_to_drop_2 = to_drop.copy()
+                new_to_drop_2.add(col)
+                drop_high_corr_recursive(df_in, upper, thresh, new_to_drop_2, path + [f"drop {col}"], best_result)
+
+                return best_result
+
+    if len(to_drop) > best_result['max_dropped']:
+        best_result['max_dropped'] = len(to_drop)
+        best_result['to_drop'] = to_drop.copy()
+
+    return best_result
+
+
 def drop_high_corr(df_in: pd.DataFrame, removed: List[str], thresh: float = 0.995) -> pd.DataFrame:
     df_out = df_in.copy()
     corr = df_out.corr().abs()
     upper = corr.where(np.triu(np.ones_like(corr), k=1).astype(bool))
-    to_drop: set[str] = set()
 
-    for col in upper.columns:
-        for row in upper.index:
-            if row in to_drop or col in to_drop:
-                continue
-            if upper.at[row, col] > thresh:
-                to_drop.add(row)
-    if to_drop:
-        removed.extend(to_drop)
-        df_out.drop(columns=list(to_drop), inplace=True)
-    return df_out
+    best_result = drop_high_corr_recursive(df_out, upper, thresh)
+    final_to_drop = best_result['to_drop']
 
+    if final_to_drop:
+        removed.extend(final_to_drop)
+        df_out.drop(columns=list(final_to_drop), inplace=True)
 
-def drop_high_corr_maximum_removal(df_in: pd.DataFrame, removed: List[str], thresh: float = 0.995) -> pd.DataFrame:
-    df_out = df_in.copy()
-    corr = df_out.corr().abs()
-    upper = corr.where(np.triu(np.ones_like(corr), k=1).astype(bool))
-    to_drop: set[str] = set()
-
-    for col in upper.columns:
-        for row in upper.index:
-            if row in to_drop or col in to_drop:
-                continue
-            if upper.at[row, col] > thresh:
-                to_drop.add(max(row, col))
-
-    if to_drop:
-        removed.extend(to_drop)
-        df_out.drop(columns=list(to_drop), inplace=True)
-    return df_out
-
-
-def drop_high_corr_interactive(df_in: pd.DataFrame, removed: List[str], thresh: float = 0.995) -> pd.DataFrame:
-    df_out = df_in.copy()
-    corr = df_out.corr().abs()
-    upper = corr.where(np.triu(np.ones_like(corr), k=1).astype(bool))
-    to_drop: set[str] = set()
-
-    for col in upper.columns:
-        for row in upper.index:
-            if row in to_drop or col in to_drop:
-                continue
-            if upper.at[row, col] > thresh:
-                print(f"\nСильная корреляция: {row} vs {col} (коэф = {upper.at[row, col]:.3f})")
-                print("Какой признак вы хотите удалить?")
-                print(f"1 — удалить {row}")
-                print(f"2 — удалить {col}")
-                while True:
-                    choice = input("Ваш выбор (1/2): ")
-                    if choice == "1":
-                        to_drop.add(row)
-                        break
-                    elif choice == "2":
-                        to_drop.add(col)
-                        break
-                    else:
-                        print("Некорректный ввод, попробуйте снова.")
-
-    if to_drop:
-        removed.extend(to_drop)
-        df_out.drop(columns=list(to_drop), inplace=True)
     return df_out
 
 
@@ -118,22 +94,6 @@ def safe_corr_df(df_in: pd.DataFrame, removed: List[str]) -> pd.DataFrame:
     while thresh >= 0.80:
         print(f"\n=== Порог корреляции: {thresh:.2f} ===")
         df_out = drop_high_corr(df_out, removed, thresh)
-        if df_out.shape[1] < 3:
-            print("Осталось менее 3 признаков — останавливаемся.")
-            break
-        if np.linalg.matrix_rank(np.corrcoef(df_out.T)) == df_out.shape[1]:
-            print("Корреляционная матрица невырождена, готово.")
-            return df_out
-        thresh -= 0.02
-    raise RuntimeError("Не удалось получить невырожденную корреляционную матрицу")
-
-
-def safe_corr_df_interactive(df_in: pd.DataFrame, removed: List[str]) -> pd.DataFrame:
-    df_out = df_in.copy()
-    thresh = 0.99
-    while thresh >= 0.80:
-        print(f"\n=== Порог корреляции: {thresh:.2f} ===")
-        df_out = drop_high_corr_interactive(df_out, removed, thresh)
         if df_out.shape[1] < 3:
             print("Осталось менее 3 признаков — останавливаемся.")
             break
