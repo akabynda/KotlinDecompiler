@@ -56,9 +56,6 @@ def save_charts(summary: pd.DataFrame, out_dir: Path) -> None:
 
 if __name__ == "__main__":
     df = pd.read_csv(input("Path to metrics.csv: "))
-
-    df = df[~df["model"].str.contains("KExercises-KStack-clean-bytecode-4bit-lora")]
-
     summary = build_category_summary(df)
     summary.index = [i.replace("KExercises-KStack-clean-bytecode-4bit-lora", "Finetuned") for i in summary.index]
     charts_dir = Path(input("Path to charts dir: "))

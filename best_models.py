@@ -28,7 +28,11 @@ def validate_columns(df: pd.DataFrame) -> None:
 def compute_reference_vector(df: pd.DataFrame) -> pd.Series:
     if 'kt_source' not in df['model'].values:
         raise ValueError("kt_source не найден в model")
-    return df[df['model'] == 'kt_source'][FEATURES].iloc[0]
+    ref_vec = df[df['model'] == 'kt_source'][FEATURES].iloc[0].copy()
+    for feat in ['CondE', 'JSD', 'KL']:
+        if feat in ref_vec:
+            ref_vec[feat] = 0.0
+    return ref_vec
 
 
 def compute_distances(row: pd.Series, ref_vec: pd.Series, coverage: float) -> pd.Series:
