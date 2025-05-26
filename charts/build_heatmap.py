@@ -18,6 +18,13 @@ def save_heatmap(summary: pd.DataFrame, out_dir: Path) -> None:
 
     subset = summary[selected_metrics]
 
+    rename_dict = {
+        'Conditional Complexity': 'CondComp',
+        'Halstead Distinct Operators': 'HalstDO'
+    }
+
+    subset = subset.rename(columns=rename_dict)
+
     plt.figure(figsize=(12, 8))
     sns.heatmap(subset, annot=True, cmap="YlGnBu", cbar_kws={'label': 'Average value'})
     plt.title("Heatmap of Selected Metrics by Model")
