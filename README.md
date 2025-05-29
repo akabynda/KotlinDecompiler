@@ -1,8 +1,7 @@
 # KotlinDecompiler
 
-Toolkit for analyzing and comparing Kotlin decompilation and re-Kotlin conversion methods using structural, entropy, and LM-based metrics.
-
----
+Toolkit for analyzing and comparing Kotlin decompilation and re-Kotlin conversion methods using structural, entropy, and
+LM-based metrics.
 
 ## Setup
 
@@ -14,8 +13,6 @@ Toolkit for analyzing and comparing Kotlin decompilation and re-Kotlin conversio
 2. Install JDK and Kotlin compiler (JVM target 23 recommended).
 3. Prepare a working environment (GPU recommended for model inference).
 
----
-
 ## Repository Structure & Scripts
 
 ### Data Collection
@@ -23,18 +20,18 @@ Toolkit for analyzing and comparing Kotlin decompilation and re-Kotlin conversio
 * **`collect/bytecode/download_datasets.py`**
   Downloads `KExercises` and `KStack-clean` datasets.
 
-  * Output: `originals/` directories with Kotlin `.kt` files.
+    * Output: `originals/` directories with Kotlin `.kt` files.
 
 * **`collect/process_models/compile_models.py`**
   Compiles `.kt` files to bytecode (`bytecode/`).
 
-  * Uses `kotlinc` and fallback Gradle projects if needed.
-  * Logs errors to `compile_errors.log`.
+    * Uses `kotlinc` and fallback Gradle projects if needed.
+    * Logs errors to `compile_errors.log`.
 
 * **`collect/bytecode/bytecode_pair_collector.py`**
   Pairs `.kt` files with their disassembled bytecode (`javap`).
 
-  * Output: `pairs.jsonl` in dataset root.
+    * Output: `pairs.jsonl` in dataset root.
 
 * **`collect/bytecode/merge_datasets.py`**
   Merges datasets, splits into train/test JSON files.
@@ -42,35 +39,29 @@ Toolkit for analyzing and comparing Kotlin decompilation and re-Kotlin conversio
 * **`distribution.py`**
   Builds token and bigram language models from datasets.
 
-  * Output: `unigram.json`, `bigram.json`, `left.json`.
-
----
+    * Output: `unigram.json`, `bigram.json`, `left.json`.
 
 ### Model Inference
 
 * **`collect/process_models/process_model.py`**
   Runs selected AI model (`transformers`) to convert bytecode to Kotlin.
 
-  * Input: `pairs.jsonl`.
-  * Output: JSONL file with model outputs per `kt_path`.
+    * Input: `pairs.jsonl`.
+    * Output: JSONL file with model outputs per `kt_path`.
 
 * **`collect/process_models/merge_all_jsonl_with_hf.py`**
   Merges original data with all model outputs (JSONL).
-
----
 
 ### Metrics Computation
 
 * **`collect/metrics/metrics_for_models.py`**
   Computes structural, entropy, and LM metrics for all outputs.
 
-  * Input: merged JSONL and allowed paths JSON.
-  * Output: CSV file with metrics per model.
+    * Input: merged JSONL and allowed paths JSON.
+    * Output: CSV file with metrics per model.
 
 * **`collect/metrics/metrics_collector.py`**
   Provides methods to compute metrics (`structural`, `entropy`, `lm_metrics`).
-
----
 
 ### Analysis
 
@@ -83,14 +74,10 @@ Toolkit for analyzing and comparing Kotlin decompilation and re-Kotlin conversio
 * **`analysis/best_models.py`**
   Ranks models by metric distance to original code.
 
----
-
 ### Visualization
 
 * **`charts/build_charts.py`**
   Generates bar charts and heatmaps for metrics comparisons.
-
----
 
 ### Model Training
 
@@ -103,14 +90,10 @@ Toolkit for analyzing and comparing Kotlin decompilation and re-Kotlin conversio
 * **`model_train/merge.py`**
   Merges LoRA adapters with base models.
 
----
-
 ### Utilities
 
 * **`dim_reduction/feature_selection.py`**
   Removes low-variance and highly correlated metrics.
-
----
 
 ## Recommended Pipeline
 
@@ -126,8 +109,6 @@ Toolkit for analyzing and comparing Kotlin decompilation and re-Kotlin conversio
 10. (optional) `best_models.py`
 11. (optional) `build_charts.py`
 
----
-
 ## Input/Output Locations
 
 * **Originals:** `dataset/originals/`
@@ -137,12 +118,9 @@ Toolkit for analyzing and comparing Kotlin decompilation and re-Kotlin conversio
 * **Merged metrics:** `metrics_results.csv`
 * **Charts:** `charts/`
 
----
-
 ## Notes
 
 * GPU is recommended for AI model inference.
 * Language models (`unigram`, `bigram`, `left`) must be built before metrics.
 * Fine-tuning (`train.py`) is optional and requires GPU.
 
----
