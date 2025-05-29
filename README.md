@@ -105,9 +105,8 @@ LM-based metrics.
 6. `run_all.py` to run all models  
 7. `merge_all_jsonl_with_hf.py`
 8. `metrics_for_models.py`
-9. (optional) `tests_J2K.py`, `tests_ChatGPT.py`
-10. (optional) `best_models.py`
-11. (optional) `build_charts.py`
+9. (optional) `best_models.py`
+10. (optional) `build_charts.py`
 
 ## Input/Output Locations
 
