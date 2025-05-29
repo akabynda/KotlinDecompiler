@@ -102,7 +102,7 @@ LM-based metrics.
 3. `bytecode_pair_collector.py`
 4. `merge_datasets.py` (optional)
 5. `distribution.py`
-6. `process_model.py <model_name>` for each model
+6. `run_all.py` to run all models  
 7. `merge_all_jsonl_with_hf.py`
 8. `metrics_for_models.py`
 9. (optional) `tests_J2K.py`, `tests_ChatGPT.py`
