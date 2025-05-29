@@ -100,7 +100,7 @@ LM-based metrics.
 1. `download_datasets.py`
 2. `compile_models.py`
 3. `bytecode_pair_collector.py`
-4. `merge_datasets.py` (optional)
+4. `merge_datasets.py`
 5. `distribution.py`
 6. `run_all.py` to run all models  
 7. `merge_all_jsonl_with_hf.py`
