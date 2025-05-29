@@ -1,7 +1,12 @@
 """
-Любая функция, помеченная декоратором @metric, автоматически
-попадает в общий реестр и будет вызвана в analyse_tests_metrics.py
+This module dynamically imports all submodules of the current package, except for __init__.py.
+This ensures that any metric functions decorated with @metric in submodules
+are automatically registered and available for usage.
 """
+
+import importlib
+import pathlib
+import pkgutil
 from typing import Callable, Dict
 
 registry: Dict[str, Callable] = {}
@@ -14,10 +19,6 @@ def metric(name: str):
 
     return wrapper
 
-
-import importlib
-import pkgutil
-import pathlib
 
 _pkg_path = pathlib.Path(__file__).parent
 for m in pkgutil.iter_modules([str(_pkg_path)]):

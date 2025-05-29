@@ -1,192 +1,204 @@
 import gc
 import json
 import sys
-from typing import List
+from pathlib import Path
+from typing import List, Optional
 
 import torch
 from datasets import load_dataset
 from tqdm.auto import tqdm
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedModel, PreTrainedTokenizerBase
 
 from collect.process_models.shared import Config, Row
 from utils.extract_kotlin import extract_kotlin
 from utils.gen_len_stats import gen_len_stats
-from utils.make_example import to_bytecode
+from utils.make_prompt import to_bytecode
 from utils.model_batch_size import model_batch_size
 
-CFG = Config()
 
+class ModelProcessor:
+    """
+    Processes a model by generating Kotlin source code from bytecode and saving the results.
+    """
 
-def load_rows() -> list[Row]:
-    ds = load_dataset(CFG.dataset_name, split=CFG.split, streaming=False)
-    return [Row(r["kt_path"], r["kt_source"], to_bytecode(r)) for r in ds]
+    def __init__(self, model_name: str) -> None:
+        self.cfg: Config = Config()
+        self.model_name: str = model_name
+        self.model: Optional[PreTrainedModel] = None
+        self.tokenizer: Optional[PreTrainedTokenizerBase] = None
+        self.output_file: Path = self.cfg.out_dir / f"{self.model_name.split('/')[-1]}.jsonl"
 
+    def load_rows(self) -> List[Row]:
+        """
+        Load dataset rows.
+        """
+        ds = load_dataset(self.cfg.dataset_name, split=self.cfg.split, streaming=False)
+        return [Row(r["kt_path"], r["kt_source"], to_bytecode(r)) for r in ds]
 
-def build_prompt(model_name: str, bytecode: str, tokenizer) -> str:
-    head = "Convert the following JVM byte‑code into **Kotlin source**.\nOutput **Kotlin code ONLY**"
-    if model_name.startswith("Qwen/"):
-        tmpl = [{"role": "user", "content": f"{head}\n\n### Byte‑code\n{bytecode}\n\n### Kotlin"}]
-        return tokenizer.apply_chat_template(tmpl, tokenize=False, add_generation_prompt=True)
-    return f"### Task\n{head}\n\n### Byte‑code\n{bytecode}\n\n### Kotlin\n"
+    @staticmethod
+    def build_prompt(model_name: str, bytecode: str, tokenizer: PreTrainedTokenizerBase) -> str:
+        """
+        Build a prompt for the model based on the given bytecode.
+        """
+        head = "Convert the following JVM byte‑code into **Kotlin source**.\nOutput **Kotlin code ONLY**"
+        if model_name.startswith("Qwen/"):
+            tmpl = [{"role": "user", "content": f"{head}\n\n### Byte‑code\n{bytecode}\n\n### Kotlin"}]
+            return tokenizer.apply_chat_template(tmpl, tokenize=False, add_generation_prompt=True)
+        return f"### Task\n{head}\n\n### Byte‑code\n{bytecode}\n\n### Kotlin\n"
 
+    @staticmethod
+    def _hf_generate(
+            model: PreTrainedModel,
+            tokenizer: PreTrainedTokenizerBase,
+            prompts: List[str],
+            max_new: int,
+            do_sample: bool = False,
+            temperature: Optional[float] = None,
+            top_p: Optional[float] = None,
+            top_k: Optional[float] = None,
+    ) -> List[str]:
+        """
+        Generate predictions from the model.
+        """
+        encodings = tokenizer(prompts, return_tensors="pt", padding=True, truncation=True).to(model.device)
+        input_len = encodings.input_ids.shape[1]
+        max_length = input_len + max_new
 
-def _hf_generate(
-        model: torch.nn.Module,
-        tokenizer,
-        prompts: List[str],
-        *,
-        max_new: int,
-        do_sample: bool = False,
-        temperature: float | None = None,
-        top_p: float | None = None,
-        top_k: float | None = None,
-) -> List[str]:
-    enc = tokenizer(
-        prompts,
-        return_tensors="pt",
-        padding=True,
-        truncation=True,
-    ).to(model.device)
+        with torch.inference_mode(), torch.amp.autocast("cuda"):
+            outputs = model.generate(
+                **encodings,
+                max_length=max_length,
+                do_sample=do_sample,
+                pad_token_id=tokenizer.eos_token_id,
+                eos_token_id=tokenizer.eos_token_id,
+                temperature=temperature,
+                top_p=top_p,
+                top_k=top_k,
+                num_beams=1,
+            )
 
-    input_len = enc.input_ids.shape[1]
-    max_length = input_len + max_new
+        results = tokenizer.batch_decode(outputs[:, input_len:], skip_special_tokens=True)
+        del encodings, outputs
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+        return results
 
-    with torch.inference_mode(), torch.amp.autocast("cuda"):
-        out = model.generate(
-            **enc,
-            max_length=max_length,
-            do_sample=do_sample,
-            pad_token_id=tokenizer.eos_token_id,
-            eos_token_id=tokenizer.eos_token_id,
-            temperature=temperature,
-            top_p=top_p,
-            top_k=top_k,
-            num_beams=1
-        )
-    res = tokenizer.batch_decode(out[:, input_len:], skip_special_tokens=True)
-
-    del enc, out
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
-
-    return res
-
-
-def load_model(name):
-    try:
-        return AutoModelForCausalLM.from_pretrained(
-            name,
-            device_map="auto",
-            torch_dtype=torch.float16 if torch.cuda.is_available() else None,
-            trust_remote_code=True,
-            quantization_config=CFG.quant_4bit,
-        )
-    except ValueError as e:
-        print(f"4-bit quant failed for {name}: {e}\n")
+    def load_model(self) -> PreTrainedModel:
+        """
+        Load the model with appropriate quantization if available.
+        """
         try:
             return AutoModelForCausalLM.from_pretrained(
-                name,
+                self.model_name,
                 device_map="auto",
                 torch_dtype=torch.float16 if torch.cuda.is_available() else None,
-                quantization_config=CFG.quant_8bit,
                 trust_remote_code=True,
+                quantization_config=self.cfg.quant_4bit,
             )
         except ValueError as e:
-            print(f"8-bit quant failed for {name}: {e}\n")
-            return AutoModelForCausalLM.from_pretrained(
-                name,
-                device_map="auto",
-                torch_dtype=torch.float16 if torch.cuda.is_available() else None,
-                trust_remote_code=True,
-            )
-
-
-def unload_model(model, tok):
-    gc.collect()
-    del model
-    del tok
-
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
-        torch.cuda.ipc_collect()
-
-
-def process_model_hf(name: str, rows: List[Row]) -> None:
-    col = name.split("/")[-1]
-    outfile = CFG.out_dir / f"{col}.jsonl"
-
-    done = set()
-    if outfile.exists():
-        with outfile.open() as file:
-            done = {json.loads(line)["kt_path"] for line in file}
-
-    if len(done) >= CFG.dataset_size:
-        return
-
-    print(f"[HF] loading {name}")
-    tokenizer = AutoTokenizer.from_pretrained(name, padding_side='left')
-    model = load_model(name).eval()
-
-    if tokenizer.pad_token is None:
-        tokenizer.pad_token = tokenizer.eos_token
-
-    batch_size = model_batch_size(model, CFG.est_scale)
-    print("batch size:", batch_size)
-    max_new, _ratio = gen_len_stats(rows, tokenizer)
-
-    print("max_new:", max_new)
-
-    buf: list[dict] = []
-    prompts, payload = [], []
-    with outfile.open("a", encoding="utf-8") as f_out:
-        for row in tqdm(rows, desc=col):
-            if row.kt_path in done:
-                continue
-            prompts.append(build_prompt(name, row.bytecode, tokenizer=tokenizer))
-            payload.append(row)
-            if len(prompts) >= batch_size:
-                answers = _hf_generate(
-                    model,
-                    tokenizer,
-                    prompts,
-                    max_new=max_new,
-                    do_sample=False
+            print(f"4-bit quant failed for {self.model_name}: {e}")
+            try:
+                return AutoModelForCausalLM.from_pretrained(
+                    self.model_name,
+                    device_map="auto",
+                    torch_dtype=torch.float16 if torch.cuda.is_available() else None,
+                    trust_remote_code=True,
+                    quantization_config=self.cfg.quant_8bit,
                 )
+            except ValueError as e:
+                print(f"8-bit quant failed for {self.model_name}: {e}")
+                return AutoModelForCausalLM.from_pretrained(
+                    self.model_name,
+                    device_map="auto",
+                    torch_dtype=torch.float16 if torch.cuda.is_available() else None,
+                    trust_remote_code=True,
+                )
+
+    @staticmethod
+    def unload_model(model: PreTrainedModel, tokenizer: PreTrainedTokenizerBase) -> None:
+        """
+        Release GPU memory and clean up.
+        """
+        gc.collect()
+        del model, tokenizer
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.ipc_collect()
+
+    def process(self) -> None:
+        """
+        Process the dataset with the model and save the results.
+        """
+        done = set()
+        if self.output_file.exists():
+            with self.output_file.open() as f:
+                done = {json.loads(line)["kt_path"] for line in f}
+
+        if len(done) >= self.cfg.dataset_size:
+            return
+
+        print(f"[HF] loading {self.model_name}")
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name, padding_side="left")
+        self.model = self.load_model().eval()
+
+        if self.tokenizer.pad_token is None:
+            self.tokenizer.pad_token = self.tokenizer.eos_token
+
+        batch_size = model_batch_size(self.model, self.cfg.est_scale)
+        print("Batch size:", batch_size)
+        rows = self.load_rows()
+        rows.sort(key=lambda r: len(r.bytecode))
+        rows = rows[:self.cfg.dataset_size]
+        max_new, _ = gen_len_stats(rows, self.tokenizer)
+        print("max_new:", max_new)
+
+        buffer: List[dict] = []
+        prompts: List[str] = []
+        payload: List[Row] = []
+
+        with self.output_file.open("a", encoding="utf-8") as f_out:
+            for row in tqdm(rows, desc=self.model_name.split("/")[-1]):
+                if row.kt_path in done:
+                    continue
+                prompts.append(self.build_prompt(self.model_name, row.bytecode, self.tokenizer))
+                payload.append(row)
+
+                if len(prompts) >= batch_size:
+                    answers = self._hf_generate(self.model, self.tokenizer, prompts, max_new=max_new)
+                    for r, ans in zip(payload, answers):
+                        buffer.append({"kt_path": r.kt_path, self.model_name.split("/")[-1]: extract_kotlin(ans)})
+                    prompts.clear()
+                    payload.clear()
+
+                if len(buffer) >= self.cfg.flush_every:
+                    for item in buffer:
+                        f_out.write(json.dumps(item, ensure_ascii=False) + "\n")
+                    f_out.flush()
+                    buffer.clear()
+
+            # Final flush
+            if prompts:
+                answers = self._hf_generate(self.model, self.tokenizer, prompts, max_new=max_new)
                 for r, ans in zip(payload, answers):
-                    buf.append({"kt_path": r.kt_path, col: extract_kotlin(ans)})
-                prompts.clear()
-                payload.clear()
-            if len(buf) >= CFG.flush_every:
-                for item in buf:
-                    f_out.write(json.dumps(item, ensure_ascii=False) + "\n")
-                f_out.flush()
-                buf.clear()
-        # tail
-        if prompts:
-            answers = _hf_generate(
-                model,
-                tokenizer,
-                prompts,
-                max_new=max_new,
-                do_sample=False
-            )
-            for r, ans in zip(payload, answers):
-                buf.append({"kt_path": r.kt_path, col: extract_kotlin(ans)})
-        for item in buf:
-            f_out.write(json.dumps(item, ensure_ascii=False) + "\n")
+                    buffer.append({"kt_path": r.kt_path, self.model_name.split("/")[-1]: extract_kotlin(ans)})
+            for item in buffer:
+                f_out.write(json.dumps(item, ensure_ascii=False) + "\n")
 
-    unload_model(model, tokenizer)
+        self.unload_model(self.model, self.tokenizer)
+        print("Processing completed!")
 
 
-if __name__ == "__main__":
+def main() -> None:
     if len(sys.argv) != 2:
         print("Usage: python process_model.py <model_name>")
         sys.exit(1)
 
     model_name = sys.argv[1]
-
     print(f"Processing model: {model_name}")
-    rows = load_rows()
-    rows.sort(key=lambda r: len(r.bytecode))
-    rows = rows[:CFG.dataset_size]
-    process_model_hf(model_name, rows)
+
+    processor = ModelProcessor(model_name)
+    processor.process()
+
+
+if __name__ == "__main__":
+    main()

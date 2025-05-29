@@ -10,6 +10,5 @@ def _get_parser():
 
 
 def parse(code: str):
-    """Вернёт root‑узел AST для переданной строки кода."""
     parser = _get_parser()
     return parser.parse(code.encode('utf8')).root_node

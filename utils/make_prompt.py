@@ -1,7 +1,7 @@
 from collect.process_models.shared import Row
 
 
-def make_example(rec: Row):
+def make_prompt(rec: Row):
     prompt = (
         "<|im_start|>system\n"
         "Convert the following JVM byte-code into **Kotlin source code**.\n"

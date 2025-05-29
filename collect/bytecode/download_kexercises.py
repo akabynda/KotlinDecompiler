@@ -1,47 +1,69 @@
-import sys
 from pathlib import Path
-from typing import Iterable, Dict, Any
+from typing import Any, Dict, Iterable
 
 from datasets import load_dataset
 
 
-def get_exercises_dataset(
-        split: str = "train",
-        streaming: bool = True
-) -> Iterable[Dict[str, Any]]:
-    dataset = load_dataset(
-        "JetBrains/KExercises",
-        split=split,
-        streaming=streaming
-    )
-    for example in dataset:
-        yield example
+class KExercisesDownloader:
+    """
+    Processes the JetBrains/KExercises dataset and saves Kotlin solutions to individual files.
+    """
 
+    def __init__(
+            self,
+            split: str = "train",
+            streaming: bool = True,
+            output_dir: Path = Path("./kexercises/originals"),
+    ) -> None:
+        """
+        Initialize the processor.
 
-def save_exercises(
-        dataset: Iterable[Dict[str, Any]],
-        originals_root: Path
-) -> None:
-    originals_root.mkdir(parents=True, exist_ok=True)
-    for idx, example in enumerate(dataset):
-        name = f"{idx}"
-        folder = originals_root / name
-        folder.mkdir(parents=True, exist_ok=True)
-        file_path = folder / f"solution_{idx}.kt"
-        file_path.write_text(example.get("problem", "").strip() + "\n" + example.get("solution", "").strip(),
-                             encoding="utf-8")
+        Args:
+            split (str): Dataset split to use (default: "train").
+            streaming (bool): Whether to stream the dataset (default: True).
+            output_dir (Path): Directory to save extracted solutions (default: "./kexercises/originals").
+        """
+        self.split: str = split
+        self.streaming: bool = streaming
+        self.output_dir: Path = output_dir
 
+    def load_dataset(self) -> Iterable[Dict[str, Any]]:
+        """
+        Load the dataset.
 
-def main() -> None:
-    output_root = Path("./kexercises/originals")
-    split = "train"
-    streaming_flag = True
+        Yields:
+            dict: Each example from the dataset.
+        """
+        dataset = load_dataset(
+            "JetBrains/KExercises",
+            split=self.split,
+            streaming=self.streaming
+        )
+        for example in dataset:
+            yield example
 
-    ds = get_exercises_dataset(split, streaming_flag)
-    save_exercises(ds, output_root)
+    def save_exercises(self, dataset: Iterable[Dict[str, Any]]) -> None:
+        """
+        Save each example as a separate Kotlin file.
 
-    print("Saved", output_root)
+        Args:
+            dataset (Iterable[dict]): Dataset to process.
+        """
+        self.output_dir.mkdir(parents=True, exist_ok=True)
+        for idx, example in enumerate(dataset):
+            folder = self.output_dir / f"{idx}"
+            folder.mkdir(parents=True, exist_ok=True)
 
+            file_path = folder / f"solution_{idx}.kt"
+            problem = example.get("problem", "").strip()
+            solution = example.get("solution", "").strip()
+            combined_code = f"{problem}\n{solution}"
 
-if __name__ == "__main__":
-    sys.exit(main())
+            file_path.write_text(combined_code, encoding="utf-8")
+
+    def process(self) -> None:
+        """
+        Full pipeline: load the dataset and save the exercises.
+        """
+        dataset = self.load_dataset()
+        self.save_exercises(dataset)
