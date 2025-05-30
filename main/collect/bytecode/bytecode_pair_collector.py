@@ -10,6 +10,9 @@ from typing import Dict, List, Optional, Tuple
 
 from tqdm import tqdm
 
+DirKey = Tuple[str, Tuple[str, ...], str]
+PkgKey = Tuple[str, Tuple[str, ...], str]
+
 
 class BytecodePairCollector:
     """
