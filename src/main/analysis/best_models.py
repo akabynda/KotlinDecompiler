@@ -4,7 +4,7 @@ from typing import Tuple
 import pandas as pd
 from scipy.spatial.distance import euclidean, cityblock, cosine, chebyshev
 
-from global_config import FEATURES, COV_EPS
+from src.global_config import FEATURES, COV_EPS
 
 
 class MetricProcessor:

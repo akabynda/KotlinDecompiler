@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-from global_config import FEATURES
+from src.global_config import FEATURES
 
 
 class MetricVisualizer:

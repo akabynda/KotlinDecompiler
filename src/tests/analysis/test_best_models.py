@@ -2,7 +2,7 @@ from unittest import mock
 
 import pandas as pd
 import pytest
-from global_config import FEATURES
+from src.global_config import FEATURES
 
 from src.main.analysis.best_models import MetricProcessor
 

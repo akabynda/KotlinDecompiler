@@ -21,7 +21,7 @@ from transformers import (
 )
 
 from src.main.collect.process_models.shared import Row
-from global_config import GLOBAL_SEED, FEATURES
+from src.global_config import GLOBAL_SEED, FEATURES
 from src.main.model_train.make_model import make_model
 from train.config import (
     VAL_SUBSET_SIZE,

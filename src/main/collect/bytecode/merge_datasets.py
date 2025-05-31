@@ -3,7 +3,7 @@ from pathlib import Path
 
 from datasets import Dataset, DatasetDict, concatenate_datasets, load_dataset
 
-from global_config import GLOBAL_SEED
+from src.global_config import GLOBAL_SEED
 
 
 class DatasetMerger:

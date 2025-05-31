@@ -15,7 +15,7 @@ from transformers import (
     set_seed,
 )
 
-from global_config import GLOBAL_SEED
+from src.global_config import GLOBAL_SEED
 from src.main.model_train import config
 from src.main.model_train.make_model import make_model
 from src.main.utils.clear_hf_cache import clear_hf_cache
