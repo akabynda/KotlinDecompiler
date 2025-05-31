@@ -9,8 +9,18 @@ from src.main.collect.process_models.save_models_by_column import JSONLProcessor
 def sample_jsonl(tmp_path):
     # Sample JSONL data: 2 records, 2 models
     records = [
-        {"kt_path": "a.kt", "modelA": "fun a() {}", "modelB": {"field": 1}, "classes": None},
-        {"kt_path": "b.kt", "modelA": "", "modelB": "fun b() {}", "extra": "will_be_ignored"}
+        {
+            "kt_path": "a.kt",
+            "modelA": "fun a() {}",
+            "modelB": {"field": 1},
+            "classes": None,
+        },
+        {
+            "kt_path": "b.kt",
+            "modelA": "",
+            "modelB": "fun b() {}",
+            "extra": "will_be_ignored",
+        },
     ]
     jsonl = tmp_path / "data.jsonl"
     with jsonl.open("w", encoding="utf-8") as f:

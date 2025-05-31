@@ -8,7 +8,7 @@ _DECISIONS = {
     "while_statement",
     "do_while_statement",
     "for_statement",
-    "catch_clause"
+    "catch_clause",
 }
 
 

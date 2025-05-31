@@ -61,7 +61,9 @@ class MetricVisualizer:
         }
 
         for cat in categories:
-            sub_df = self.dataframe.loc[self.dataframe[self.skip_columns[1]] == cat, self.metrics]
+            sub_df = self.dataframe.loc[
+                self.dataframe[self.skip_columns[1]] == cat, self.metrics
+            ]
             data[self.skip_columns[1]].append(cat)
             for metric in self.metrics:
                 data[metric].append(sub_df[metric].mean())
@@ -80,13 +82,17 @@ class MetricVisualizer:
 
         for metric in summary.columns:
             if self.reference_model not in summary.index:
-                print(f"Reference '{self.reference_model}' not found for metric '{metric}', skipping...")
+                print(
+                    f"Reference '{self.reference_model}' not found for metric '{metric}', skipping..."
+                )
                 continue
 
             ref_value = summary.loc[self.reference_model, metric]
             sorted_summary = summary.copy()
             sorted_summary["distance"] = (sorted_summary[metric] - ref_value).abs()
-            sorted_summary = sorted_summary.sort_values("distance").drop(columns="distance")
+            sorted_summary = sorted_summary.sort_values("distance").drop(
+                columns="distance"
+            )
 
             plt.figure(figsize=(10, 4))
             sorted_summary[metric].plot(kind="bar")
@@ -94,7 +100,9 @@ class MetricVisualizer:
             plt.ylabel("Average value")
             plt.xticks(rotation=45, ha="right")
             plt.tight_layout()
-            plt.savefig(self.out_dir / f"{metric.replace(' ', '_')}_by_category.png", dpi=150)
+            plt.savefig(
+                self.out_dir / f"{metric.replace(' ', '_')}_by_category.png", dpi=150
+            )
             plt.close()
 
     def save_heatmap(self, summary: pd.DataFrame) -> None:
@@ -112,13 +120,15 @@ class MetricVisualizer:
         subset = summary[selected_metrics]
 
         rename_dict = {
-            'Conditional Complexity': 'CondComp',
-            'Halstead Distinct Operators': 'HalstDO'
+            "Conditional Complexity": "CondComp",
+            "Halstead Distinct Operators": "HalstDO",
         }
         subset = subset.rename(columns=rename_dict)
 
         plt.figure(figsize=(12, 8))
-        sns.heatmap(subset, annot=True, cmap="YlGnBu", cbar_kws={'label': 'Average value'})
+        sns.heatmap(
+            subset, annot=True, cmap="YlGnBu", cbar_kws={"label": "Average value"}
+        )
         plt.title("Heatmap of Selected Metrics by Model")
         plt.ylabel("Model")
         plt.xlabel("Metric")

@@ -19,7 +19,7 @@ class JSONLProcessor:
         Yields:
             dict: JSON-decoded dictionary for each line.
         """
-        with jsonl_file.open('r', encoding='utf-8') as f:
+        with jsonl_file.open("r", encoding="utf-8") as f:
             for line in f:
                 yield json.loads(line)
 
@@ -38,8 +38,8 @@ class JSONLProcessor:
 
         # Identify model names
         all_models: set[str] = set().union(*(r.keys() for r in records))
-        all_models.discard('classes')
-        all_models.discard('kt_path')
+        all_models.discard("classes")
+        all_models.discard("kt_path")
 
         # Create directories for each model
         for model in all_models:
@@ -47,7 +47,7 @@ class JSONLProcessor:
 
         # Save data for each model
         for rec in records:
-            kt_path: str | None = rec.get('kt_path')
+            kt_path: str | None = rec.get("kt_path")
             if not kt_path:
                 continue
             for model in all_models:
@@ -66,7 +66,7 @@ class JSONLProcessor:
                 else:
                     text = json.dumps(content, ensure_ascii=False)
 
-                dest_file.write_text(text, encoding='utf-8')
+                dest_file.write_text(text, encoding="utf-8")
 
         print(f"All models saved under {output_root}")
 
@@ -82,5 +82,5 @@ def main() -> None:
     processor.save_models_by_column(jsonl_file, output_dir)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

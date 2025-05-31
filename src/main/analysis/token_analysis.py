@@ -76,7 +76,7 @@ class TokenAnalysis:
 def main() -> None:
     analysis = TokenAnalysis(
         dataset_name="akabynda/KExercises-bytecode",
-        tokenizer_name="JetBrains/deepseek-coder-1.3B-kexer"
+        tokenizer_name="JetBrains/deepseek-coder-1.3B-kexer",
     )
 
     df = analysis.analyze()

@@ -17,7 +17,7 @@ def mock_examples():
             "name": "repo1",
             "commit_sha": "1234567890abcdef",
             "path": "src/main.kt",
-            "content": "fun main() = println(\"Hello\")",
+            "content": 'fun main() = println("Hello")',
         },
         {
             "owner": "user1",
@@ -52,7 +52,9 @@ def test_init_custom(tmp_path):
     Tests initialization with custom arguments.
     """
     out_dir = tmp_path / "custom"
-    downloader = KStackCleanDownloader(output_root=out_dir, split="test", streaming=False)
+    downloader = KStackCleanDownloader(
+        output_root=out_dir, split="test", streaming=False
+    )
     assert downloader.output_root == out_dir
     assert downloader.originals_root == out_dir / "originals"
     assert downloader.split == "test"
@@ -66,7 +68,9 @@ def test_load_dataset_yields_kt_only(monkeypatch, mock_examples):
     downloader = KStackCleanDownloader()
     # Patch load_dataset from datasets to yield our mock examples
     mock_loader = mock.Mock(return_value=iter(mock_examples))
-    monkeypatch.setattr("main.collect.bytecode.download_kstack_clean.load_dataset", mock_loader)
+    monkeypatch.setattr(
+        "main.collect.bytecode.download_kstack_clean.load_dataset", mock_loader
+    )
 
     # Should only yield examples with .kt paths
     filtered = list(downloader.load_dataset())

@@ -17,7 +17,7 @@ def make_prompt(rec: Row):
         "text": prompt + target,
         "kt_path": rec.kt_path,
         "bytecode": rec.bytecode,
-        "kt_source": rec.kt_source
+        "kt_source": rec.kt_source,
     }
 
 
@@ -25,7 +25,7 @@ def wrap_as_row(example):
     return Row(
         kt_path=example["kt_path"],
         kt_source=example["kt_source"],
-        bytecode=to_bytecode(example)
+        bytecode=to_bytecode(example),
     )
 
 

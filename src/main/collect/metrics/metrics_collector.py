@@ -25,7 +25,9 @@ class MetricsCollector:
         self.entropy: Entropy = Entropy(language)
         self.decompilers: Set[str] = {"Bytecode", "CFR", "JDGUI", "Fernflower"}
         self.converters: Set[str] = {"ChatGPT", "J2K"}
-        self._issue_re = re.compile(r"^(?P<issue>\w+)\s+-.*\s+at\s+(?P<path>/.*?):\d+:\d+")
+        self._issue_re = re.compile(
+            r"^(?P<issue>\w+)\s+-.*\s+at\s+(?P<path>/.*?):\d+:\d+"
+        )
 
     @staticmethod
     def read_kt(path: Path) -> str:
@@ -90,7 +92,9 @@ class MetricsCollector:
             "CondE": self.entropy.conditional_entropy(orig, dec),
         }
 
-    def load_lm(self, lm_dir: Optional[Path] = None) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
+    def load_lm(
+        self, lm_dir: Optional[Path] = None
+    ) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
         """
         Load language model probabilities from JSON files.
 
@@ -110,8 +114,13 @@ class MetricsCollector:
             p_left = json.load(f)
         return p_uni, p_bi, p_left
 
-    def lm_metrics(self, p_uni: Dict[str, Any], p_bi: Dict[str, Any], p_left: Dict[str, Any], src: str) -> Dict[
-        str, float]:
+    def lm_metrics(
+        self,
+        p_uni: Dict[str, Any],
+        p_bi: Dict[str, Any],
+        p_left: Dict[str, Any],
+        src: str,
+    ) -> Dict[str, float]:
         """
         Compute language model-based metrics.
 
@@ -178,7 +187,9 @@ class MetricsCollector:
         return tests
 
     @staticmethod
-    def build_pairs(tests: Dict[str, Dict[str, Any]]) -> List[Tuple[str, str, str, str]]:
+    def build_pairs(
+        tests: Dict[str, Dict[str, Any]],
+    ) -> List[Tuple[str, str, str, str]]:
         """
         Build pairs of (test, category, decompiled/original code, original code).
 

@@ -22,5 +22,5 @@ def metric(name: str):
 
 _pkg_path = pathlib.Path(__file__).parent
 for m in pkgutil.iter_modules([str(_pkg_path)]):
-    if m.name != '__init__':
+    if m.name != "__init__":
         importlib.import_module(f"{__name__}.{m.name}")

@@ -9,7 +9,7 @@ _DECISIONS = {
     "do_while_statement",
     "for_statement",
     "catch_clause",
-    "binary_expression"
+    "binary_expression",
 }
 
 

@@ -169,8 +169,10 @@ class KotlinBytecodeCompiler:
             (tmp / "settings.gradle.kts").write_text(
                 'rootProject.name = "synthetic"\n', encoding="utf-8"
             )
-            deps_block = "\n".join(
-                f'    implementation("{c}")' for c in sorted(dependencies)) or "    // no external deps"
+            deps_block = (
+                "\n".join(f'    implementation("{c}")' for c in sorted(dependencies))
+                or "    // no external deps"
+            )
             (tmp / "build.gradle.kts").write_text(
                 f"""
 plugins {{
@@ -226,7 +228,14 @@ dependencies {{
         with tempfile.TemporaryDirectory() as tmpdir:
             tmp_out = Path(tmpdir) / "out"
             tmp_out.mkdir()
-            cmd = ["kotlinc", "-jvm-target", "23", *map(str, kt_files), "-d", str(tmp_out)]
+            cmd = [
+                "kotlinc",
+                "-jvm-target",
+                "23",
+                *map(str, kt_files),
+                "-d",
+                str(tmp_out),
+            ]
             res = subprocess.run(cmd, capture_output=True, text=True)
             if res.returncode != 0:
                 return False, res.stderr
@@ -296,7 +305,11 @@ dependencies {{
         repos = self.find_repositories()
         print(f"Found {len(repos)} repositories.")
 
-        tasks = [(repo, self.bytecode_root) for repo in repos if not (self.bytecode_root / repo.name).exists()]
+        tasks = [
+            (repo, self.bytecode_root)
+            for repo in repos
+            if not (self.bytecode_root / repo.name).exists()
+        ]
         random.shuffle(tasks)
         print(f"Found {len(tasks)} tasks to compile.")
 

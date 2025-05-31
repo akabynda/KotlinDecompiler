@@ -10,6 +10,7 @@ class Row:
         self.kt_source = kt_source
         self.bytecode = bytecode
 
+
 @pytest.mark.parametrize(
     "kt_path, kt_source, bytecode, expected_prompt, expected_target",
     [
@@ -28,7 +29,7 @@ class Row:
                 "<|im_start|>assistant\n"
             ),
             "```kotlin\nfun main() {\n  println(42)\n}\n```\n<|im_end|>\n",
-            id="basic"
+            id="basic",
         ),
         pytest.param(
             "A.kt",
@@ -45,7 +46,7 @@ class Row:
                 "<|im_start|>assistant\n"
             ),
             "```kotlin\nclass A {}\n```\n<|im_end|>\n",
-            id="no-trailing-newline"
+            id="no-trailing-newline",
         ),
         pytest.param(
             "Path/Bar.kt",
@@ -62,11 +63,13 @@ class Row:
                 "<|im_start|>assistant\n"
             ),
             "```kotlin\nval x = 123\n```\n<|im_end|>\n",
-            id="single-line-kt"
+            id="single-line-kt",
         ),
-    ]
+    ],
 )
-def test_make_prompt_format(kt_path, kt_source, bytecode, expected_prompt, expected_target):
+def test_make_prompt_format(
+    kt_path, kt_source, bytecode, expected_prompt, expected_target
+):
     """
     Test that make_prompt returns the prompt and target formatted exactly as required.
     """
@@ -80,6 +83,7 @@ def test_make_prompt_format(kt_path, kt_source, bytecode, expected_prompt, expec
     assert result["bytecode"] == bytecode
     assert result["kt_source"] == kt_source
 
+
 def test_make_prompt_trailing_newline_handling():
     """
     The Kotlin source should not lose its final newline inside the code block.
@@ -91,6 +95,7 @@ def test_make_prompt_trailing_newline_handling():
     # There is always exactly one newline before the code block ends
     assert result["text"].split("```kotlin\n")[1].endswith("\n```\n<|im_end|>\n")
 
+
 def test_make_prompt_multiline_bytecode():
     """
     The user prompt should include the bytecode block exactly.
@@ -101,6 +106,7 @@ def test_make_prompt_multiline_bytecode():
     # User prompt ends after all bytecode lines
     assert "<|im_start|>user\nline1\nline2\nline3\n<|im_end|>" in result["text"]
 
+
 def test_make_prompt_with_wrap_and_to_bytecode():
     """
     Test integration: wrap_as_row and to_bytecode cooperate as expected.
@@ -108,10 +114,7 @@ def test_make_prompt_with_wrap_and_to_bytecode():
     example = {
         "kt_path": "Q.kt",
         "kt_source": "fun q() {}",
-        "classes": [
-            {"javap": "first"},
-            {"javap": "second"}
-        ]
+        "classes": [{"javap": "first"}, {"javap": "second"}],
     }
     row = wrap_as_row(example)
     # to_bytecode called by wrap_as_row
@@ -121,13 +124,14 @@ def test_make_prompt_with_wrap_and_to_bytecode():
     assert "first\nsecond" in prompt_dict["text"]
     assert "fun q() {}" in prompt_dict["text"]
 
+
 @pytest.mark.parametrize(
     "kt_source",
     [
         "fun foo() {}\n",
         "fun bar() {}",
         "",
-    ]
+    ],
 )
 def test_make_prompt_code_block_exact(kt_source):
     """
@@ -138,6 +142,7 @@ def test_make_prompt_code_block_exact(kt_source):
     code_block = f"```kotlin\n{kt_source.rstrip()}\n```\n<|im_end|>\n"
     assert code_block in result["text"]
 
+
 @pytest.mark.parametrize(
     "example, expected_bytecode",
     [
@@ -147,7 +152,7 @@ def test_make_prompt_code_block_exact(kt_source):
                 "kt_source": "val x = 0",
                 "classes": [{"javap": "abc"}, {"javap": "def"}],
             },
-            "abc\ndef"
+            "abc\ndef",
         ),
         (
             {
@@ -155,7 +160,7 @@ def test_make_prompt_code_block_exact(kt_source):
                 "kt_source": "",
                 "classes": [],
             },
-            ""
+            "",
         ),
         (
             {
@@ -163,9 +168,9 @@ def test_make_prompt_code_block_exact(kt_source):
                 "kt_source": "a",
                 "classes": [{"javap": "unique"}],
             },
-            "unique"
+            "unique",
         ),
-    ]
+    ],
 )
 def test_to_bytecode_and_wrap_as_row(example, expected_bytecode):
     """
@@ -176,4 +181,3 @@ def test_to_bytecode_and_wrap_as_row(example, expected_bytecode):
     assert row.bytecode == expected_bytecode
     assert row.kt_path == example["kt_path"]
     assert row.kt_source == example["kt_source"]
-

@@ -1,5 +1,3 @@
-
-
 from unittest import mock
 
 import pandas as pd
@@ -15,10 +13,10 @@ def sample_metrics_df() -> pd.DataFrame:
     Provides a sample metrics DataFrame for testing.
     """
     data = {
-        'model': ['kt_source', 'model1'],
+        "model": ["kt_source", "model1"],
     }
     for i, feat in enumerate(FEATURES):
-        data[feat] = [float(i), float(i+1)]
+        data[feat] = [float(i), float(i + 1)]
     return pd.DataFrame(data)
 
 
@@ -27,10 +25,7 @@ def sample_comp_df() -> pd.DataFrame:
     """
     Provides a sample compilation DataFrame for testing.
     """
-    data = {
-        'field': ['model1'],
-        'repo_count': [10]
-    }
+    data = {"field": ["model1"], "repo_count": [10]}
     return pd.DataFrame(data)
 
 
@@ -63,9 +58,9 @@ def test_compute_reference_vector(sample_metrics_df: pd.DataFrame) -> None:
     ref_vec: pd.Series = processor.compute_reference_vector(sample_metrics_df)
 
     assert isinstance(ref_vec, pd.Series)
-    assert ref_vec['CondE'] == 0.0
-    assert ref_vec['JSD'] == 0.0
-    assert ref_vec['KL'] == 0.0
+    assert ref_vec["CondE"] == 0.0
+    assert ref_vec["JSD"] == 0.0
+    assert ref_vec["KL"] == 0.0
 
 
 def test_compute_distances(sample_metrics_df: pd.DataFrame) -> None:
@@ -80,23 +75,29 @@ def test_compute_distances(sample_metrics_df: pd.DataFrame) -> None:
     distances: pd.Series = processor.compute_distances(row, ref_vec, coverage)
 
     assert isinstance(distances, pd.Series)
-    for metric in ['euclidean', 'manhattan', 'cosine', 'chebyshev']:
+    for metric in ["euclidean", "manhattan", "cosine", "chebyshev"]:
         assert metric in distances
         assert metric + "_cov" in distances
 
 
-def test_process_pipeline(monkeypatch: pytest.MonkeyPatch, sample_metrics_df: pd.DataFrame, sample_comp_df: pd.DataFrame) -> None:
+def test_process_pipeline(
+    monkeypatch: pytest.MonkeyPatch,
+    sample_metrics_df: pd.DataFrame,
+    sample_comp_df: pd.DataFrame,
+) -> None:
     """
     Tests the main processing pipeline end-to-end, without actual file I/O.
     """
     processor = MetricProcessor("metrics.csv", "comp.csv", "output.csv")
 
-    monkeypatch.setattr(processor, "load_data", lambda: (sample_metrics_df, sample_comp_df))
+    monkeypatch.setattr(
+        processor, "load_data", lambda: (sample_metrics_df, sample_comp_df)
+    )
     monkeypatch.setattr(processor, "validate_columns", lambda df: None)
     monkeypatch.setattr(
         processor,
         "compute_reference_vector",
-        lambda df: df.loc[df["model"] == "kt_source", FEATURES].iloc[0]
+        lambda df: df.loc[df["model"] == "kt_source", FEATURES].iloc[0],
     )
 
     # Patch to_csv to capture the output DataFrame instead of writing to file

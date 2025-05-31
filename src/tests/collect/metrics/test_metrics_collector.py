@@ -35,28 +35,32 @@ def test_structural_calls_registry(monkeypatch):
     called = {}
     # Patch parse and registry
     monkeypatch.setattr("main.utils.kotlin_parser.parse", lambda src: tree_obj)
-    monkeypatch.setattr("main.metrics.registry", {"foo": lambda tree: 1.23, "bar": lambda tree: 4.56})
+    monkeypatch.setattr(
+        "main.metrics.registry", {"foo": lambda tree: 1.23, "bar": lambda tree: 4.56}
+    )
     result = MetricsCollector.structural("some code")
-    assert result == {'Abrupt Control Flow': 0,
-                      'Chapin Q': 0.0,
-                      'Conditional Complexity': 0.0,
-                      'Conditional Statements': 0,
-                      'Cyclomatic Complexity': 1,
-                      'Halstead Bugs': 0,
-                      'Halstead Difficulty': 0,
-                      'Halstead Distinct Operands': 0,
-                      'Halstead Distinct Operators': 0,
-                      'Halstead Effort': 0,
-                      'Halstead Length': 0,
-                      'Halstead Time': 0.0,
-                      'Halstead Total Operands': 0,
-                      'Halstead Total Operators': 0,
-                      'Halstead Vocabulary': 0,
-                      'Halstead Volume': 0,
-                      'Labeled Blocks': 0,
-                      'Local Variables': 0,
-                      'Pivovarsky N(G)': 1,
-                      'Program Size': 4}
+    assert result == {
+        "Abrupt Control Flow": 0,
+        "Chapin Q": 0.0,
+        "Conditional Complexity": 0.0,
+        "Conditional Statements": 0,
+        "Cyclomatic Complexity": 1,
+        "Halstead Bugs": 0,
+        "Halstead Difficulty": 0,
+        "Halstead Distinct Operands": 0,
+        "Halstead Distinct Operators": 0,
+        "Halstead Effort": 0,
+        "Halstead Length": 0,
+        "Halstead Time": 0.0,
+        "Halstead Total Operands": 0,
+        "Halstead Total Operators": 0,
+        "Halstead Vocabulary": 0,
+        "Halstead Volume": 0,
+        "Labeled Blocks": 0,
+        "Local Variables": 0,
+        "Pivovarsky N(G)": 1,
+        "Program Size": 4,
+    }
 
 
 def test_entropy_metrics_calls_entropy_methods(collector, monkeypatch):
@@ -88,13 +92,7 @@ def test_lm_metrics_calls_entropy_methods(collector):
     collector.entropy.jensen_shannon_distance_lang = mock.Mock(return_value=4)
     collector.entropy.conditional_entropy_lang = mock.Mock(return_value=5)
     res = collector.lm_metrics({"u": 1}, {"b": 2}, {"l": 3}, "code")
-    assert res == {
-        "LM_CE": 1,
-        "LM_KL": 2,
-        "LM_PPL": 3,
-        "LM_JSD": 4,
-        "LM_CondE": 5
-    }
+    assert res == {"LM_CE": 1, "LM_KL": 2, "LM_PPL": 3, "LM_JSD": 4, "LM_CondE": 5}
 
 
 def test_collect_tests_finds_and_reads(tmp_path, monkeypatch, collector):
@@ -103,7 +101,9 @@ def test_collect_tests_finds_and_reads(tmp_path, monkeypatch, collector):
     (test1 / "Bytecode").mkdir()
     (test1 / "Bytecode" / "FileChatGPT.kt").write_text("converted")
     (test1 / "Original.kt").write_text("original code")
-    monkeypatch.setattr(collector, "read_kt_flat", lambda p: (p / "Original.kt").read_text())
+    monkeypatch.setattr(
+        collector, "read_kt_flat", lambda p: (p / "Original.kt").read_text()
+    )
     monkeypatch.setattr(collector, "read_kt", lambda p: p.read_text())
     out = collector.collect_tests(tmp_path)
     assert "test1" in out
@@ -114,12 +114,7 @@ def test_collect_tests_finds_and_reads(tmp_path, monkeypatch, collector):
 
 def test_build_pairs_works():
     # test that build_pairs returns the correct structure
-    tests = {
-        "T": {
-            "orig": "SRC",
-            "decs": {"Cat1": "DEC1", "Cat2": "DEC2"}
-        }
-    }
+    tests = {"T": {"orig": "SRC", "decs": {"Cat1": "DEC1", "Cat2": "DEC2"}}}
     pairs = MetricsCollector.build_pairs(tests)
     assert ("T", "Original", "SRC", "SRC") in pairs
     assert ("T", "Cat1", "DEC1", "SRC") in pairs

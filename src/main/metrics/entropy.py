@@ -48,7 +48,7 @@ class Entropy:
         bp, up = bigram(p_src)
         bq, _ = bigram(q_src)
         res = 0.0
-        for (a, b) in self.merge(bp, bq):
+        for a, b in self.merge(bp, bq):
             q = bq.get((a, b), eps)
             p_cond = bp.get((a, b), eps) / up.get(a, eps)
             res += q * math.log2(1 / max(p_cond, eps))
@@ -56,19 +56,24 @@ class Entropy:
 
     def cross_entropy(self, p_src: str, q_src: str, eps=1e-12):
         p, q = self.dist(p_src), self.dist(q_src)
-        return sum(q.get(k, eps) * math.log2(1 / max(p.get(k, eps), eps))
-                   for k in self.merge(p, q))
+        return sum(
+            q.get(k, eps) * math.log2(1 / max(p.get(k, eps), eps))
+            for k in self.merge(p, q)
+        )
 
     def kl_div(self, p_src: str, q_src: str, eps=1e-12):
         p, q = self.dist(p_src), self.dist(q_src)
-        return sum(q.get(k, eps) * math.log2(max(q.get(k, eps), eps) /
-                                             max(p.get(k, eps), eps))
-                   for k in self.merge(p, q))
+        return sum(
+            q.get(k, eps) * math.log2(max(q.get(k, eps), eps) / max(p.get(k, eps), eps))
+            for k in self.merge(p, q)
+        )
 
     def entropy(self, src: str):
         return self.cross_entropy(src, src)
 
-    def jensen_shannon_divergence(self, p: dict[str, float], q: dict[str, float], eps=1e-12) -> float:
+    def jensen_shannon_divergence(
+        self, p: dict[str, float], q: dict[str, float], eps=1e-12
+    ) -> float:
         m = {k: 0.5 * (p.get(k, 0.0) + q.get(k, 0.0)) for k in self.merge(p, q)}
         kl_pm = 0.0
         kl_qm = 0.0
@@ -91,19 +96,25 @@ class Entropy:
 
     def cross_entropy_lang(self, lang_dist: dict[str, float], src: str, eps=1e-12):
         q = self.dist(src)
-        return sum(q.get(k, eps) * math.log2(1 / max(lang_dist.get(k, eps), eps))
-                   for k in self.merge(lang_dist, q))
+        return sum(
+            q.get(k, eps) * math.log2(1 / max(lang_dist.get(k, eps), eps))
+            for k in self.merge(lang_dist, q)
+        )
 
     def kl_div_lang(self, lang_dist: dict[str, float], src: str, eps=1e-12):
         q = self.dist(src)
-        return sum(q.get(k, eps) * math.log2(max(q.get(k, eps), eps) /
-                                             max(lang_dist.get(k, eps), eps))
-                   for k in self.merge(lang_dist, q))
+        return sum(
+            q.get(k, eps)
+            * math.log2(max(q.get(k, eps), eps) / max(lang_dist.get(k, eps), eps))
+            for k in self.merge(lang_dist, q)
+        )
 
     def perplexity_lang(self, lang_dist: dict[str, float], src: str, eps=1e-12):
         return 2 ** self.cross_entropy_lang(lang_dist, src, eps)
 
-    def jensen_shannon_distance_lang(self, lang_dist: dict[str, float], src: str, eps=1e-12) -> float:
+    def jensen_shannon_distance_lang(
+        self, lang_dist: dict[str, float], src: str, eps=1e-12
+    ) -> float:
         q_dist = self.dist(src)
         divergence = self.jensen_shannon_divergence(lang_dist, q_dist, eps=eps)
         return math.sqrt(divergence)

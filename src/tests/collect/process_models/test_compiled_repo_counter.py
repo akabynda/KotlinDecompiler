@@ -27,6 +27,7 @@ def sample_dataset(tmp_path):
     (tmp_path / "modelC").mkdir()
     return tmp_path
 
+
 def test_count_compiles_correct_results(sample_dataset):
     crc = CompiledRepoCounter(sample_dataset)
     crc.count()
@@ -41,6 +42,7 @@ def test_count_compiles_correct_results(sample_dataset):
         elif field == "modelB":
             assert count == 0
 
+
 def test_count_compiled_info_paths(sample_dataset):
     crc = CompiledRepoCounter(sample_dataset)
     crc.count()
@@ -49,6 +51,7 @@ def test_count_compiled_info_paths(sample_dataset):
     assert any(f == "repo1/File.kt" for f in files)
     # modelB should have no files
     assert crc.compiled_info["modelB"] == []
+
 
 def test_save_results_creates_csv_and_json(sample_dataset, monkeypatch):
     crc = CompiledRepoCounter(sample_dataset)
@@ -69,11 +72,13 @@ def test_save_results_creates_csv_and_json(sample_dataset, monkeypatch):
     assert "modelA" in data
     assert isinstance(data["modelA"], list)
 
+
 def test_save_plot_creates_png(sample_dataset, monkeypatch):
     crc = CompiledRepoCounter(sample_dataset)
     crc.count()
     # Patch plt.savefig to a mock
     import matplotlib.pyplot as plt
+
     mock_savefig = mock.Mock()
     monkeypatch.setattr(plt, "savefig", mock_savefig)
     crc._save_plot()

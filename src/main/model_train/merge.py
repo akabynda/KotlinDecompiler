@@ -28,9 +28,7 @@ class ModelMerger:
         """
         print("Loading base model ...")
         base_model = AutoModelForCausalLM.from_pretrained(
-            MODEL,
-            device_map="auto",
-            trust_remote_code=True
+            MODEL, device_map="auto", trust_remote_code=True
         )
 
         print("Loading PEFT adapter ...")

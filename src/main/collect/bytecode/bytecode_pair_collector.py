@@ -90,9 +90,7 @@ class BytecodePairCollector:
 
         with ProcessPoolExecutor(max_workers=multiprocessing.cpu_count() - 1) as pool:
             tasks = (kt for kt in self.originals_root.rglob("*.kt"))
-            for dir_key, pkg_key, kt_path in pool.map(
-                    partial(self._index_one), tasks
-            ):
+            for dir_key, pkg_key, kt_path in pool.map(partial(self._index_one), tasks):
                 if dir_key in idx_dir:
                     raise ValueError(f"Duplicate file {kt_path}")
                 idx_dir[dir_key] = kt_path
@@ -108,8 +106,8 @@ class BytecodePairCollector:
         for cls in self.bytecode_root.rglob("*.class"):
             p = cls.as_posix()
             if "/META-INF/" in p or any(
-                    p.startswith(self.bytecode_root.joinpath(pref).as_posix())
-                    for pref in skipped_prefixes
+                p.startswith(self.bytecode_root.joinpath(pref).as_posix())
+                for pref in skipped_prefixes
             ):
                 continue
 
@@ -142,11 +140,13 @@ class BytecodePairCollector:
             stdout, stderr, code = self.run_command(["javap", "-c", "-p", str(c)])
             if stdout.strip():
                 all_empty = False
-            class_entries.append({
-                "class_path": str(c.relative_to(self.bytecode_root)),
-                "javap": stdout,
-                "javap_err": stderr
-            })
+            class_entries.append(
+                {
+                    "class_path": str(c.relative_to(self.bytecode_root)),
+                    "javap": stdout,
+                    "javap_err": stderr,
+                }
+            )
 
         if all_empty:
             print(f"\nSkipped: {kt_path} — all javap outputs are empty.")
@@ -163,11 +163,14 @@ class BytecodePairCollector:
         out_path.parent.mkdir(parents=True, exist_ok=True)
         tasks = [(kt_path, cls_list) for kt_path, cls_list in pairs.items() if cls_list]
 
-        with out_path.open("w", encoding="utf-8") as fh, \
-                ProcessPoolExecutor(max_workers=multiprocessing.cpu_count() // 2) as pool:
-            for json_line in tqdm(pool.map(self._build_record, tasks, chunksize=8),
-                                  total=len(tasks),
-                                  desc="javap"):
+        with out_path.open("w", encoding="utf-8") as fh, ProcessPoolExecutor(
+            max_workers=multiprocessing.cpu_count() // 2
+        ) as pool:
+            for json_line in tqdm(
+                pool.map(self._build_record, tasks, chunksize=8),
+                total=len(tasks),
+                desc="javap",
+            ):
                 if json_line is not None:
                     fh.write(json_line + "\n")
 
@@ -179,7 +182,9 @@ PkgKey = Tuple[str, Tuple[str, ...], str]
 
 
 def main() -> None:
-    ds_root = Path(input("Path to dataset (must contain originals/ and bytecode/): ").strip()).resolve()
+    ds_root = Path(
+        input("Path to dataset (must contain originals/ and bytecode/): ").strip()
+    ).resolve()
     if not (ds_root / "originals").is_dir() or not (ds_root / "bytecode").is_dir():
         raise SystemExit("originals/ or bytecode/ not found.")
 

@@ -34,7 +34,7 @@ LORA_CFG: Dict[str, Any] = {
     "lora_dropout": 0.05,
     "bias": "none",
     "target_modules": "all-linear",
-    "init_lora_weights": "gaussian"
+    "init_lora_weights": "gaussian",
 }
 
 # Optimizer parameters

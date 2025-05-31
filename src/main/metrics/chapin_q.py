@@ -4,7 +4,13 @@ from src.main.metrics import metric
 
 _READ = {"identifier"}
 _WRITE = {"assignment_expression", "var_modifier", "property_declaration"}
-_CTRL = {"if_expression", "when_expression", "while_statement", "do_while_statement", "for_statement"}
+_CTRL = {
+    "if_expression",
+    "when_expression",
+    "while_statement",
+    "do_while_statement",
+    "for_statement",
+}
 
 
 @metric("Chapin Q")

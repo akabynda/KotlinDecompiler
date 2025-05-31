@@ -30,9 +30,7 @@ class KotlinBytecodeGenerator:
             self.model_dir / "tokenizer", padding_side="left"
         )
         self.model: AutoModelForCausalLM = AutoModelForCausalLM.from_pretrained(
-            self.model_dir / "merged_model",
-            device_map="auto",
-            trust_remote_code=True
+            self.model_dir / "merged_model", device_map="auto", trust_remote_code=True
         )
 
         self.tokenizer.pad_token = self.tokenizer.pad_token or self.tokenizer.eos_token
@@ -40,8 +38,8 @@ class KotlinBytecodeGenerator:
         raw_rows = load_dataset(DATASET, split="test")
         self.rows: List[Row] = sorted(
             (Row(r["kt_path"], r["kt_source"], to_bytecode(r)) for r in raw_rows),
-            key=lambda r: len(r.bytecode)
-        )[:self.num_examples]
+            key=lambda r: len(r.bytecode),
+        )[: self.num_examples]
 
         self.examples: List[dict[str, Any]] = [make_prompt(r) for r in self.rows]
         self.dataset: Dataset = Dataset.from_list(self.examples)
@@ -54,11 +52,15 @@ class KotlinBytecodeGenerator:
         """
         return text.split("<|im_start|>assistant")[0]
 
-    def generate_batch(self, prompts: List[str], paths: List[str]) -> List[dict[str, str]]:
+    def generate_batch(
+        self, prompts: List[str], paths: List[str]
+    ) -> List[dict[str, str]]:
         """
         Generate bytecode predictions for a batch of prompts.
         """
-        inputs = self.tokenizer(prompts, return_tensors="pt", padding=True, truncation=True).to(self.device)
+        inputs = self.tokenizer(
+            prompts, return_tensors="pt", padding=True, truncation=True
+        ).to(self.device)
         input_len = inputs.input_ids.shape[1]
 
         with torch.inference_mode():
@@ -77,10 +79,7 @@ class KotlinBytecodeGenerator:
         for path, output in zip(paths, outputs):
             text = self.tokenizer.decode(output[input_len:], skip_special_tokens=True)
             result = text.split("<|im_end|>")[0].strip()
-            results.append({
-                "kt_path": path,
-                f"{STUDY_NAME}": extract_kotlin(result)
-            })
+            results.append({"kt_path": path, f"{STUDY_NAME}": extract_kotlin(result)})
 
         return results
 
@@ -97,8 +96,8 @@ class KotlinBytecodeGenerator:
 
             with tqdm(total=self.num_examples, desc="Generating") as pbar:
                 while i < self.num_examples:
-                    batch_prompts = prompts[i:i + batch_size]
-                    batch_paths = kt_paths[i:i + batch_size]
+                    batch_prompts = prompts[i : i + batch_size]
+                    batch_paths = kt_paths[i : i + batch_size]
 
                     try:
                         results = self.generate_batch(batch_prompts, batch_paths)

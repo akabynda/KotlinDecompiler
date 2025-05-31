@@ -10,10 +10,10 @@ class KExercisesDownloader:
     """
 
     def __init__(
-            self,
-            split: str = "train",
-            streaming: bool = True,
-            output_dir: Path = Path("kexercises/originals"),
+        self,
+        split: str = "train",
+        streaming: bool = True,
+        output_dir: Path = Path("kexercises/originals"),
     ) -> None:
         """
         Initialize the processor.
@@ -35,9 +35,7 @@ class KExercisesDownloader:
             dict: Each example from the dataset.
         """
         dataset = load_dataset(
-            "JetBrains/KExercises",
-            split=self.split,
-            streaming=self.streaming
+            "JetBrains/KExercises", split=self.split, streaming=self.streaming
         )
         for example in dataset:
             yield example

@@ -7,7 +7,12 @@ from typing import List, Optional
 import torch
 from datasets import load_dataset
 from tqdm.auto import tqdm
-from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedModel, PreTrainedTokenizerBase
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    PreTrainedModel,
+    PreTrainedTokenizerBase,
+)
 
 from src.main.collect.process_models.shared import Config, Row
 from src.main.utils.extract_kotlin import extract_kotlin
@@ -26,7 +31,9 @@ class ModelProcessor:
         self.model_name: str = model_name
         self.model: Optional[PreTrainedModel] = None
         self.tokenizer: Optional[PreTrainedTokenizerBase] = None
-        self.output_file: Path = self.cfg.out_dir / f"{self.model_name.split('/')[-1]}.jsonl"
+        self.output_file: Path = (
+            self.cfg.out_dir / f"{self.model_name.split('/')[-1]}.jsonl"
+        )
 
     def load_rows(self) -> List[Row]:
         """
@@ -36,31 +43,42 @@ class ModelProcessor:
         return [Row(r["kt_path"], r["kt_source"], to_bytecode(r)) for r in ds]
 
     @staticmethod
-    def build_prompt(model_name: str, bytecode: str, tokenizer: PreTrainedTokenizerBase) -> str:
+    def build_prompt(
+        model_name: str, bytecode: str, tokenizer: PreTrainedTokenizerBase
+    ) -> str:
         """
         Build a prompt for the model based on the given bytecode.
         """
         head = "Convert the following JVM byte‑code into **Kotlin source**.\nOutput **Kotlin code ONLY**"
         if model_name.startswith("Qwen/"):
-            tmpl = [{"role": "user", "content": f"{head}\n\n### Byte‑code\n{bytecode}\n\n### Kotlin"}]
-            return tokenizer.apply_chat_template(tmpl, tokenize=False, add_generation_prompt=True)
+            tmpl = [
+                {
+                    "role": "user",
+                    "content": f"{head}\n\n### Byte‑code\n{bytecode}\n\n### Kotlin",
+                }
+            ]
+            return tokenizer.apply_chat_template(
+                tmpl, tokenize=False, add_generation_prompt=True
+            )
         return f"### Task\n{head}\n\n### Byte‑code\n{bytecode}\n\n### Kotlin\n"
 
     @staticmethod
     def _hf_generate(
-            model: PreTrainedModel,
-            tokenizer: PreTrainedTokenizerBase,
-            prompts: List[str],
-            max_new: int,
-            do_sample: bool = False,
-            temperature: Optional[float] = None,
-            top_p: Optional[float] = None,
-            top_k: Optional[float] = None,
+        model: PreTrainedModel,
+        tokenizer: PreTrainedTokenizerBase,
+        prompts: List[str],
+        max_new: int,
+        do_sample: bool = False,
+        temperature: Optional[float] = None,
+        top_p: Optional[float] = None,
+        top_k: Optional[float] = None,
     ) -> List[str]:
         """
         Generate predictions from the model.
         """
-        encodings = tokenizer(prompts, return_tensors="pt", padding=True, truncation=True).to(model.device)
+        encodings = tokenizer(
+            prompts, return_tensors="pt", padding=True, truncation=True
+        ).to(model.device)
         input_len = encodings.input_ids.shape[1]
         max_length = input_len + max_new
 
@@ -77,7 +95,9 @@ class ModelProcessor:
                 num_beams=1,
             )
 
-        results = tokenizer.batch_decode(outputs[:, input_len:], skip_special_tokens=True)
+        results = tokenizer.batch_decode(
+            outputs[:, input_len:], skip_special_tokens=True
+        )
         del encodings, outputs
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
@@ -115,7 +135,9 @@ class ModelProcessor:
                 )
 
     @staticmethod
-    def unload_model(model: PreTrainedModel, tokenizer: PreTrainedTokenizerBase) -> None:
+    def unload_model(
+        model: PreTrainedModel, tokenizer: PreTrainedTokenizerBase
+    ) -> None:
         """
         Release GPU memory and clean up.
         """
@@ -138,7 +160,9 @@ class ModelProcessor:
             return
 
         print(f"[HF] loading {self.model_name}")
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name, padding_side="left")
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            self.model_name, padding_side="left"
+        )
         self.model = self.load_model().eval()
 
         if self.tokenizer.pad_token is None:
@@ -148,7 +172,7 @@ class ModelProcessor:
         print("Batch size:", batch_size)
         rows = self.load_rows()
         rows.sort(key=lambda r: len(r.bytecode))
-        rows = rows[:self.cfg.dataset_size]
+        rows = rows[: self.cfg.dataset_size]
         max_new, _ = gen_len_stats(rows, self.tokenizer)
         print("max_new:", max_new)
 
@@ -160,13 +184,22 @@ class ModelProcessor:
             for row in tqdm(rows, desc=self.model_name.split("/")[-1]):
                 if row.kt_path in done:
                     continue
-                prompts.append(self.build_prompt(self.model_name, row.bytecode, self.tokenizer))
+                prompts.append(
+                    self.build_prompt(self.model_name, row.bytecode, self.tokenizer)
+                )
                 payload.append(row)
 
                 if len(prompts) >= batch_size:
-                    answers = self._hf_generate(self.model, self.tokenizer, prompts, max_new=max_new)
+                    answers = self._hf_generate(
+                        self.model, self.tokenizer, prompts, max_new=max_new
+                    )
                     for r, ans in zip(payload, answers):
-                        buffer.append({"kt_path": r.kt_path, self.model_name.split("/")[-1]: extract_kotlin(ans)})
+                        buffer.append(
+                            {
+                                "kt_path": r.kt_path,
+                                self.model_name.split("/")[-1]: extract_kotlin(ans),
+                            }
+                        )
                     prompts.clear()
                     payload.clear()
 
@@ -178,9 +211,16 @@ class ModelProcessor:
 
             # Final flush
             if prompts:
-                answers = self._hf_generate(self.model, self.tokenizer, prompts, max_new=max_new)
+                answers = self._hf_generate(
+                    self.model, self.tokenizer, prompts, max_new=max_new
+                )
                 for r, ans in zip(payload, answers):
-                    buffer.append({"kt_path": r.kt_path, self.model_name.split("/")[-1]: extract_kotlin(ans)})
+                    buffer.append(
+                        {
+                            "kt_path": r.kt_path,
+                            self.model_name.split("/")[-1]: extract_kotlin(ans),
+                        }
+                    )
             for item in buffer:
                 f_out.write(json.dumps(item, ensure_ascii=False) + "\n")
 

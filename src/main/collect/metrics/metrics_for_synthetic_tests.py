@@ -42,7 +42,10 @@ class SyntheticMetricsCalculator:
             row.update(self.metrics_collector.structural(dec_code))
             row.update(self.metrics_collector.entropy_metrics(orig_code, dec_code))
             row.update(
-                self.metrics_collector.lm_metrics(src=dec_code, p_uni=self.p_uni, p_left=self.p_left, p_bi=self.p_bi))
+                self.metrics_collector.lm_metrics(
+                    src=dec_code, p_uni=self.p_uni, p_left=self.p_left, p_bi=self.p_bi
+                )
+            )
             rows.append(row)
 
         return rows

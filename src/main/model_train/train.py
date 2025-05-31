@@ -63,15 +63,16 @@ class FullFineTuner:
         Load the dataset and wrap Kotlin code as prompts.
         """
         raw_ds = load_dataset(config.DATASET)
-        wrapped_ds = DatasetDict({
-            split: raw_ds[split].map(lambda ex: make_prompt(wrap_as_row(ex)))
-            for split in raw_ds
-        })
+        wrapped_ds = DatasetDict(
+            {
+                split: raw_ds[split].map(lambda ex: make_prompt(wrap_as_row(ex)))
+                for split in raw_ds
+            }
+        )
 
         print("Tokenizing dataset ...")
         tokenized_ds = wrapped_ds.map(
-            self._tokenize,
-            remove_columns=["text", "kt_path"]
+            self._tokenize, remove_columns=["text", "kt_path"]
         )
         return tokenized_ds
 
@@ -90,7 +91,7 @@ class FullFineTuner:
                 "input_ids": ex["input_ids"][:seq_len],
                 "attention_mask": ex["attention_mask"][:seq_len],
             },
-            remove_columns=["input_ids", "attention_mask"]
+            remove_columns=["input_ids", "attention_mask"],
         )
         self.seq_len: int = seq_len
         return train_ds
@@ -103,7 +104,7 @@ class FullFineTuner:
         model = make_model(
             r=config.LORA_CFG["r"],
             alpha=config.LORA_CFG["lora_alpha"],
-            dropout=config.LORA_CFG["lora_dropout"]
+            dropout=config.LORA_CFG["lora_dropout"],
         )
         model.print_trainable_parameters()
         return model
@@ -130,14 +131,16 @@ class FullFineTuner:
             optim="adamw_torch_fused",
         )
 
-        data_collator = DataCollatorForLanguageModeling(tokenizer=self.tokenizer, mlm=False)
+        data_collator = DataCollatorForLanguageModeling(
+            tokenizer=self.tokenizer, mlm=False
+        )
 
         print("Starting training ...")
         trainer = Trainer(
             model=self.model,
             args=training_args,
             train_dataset=self.train_dataset,
-            data_collator=data_collator
+            data_collator=data_collator,
         )
         trainer.train()
 

@@ -13,12 +13,12 @@ class DatasetMerger:
     """
 
     def __init__(
-            self,
-            dataset1_name: str,
-            dataset2_name: str,
-            output_dir: Path,
-            test_size: float = 0.1,
-            seed: int = GLOBAL_SEED,
+        self,
+        dataset1_name: str,
+        dataset2_name: str,
+        output_dir: Path,
+        test_size: float = 0.1,
+        seed: int = GLOBAL_SEED,
     ) -> None:
         """
         Initialize the DatasetMerger.

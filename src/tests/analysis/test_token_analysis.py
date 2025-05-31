@@ -1,5 +1,3 @@
-
-
 from typing import Any
 from unittest import mock
 
@@ -46,21 +44,25 @@ def mock_dataset() -> Dataset:
     Provides a mock dataset for testing.
     """
     data = {
-        "kt_source": ["fun main() = println(\"Hi\")", "val x = 42"],
+        "kt_source": ['fun main() = println("Hi")', "val x = 42"],
         "classes": [
             [{"javap": "public void main() {...}"}],
-            [{"javap": "public final class Main {...}"}]
-        ]
+            [{"javap": "public final class Main {...}"}],
+        ],
     }
     return Dataset.from_dict(data)
 
 
-def test_count_tokens(monkeypatch: pytest.MonkeyPatch, mock_tokenizer: MockTokenizer) -> None:
+def test_count_tokens(
+    monkeypatch: pytest.MonkeyPatch, mock_tokenizer: MockTokenizer
+) -> None:
     """
     Tests token counting logic, isolating from real dataset loading.
     """
-    monkeypatch.setattr("main.analysis.token_analysis.TokenAnalysis.__init__",
-                        lambda self, dataset_name, tokenizer_name: None)
+    monkeypatch.setattr(
+        "main.analysis.token_analysis.TokenAnalysis.__init__",
+        lambda self, dataset_name, tokenizer_name: None,
+    )
 
     analysis = TokenAnalysis(dataset_name="irrelevant", tokenizer_name="irrelevant")
     analysis.tokenizer = mock_tokenizer
@@ -71,12 +73,18 @@ def test_count_tokens(monkeypatch: pytest.MonkeyPatch, mock_tokenizer: MockToken
     assert token_count == 4
 
 
-def test_analyze(monkeypatch: pytest.MonkeyPatch, mock_tokenizer: MockTokenizer, mock_dataset: Dataset) -> None:
+def test_analyze(
+    monkeypatch: pytest.MonkeyPatch,
+    mock_tokenizer: MockTokenizer,
+    mock_dataset: Dataset,
+) -> None:
     """
     Tests the analysis workflow, ensuring the resulting DataFrame has correct structure.
     """
-    monkeypatch.setattr("main.analysis.token_analysis.TokenAnalysis.__init__",
-                        lambda self, dataset_name, tokenizer_name: None)
+    monkeypatch.setattr(
+        "main.analysis.token_analysis.TokenAnalysis.__init__",
+        lambda self, dataset_name, tokenizer_name: None,
+    )
 
     analysis = TokenAnalysis(dataset_name="irrelevant", tokenizer_name="irrelevant")
     analysis.tokenizer = mock_tokenizer
@@ -96,7 +104,7 @@ def test_compute_statistics(capsys: pytest.CaptureFixture[str]) -> None:
     data = {
         "kt_tokens": [1, 2, 3],
         "bc_tokens": [2, 4, 6],
-        "ratio_bc_to_kt": [2.0, 2.0, 2.0]
+        "ratio_bc_to_kt": [2.0, 2.0, 2.0],
     }
     df = pd.DataFrame(data)
 
@@ -109,12 +117,18 @@ def test_compute_statistics(capsys: pytest.CaptureFixture[str]) -> None:
     assert "Median ratio" in captured.out
 
 
-def test_plot_data(monkeypatch: pytest.MonkeyPatch, mock_tokenizer: MockTokenizer, mock_dataset: Dataset) -> None:
+def test_plot_data(
+    monkeypatch: pytest.MonkeyPatch,
+    mock_tokenizer: MockTokenizer,
+    mock_dataset: Dataset,
+) -> None:
     """
     Tests plotting functionality to ensure no errors during plotting.
     """
-    monkeypatch.setattr("main.analysis.token_analysis.TokenAnalysis.__init__",
-                        lambda self, dataset_name, tokenizer_name: None)
+    monkeypatch.setattr(
+        "main.analysis.token_analysis.TokenAnalysis.__init__",
+        lambda self, dataset_name, tokenizer_name: None,
+    )
 
     analysis = TokenAnalysis(dataset_name="irrelevant", tokenizer_name="irrelevant")
     analysis.tokenizer = mock_tokenizer

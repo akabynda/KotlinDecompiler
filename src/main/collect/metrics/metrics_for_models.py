@@ -46,8 +46,10 @@ class ModelMetricsCalculator:
         return row
 
     def prepare_tasks(
-            self, jsonl_file: Path, allowed_paths_file: Path, output_csv: Path
-    ) -> Tuple[List[Tuple[str, str, str, str, List[str]]], List[str], Set[Tuple[str, str]]]:
+        self, jsonl_file: Path, allowed_paths_file: Path, output_csv: Path
+    ) -> Tuple[
+        List[Tuple[str, str, str, str, List[str]]], List[str], Set[Tuple[str, str]]
+    ]:
         """
         Prepare the list of tasks to process and gather existing entries.
 
@@ -113,7 +115,7 @@ class ModelMetricsCalculator:
         return tasks, metric_list, existing
 
     def process_metrics(
-            self, jsonl_file: Path, output_csv: Path, allowed_paths_file: Path
+        self, jsonl_file: Path, output_csv: Path, allowed_paths_file: Path
     ) -> None:
         """
         Compute metrics in parallel and write them to a CSV file.
@@ -123,7 +125,9 @@ class ModelMetricsCalculator:
             output_csv (Path): Path to save the CSV output.
             allowed_paths_file (Path): JSON file with allowed paths.
         """
-        tasks, metric_list, existing = self.prepare_tasks(jsonl_file, allowed_paths_file, output_csv)
+        tasks, metric_list, existing = self.prepare_tasks(
+            jsonl_file, allowed_paths_file, output_csv
+        )
 
         if not output_csv.exists():
             with output_csv.open("w", newline="", encoding="utf-8") as f:
@@ -132,8 +136,9 @@ class ModelMetricsCalculator:
 
         print(f"Total tasks to process: {len(tasks)}")
 
-        with ProcessPoolExecutor(max_workers=self.workers) as executor, \
-                output_csv.open("a", newline="", encoding="utf-8", buffering=1) as f:
+        with ProcessPoolExecutor(max_workers=self.workers) as executor, output_csv.open(
+            "a", newline="", encoding="utf-8", buffering=1
+        ) as f:
             writer = csv.writer(f)
             futures = {executor.submit(self.compute_row, task): task for task in tasks}
             for future in as_completed(futures):

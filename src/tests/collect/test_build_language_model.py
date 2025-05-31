@@ -12,7 +12,10 @@ def dummy_entropy(monkeypatch):
     # Patch Entropy to return simple tokenization
     mock_entropy = mock.Mock()
     mock_entropy.tokens.side_effect = lambda x: x.split() if isinstance(x, str) else []
-    monkeypatch.setattr("main.collect.build_language_model.Entropy", mock.Mock(return_value=mock_entropy))
+    monkeypatch.setattr(
+        "main.collect.build_language_model.Entropy",
+        mock.Mock(return_value=mock_entropy),
+    )
     return mock_entropy
 
 
@@ -31,7 +34,9 @@ def dummy_dataset(monkeypatch):
         else:
             return iter([])
 
-    monkeypatch.setattr("main.collect.build_language_model.load_dataset", fake_load_dataset)
+    monkeypatch.setattr(
+        "main.collect.build_language_model.load_dataset", fake_load_dataset
+    )
     return (rows1, rows2)
 
 
@@ -113,7 +118,7 @@ def test_build_writes_all_json(tmp_path, dummy_entropy, dummy_dataset):
             ("KStack-clean", "content", lambda row: True),
             ("KExercises", "solution", lambda row: True),
         ],
-        tmp_path
+        tmp_path,
     )
     builder.TOKENS_PER_DUMP = 100  # big enough to avoid many partials
     builder.build()
@@ -130,9 +135,12 @@ def test_build_writes_all_json(tmp_path, dummy_entropy, dummy_dataset):
 
 
 def test_merge_partials_handles_no_partials(tmp_path, dummy_entropy, dummy_dataset):
-    builder = LanguageModelBuilder("kotlin", [("KStack-clean", "content", lambda row: True)], tmp_path)
+    builder = LanguageModelBuilder(
+        "kotlin", [("KStack-clean", "content", lambda row: True)], tmp_path
+    )
     shutil.rmtree(builder.tmp_dir)
     import os
+
     orig_rmtree = shutil.rmtree
 
     def safe_rmtree(path, *args, **kwargs):
@@ -154,7 +162,9 @@ def test_process_dataset_respects_filter(tmp_path, dummy_entropy, dummy_dataset)
         ("KStack-clean", "content", lambda row: "x" in row["content"]),
     ]
     builder = LanguageModelBuilder("kotlin", datasets, tmp_path)
-    builder._process_dataset("KStack-clean", "content", lambda row: "x" in row["content"])
+    builder._process_dataset(
+        "KStack-clean", "content", lambda row: "x" in row["content"]
+    )
     # Only dummy rows from dummy_dataset with "x y" (so, two rows)
     # Each "x y" yields two tokens, so total_unigrams should be 0 (since dummy_dataset only gives "a b c" for KStack)
     assert builder.total_unigrams == 0

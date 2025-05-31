@@ -10,10 +10,10 @@ class KStackCleanDownloader:
     """
 
     def __init__(
-            self,
-            output_root: Path = Path("kstack-clean"),
-            split: str = "train",
-            streaming: bool = True,
+        self,
+        output_root: Path = Path("kstack-clean"),
+        split: str = "train",
+        streaming: bool = True,
     ) -> None:
         """
         Initialize the processor.
@@ -36,9 +36,7 @@ class KStackCleanDownloader:
             dict: Example containing a Kotlin file.
         """
         dataset = load_dataset(
-            "JetBrains/KStack-clean",
-            split=self.split,
-            streaming=self.streaming
+            "JetBrains/KStack-clean", split=self.split, streaming=self.streaming
         )
         for example in dataset:
             if example.get("path", "").endswith(".kt"):

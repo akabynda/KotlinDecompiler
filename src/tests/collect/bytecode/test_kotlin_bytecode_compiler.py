@@ -40,7 +40,9 @@ def test_parse_kotlin_imports(tmp_path):
 def test_guess_dependencies_skips_standard(monkeypatch):
     c = KotlinBytecodeCompiler(Path("/tmp/foo"))
     # Patch resolve_artifact to a known result
-    monkeypatch.setattr(c, "resolve_artifact", lambda p: "g:a:+" if p == "abc.def" else None)
+    monkeypatch.setattr(
+        c, "resolve_artifact", lambda p: "g:a:+" if p == "abc.def" else None
+    )
     deps = c.guess_dependencies(["kotlin.math.PI", "abc.def", "java.io.File"])
     assert "g:a:+" in deps
     assert len(deps) == 1
@@ -89,7 +91,9 @@ def test_manual_kotlinc_compile_runs_subprocess(monkeypatch, tmp_repo, tmp_path)
         (Path(cmd[-1]) / "Dummy.class").parent.mkdir(parents=True, exist_ok=True)
         (Path(cmd[-1]) / "Dummy.class").write_text("dummy")
 
-        class Res: returncode = 0; stderr = ""
+        class Res:
+            returncode = 0
+            stderr = ""
 
         return Res()
 
@@ -107,7 +111,8 @@ def test_resolve_artifact_success(monkeypatch):
     class Resp:
         status_code = 200
 
-        def json(self): return {"response": {"docs": [{"g": "g", "a": "a"}]}}
+        def json(self):
+            return {"response": {"docs": [{"g": "g", "a": "a"}]}}
 
     monkeypatch.setattr("requests.get", lambda *a, **k: Resp())
     KotlinBytecodeCompiler.resolve_artifact.cache_clear()
@@ -119,7 +124,8 @@ def test_resolve_artifact_failure(monkeypatch):
     class Resp:
         status_code = 404
 
-        def json(self): return {}
+        def json(self):
+            return {}
 
     monkeypatch.setattr("requests.get", lambda *a, **k: Resp())
     KotlinBytecodeCompiler.resolve_artifact.cache_clear()
@@ -138,7 +144,9 @@ def test_compile_repository_prefers_manual(tmp_repo, tmp_path, monkeypatch):
 def test_compile_repository_fallbacks(tmp_repo, tmp_path, monkeypatch):
     c = KotlinBytecodeCompiler(tmp_path)
     # Fail manual, succeed gradle
-    monkeypatch.setattr(c, "manual_kotlinc_compile", lambda repo, out: (False, "manual fail"))
+    monkeypatch.setattr(
+        c, "manual_kotlinc_compile", lambda repo, out: (False, "manual fail")
+    )
     monkeypatch.setattr(c, "build_with_gradle", lambda repo: (True, ""))
     name, err = c.compile_repository(tmp_repo)
     assert name == tmp_repo.name and err is None
@@ -146,7 +154,9 @@ def test_compile_repository_fallbacks(tmp_repo, tmp_path, monkeypatch):
 
 def test_compile_repository_all_fail(tmp_repo, tmp_path, monkeypatch):
     c = KotlinBytecodeCompiler(tmp_path)
-    monkeypatch.setattr(c, "manual_kotlinc_compile", lambda repo, out: (False, "manual fail"))
+    monkeypatch.setattr(
+        c, "manual_kotlinc_compile", lambda repo, out: (False, "manual fail")
+    )
     monkeypatch.setattr(c, "build_with_gradle", lambda repo: (False, "gradle fail"))
     name, err = c.compile_repository(tmp_repo)
     assert name == tmp_repo.name and err == "gradle fail"
@@ -173,5 +183,7 @@ def test_process_all(monkeypatch, tmp_path):
             func(t)
         return [None for _ in tasks]
 
-    monkeypatch.setattr("main.collect.bytecode.kotlin_bytecode_compiler.process_map", fake_process_map)
+    monkeypatch.setattr(
+        "main.collect.bytecode.kotlin_bytecode_compiler.process_map", fake_process_map
+    )
     c.process_all()

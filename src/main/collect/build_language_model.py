@@ -19,10 +19,10 @@ class LanguageModelBuilder:
     TOKENS_PER_DUMP: int = 10_000_000
 
     def __init__(
-            self,
-            language: str,
-            datasets: list[tuple[str, str, Callable[[dict], bool]]],
-            output_dir: Path
+        self,
+        language: str,
+        datasets: list[tuple[str, str, Callable[[dict], bool]]],
+        output_dir: Path,
     ) -> None:
         """
         Initialize the LanguageModelBuilder.
@@ -66,9 +66,13 @@ class LanguageModelBuilder:
         self.unigram_counter.clear()
         self.bigram_counter.clear()
 
-    def _process_dataset(self, dname: str, col: str, keep: Callable[[dict], bool]) -> None:
+    def _process_dataset(
+        self, dname: str, col: str, keep: Callable[[dict], bool]
+    ) -> None:
         """Process a single dataset and update unigram and bigram counters."""
-        ds: Iterable[dict] = load_dataset(f"JetBrains/{dname}", split="train", streaming=True)
+        ds: Iterable[dict] = load_dataset(
+            f"JetBrains/{dname}", split="train", streaming=True
+        )
         for row in tqdm(ds, desc=dname, leave=False):
             if not keep(row):
                 continue
@@ -119,7 +123,8 @@ class LanguageModelBuilder:
             k: v / self.total_bigrams for k, v in final_bi.items()
         }
         left_prob: dict[str, float] = {
-            a: v / self.total_bigrams for a, v in Counter(a for a, _ in final_bi).items()
+            a: v / self.total_bigrams
+            for a, v in Counter(a for a, _ in final_bi).items()
         }
 
         # Save results
@@ -144,9 +149,7 @@ class LanguageModelBuilder:
             f"{meta['num_bigrams']:,} bigrams, {meta['partials']} partial files merged"
         )
 
-    def _save_json(
-            self, path: Path, data: dict, indent: int | None = None
-    ) -> None:
+    def _save_json(self, path: Path, data: dict, indent: int | None = None) -> None:
         """Save a dictionary as a JSON file."""
         with path.open("w", encoding="utf8") as f:
             json.dump(data, f, ensure_ascii=False, indent=indent)

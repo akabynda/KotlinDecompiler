@@ -49,9 +49,7 @@ class CompileModels:
         print(f"Found {len(repos)} repositories for model '{model}'.")
 
         tasks: List[tuple[Path, Path]] = [
-            (repo, dst)
-            for repo in repos
-            if not (dst / repo.name).exists()
+            (repo, dst) for repo in repos if not (dst / repo.name).exists()
         ]
 
         print(f"Found {len(tasks)} tasks to compile for model '{model}'.")
@@ -61,7 +59,7 @@ class CompileModels:
             tasks,
             max_workers=cpu_count() - 1,
             chunksize=1,
-            desc=f"Compiling ({model})"
+            desc=f"Compiling ({model})",
         )
 
         print(f"Compilation finished for model '{model}'.")

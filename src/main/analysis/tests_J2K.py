@@ -21,8 +21,11 @@ def main() -> None:
         row: Dict[str, str] = {"Test": test_dir.name}
         for decompiler in decompilers:
             decompiler_dir = test_dir / decompiler
-            has_j2k_class = any(
-                "J2K" in cls.name for cls in decompiler_dir.glob("*.class")) if decompiler_dir.is_dir() else False
+            has_j2k_class = (
+                any("J2K" in cls.name for cls in decompiler_dir.glob("*.class"))
+                if decompiler_dir.is_dir()
+                else False
+            )
             row[decompiler] = "+" if has_j2k_class else "-"
             if has_j2k_class:
                 passed[decompiler] += 1

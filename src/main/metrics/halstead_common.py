@@ -1,13 +1,53 @@
 import math
 
 _OPS = {
-    '+', '-', '*', '/', '%', '++', '--', '+=', '-=', '*=', '/=', '%=',
-    '==', '!=', '>', '<', '>=', '<=', '&&', '||', '!', '?', '?:', '?.',
-    '::', '..', '..<', 'in', '!in', 'is', '!is', '=', '->', '@', 'as', 'as?'
+    "+",
+    "-",
+    "*",
+    "/",
+    "%",
+    "++",
+    "--",
+    "+=",
+    "-=",
+    "*=",
+    "/=",
+    "%=",
+    "==",
+    "!=",
+    ">",
+    "<",
+    ">=",
+    "<=",
+    "&&",
+    "||",
+    "!",
+    "?",
+    "?:",
+    "?.",
+    "::",
+    "..",
+    "..<",
+    "in",
+    "!in",
+    "is",
+    "!is",
+    "=",
+    "->",
+    "@",
+    "as",
+    "as?",
 }
 _OPERAND_TYPES = {
-    'identifier', 'this', 'super', 'integer_literal', 'float_literal',
-    'string_literal', 'null_literal', 'boolean_literal', 'character_literal'
+    "identifier",
+    "this",
+    "super",
+    "integer_literal",
+    "float_literal",
+    "string_literal",
+    "null_literal",
+    "boolean_literal",
+    "character_literal",
 }
 
 
@@ -24,8 +64,9 @@ def counts(root):
     ops = set()
     opr = set()
     for leaf in _walk(root):
-        if leaf.text is None: continue
-        txt = leaf.text.decode('utf8')
+        if leaf.text is None:
+            continue
+        txt = leaf.text.decode("utf8")
         if txt in _OPS:
             N1 += 1
             ops.add(txt)

@@ -1,5 +1,3 @@
-
-
 from pathlib import Path
 from unittest import mock
 
@@ -14,7 +12,7 @@ def mock_examples():
     Provides a small iterable of mock examples as would be yielded by the dataset.
     """
     return [
-        {"problem": "fun main() { println(\"Hello\") }", "solution": "// solution code"},
+        {"problem": 'fun main() { println("Hello") }', "solution": "// solution code"},
         {"problem": "fun sum(a:Int,b:Int)=a+b", "solution": "// add implementation"},
     ]
 
@@ -47,7 +45,9 @@ def test_load_dataset_yields_examples(monkeypatch, mock_examples):
     downloader = KExercisesDownloader()
     # Mock datasets.load_dataset to yield our examples
     mock_loader = mock.Mock(return_value=iter(mock_examples))
-    monkeypatch.setattr("main.collect.bytecode.download_kexercises.load_dataset", mock_loader)
+    monkeypatch.setattr(
+        "main.collect.bytecode.download_kexercises.load_dataset", mock_loader
+    )
     result = list(downloader.load_dataset())
     assert result == mock_examples
     mock_loader.assert_called_once_with(
@@ -89,7 +89,9 @@ def test_process_full_pipeline(monkeypatch, tmp_path, mock_examples):
     downloader = KExercisesDownloader(output_dir=tmp_path)
 
     # Patch load_dataset and save_exercises
-    monkeypatch.setattr(downloader, "load_dataset", mock.Mock(return_value=mock_examples))
+    monkeypatch.setattr(
+        downloader, "load_dataset", mock.Mock(return_value=mock_examples)
+    )
     monkeypatch.setattr(downloader, "save_exercises", mock.Mock())
 
     downloader.process()

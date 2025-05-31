@@ -18,19 +18,21 @@ def tmp_jsonl_files(tmp_path):
     file2.write_text("\n".join(json.dumps(x) for x in [d3, d4]), encoding="utf-8")
     return tmp_path, [file1, file2]
 
+
 @pytest.fixture
 def mock_hf(monkeypatch):
     # Base HuggingFace dataset returns two rows
     data = [
         {"kt_path": "f1.kt", "base": "yes"},
         {"kt_path": "f2.kt", "base": "no"},
-        {"kt_path": "f3.kt", "base": "zzz"}
+        {"kt_path": "f3.kt", "base": "zzz"},
     ]
     monkeypatch.setattr(
         "main.collect.process_models.merge_all_jsonl_with_hf.load_dataset",
-        lambda name, split: data
+        lambda name, split: data,
     )
     return data
+
 
 def test_merge_with_hf_dataset(tmp_jsonl_files, mock_hf, tmp_path):
     in_dir, files = tmp_jsonl_files
@@ -48,14 +50,21 @@ def test_merge_with_hf_dataset(tmp_jsonl_files, mock_hf, tmp_path):
     # Should contain merged columns
     assert any("local1" in row or "local2" in row for row in lines)
     # Should drop rows with no local columns at all
-    all_local_empty = [row for row in lines if not any(k.startswith("local") for k in row)]
+    all_local_empty = [
+        row for row in lines if not any(k.startswith("local") for k in row)
+    ]
     assert not all_local_empty
+
 
 def test_duplicate_columns_are_removed(tmp_jsonl_files, mock_hf, tmp_path):
     in_dir, files = tmp_jsonl_files
     # Add a duplicate column in local file
     file1 = in_dir / "dup.jsonl"
-    file1.write_text(json.dumps({"kt_path": "f2.kt", "base": "SHOULD_BE_DROPPED", "localx": "hi"}) + "\n", encoding="utf-8")
+    file1.write_text(
+        json.dumps({"kt_path": "f2.kt", "base": "SHOULD_BE_DROPPED", "localx": "hi"})
+        + "\n",
+        encoding="utf-8",
+    )
     out_path = tmp_path / "out.jsonl"
     merger = DatasetMerger()
     merger.config.dataset_name = "dummy"
@@ -66,6 +75,3 @@ def test_duplicate_columns_are_removed(tmp_jsonl_files, mock_hf, tmp_path):
         rows = [json.loads(l) for l in f if l.strip()]
     row = next(r for r in rows if r["kt_path"] == "f2.kt")
     assert row["base"] == "no"
-
-
-

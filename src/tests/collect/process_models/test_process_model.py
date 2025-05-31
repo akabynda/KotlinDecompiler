@@ -21,12 +21,13 @@ class DummyTokenizer:
                 self["input_ids"] = tensor
                 self.input_ids = tensor
 
-            def to(self, device): return self
+            def to(self, device):
+                return self
 
         return DummyEnc(len(prompts))
 
     def batch_decode(self, outputs, skip_special_tokens=None):
-        return ["GEN1", "GEN2"][:outputs.shape[0]]
+        return ["GEN1", "GEN2"][: outputs.shape[0]]
 
     def apply_chat_template(self, tmpl, tokenize, add_generation_prompt):
         # Used by Qwen models
@@ -36,18 +37,21 @@ class DummyTokenizer:
 class DummyModel:
     device = "cpu"
 
-    def eval(self): return self
+    def eval(self):
+        return self
 
     def generate(self, **kwargs):
         class DummyOut:
             def __getitem__(self, idx):
                 # Return a dummy tensor
                 import numpy as np
+
                 return np.array([[0, 1, 2, 3, 4, 5, 6]])
 
             shape = (2, 7)
 
         import numpy as np
+
         return np.array([[10, 11, 12, 13, 14, 15, 16], [20, 21, 22, 23, 24, 25, 26]])
 
 
@@ -97,11 +101,17 @@ def test_build_prompt_qwen(processor):
 
 def test_load_rows(monkeypatch, processor):
     # Patch load_dataset to yield test data
-    dummy_data = [{"kt_path": "a.kt", "kt_source": "origA", "foo": 1},
-                  {"kt_path": "b.kt", "kt_source": "origB", "foo": 2}]
-    monkeypatch.setattr("main.collect.process_models.process_model.load_dataset",
-                        lambda n, split, streaming: dummy_data)
-    monkeypatch.setattr("main.collect.process_models.process_model.to_bytecode", lambda r: "BYTECODE")
+    dummy_data = [
+        {"kt_path": "a.kt", "kt_source": "origA", "foo": 1},
+        {"kt_path": "b.kt", "kt_source": "origB", "foo": 2},
+    ]
+    monkeypatch.setattr(
+        "main.collect.process_models.process_model.load_dataset",
+        lambda n, split, streaming: dummy_data,
+    )
+    monkeypatch.setattr(
+        "main.collect.process_models.process_model.to_bytecode", lambda r: "BYTECODE"
+    )
     rows = processor.load_rows()
     assert rows[0].kt_path == "a.kt"
     assert rows[0].bytecode == "BYTECODE"
@@ -123,8 +133,10 @@ def test_hf_generate(monkeypatch, processor):
 def test_load_model(monkeypatch, processor):
     # Patch AutoModelForCausalLM
     dummy_model = DummyModel()
-    monkeypatch.setattr("main.collect.process_models.process_model.AutoModelForCausalLM.from_pretrained",
-                        lambda *a, **k: dummy_model)
+    monkeypatch.setattr(
+        "main.collect.process_models.process_model.AutoModelForCausalLM.from_pretrained",
+        lambda *a, **k: dummy_model,
+    )
     monkeypatch.setattr("main.collect.process_models.process_model.torch", mock.Mock())
     m = processor.load_model()
     assert m is dummy_model
@@ -143,19 +155,41 @@ def test_process(monkeypatch, processor, tmp_path):
     processor.cfg.dataset_size = 2
     processor.cfg.flush_every = 1
     processor.output_file = tmp_path / "out.jsonl"
-    monkeypatch.setattr("main.collect.process_models.process_model.extract_kotlin", lambda x: x)
-    monkeypatch.setattr("main.collect.process_models.process_model.to_bytecode", lambda r: r["kt_path"] + "_BC")
-    monkeypatch.setattr("main.collect.process_models.process_model.gen_len_stats", lambda rows, tok: (5, 0))
-    monkeypatch.setattr("main.collect.process_models.process_model.model_batch_size", lambda model, scale: 1)
-    monkeypatch.setattr("main.collect.process_models.process_model.AutoTokenizer.from_pretrained",
-                        lambda n, **k: DummyTokenizer())
-    monkeypatch.setattr("main.collect.process_models.process_model.AutoModelForCausalLM.from_pretrained",
-                        lambda *a, **k: DummyModel())
-    dummy_data = [{"kt_path": "a.kt", "kt_source": "origA"}, {"kt_path": "b.kt", "kt_source": "origB"}]
-    monkeypatch.setattr("main.collect.process_models.process_model.load_dataset",
-                        lambda n, split, streaming: dummy_data)
+    monkeypatch.setattr(
+        "main.collect.process_models.process_model.extract_kotlin", lambda x: x
+    )
+    monkeypatch.setattr(
+        "main.collect.process_models.process_model.to_bytecode",
+        lambda r: r["kt_path"] + "_BC",
+    )
+    monkeypatch.setattr(
+        "main.collect.process_models.process_model.gen_len_stats",
+        lambda rows, tok: (5, 0),
+    )
+    monkeypatch.setattr(
+        "main.collect.process_models.process_model.model_batch_size",
+        lambda model, scale: 1,
+    )
+    monkeypatch.setattr(
+        "main.collect.process_models.process_model.AutoTokenizer.from_pretrained",
+        lambda n, **k: DummyTokenizer(),
+    )
+    monkeypatch.setattr(
+        "main.collect.process_models.process_model.AutoModelForCausalLM.from_pretrained",
+        lambda *a, **k: DummyModel(),
+    )
+    dummy_data = [
+        {"kt_path": "a.kt", "kt_source": "origA"},
+        {"kt_path": "b.kt", "kt_source": "origB"},
+    ]
+    monkeypatch.setattr(
+        "main.collect.process_models.process_model.load_dataset",
+        lambda n, split, streaming: dummy_data,
+    )
     # Don't actually run tqdm for speed
-    monkeypatch.setattr("main.collect.process_models.process_model.tqdm", lambda x, desc=None: x)
+    monkeypatch.setattr(
+        "main.collect.process_models.process_model.tqdm", lambda x, desc=None: x
+    )
     processor.process()
     lines = [json.loads(line) for line in (tmp_path / "out.jsonl").open()]
     assert {"kt_path": "a.kt", "model": "GEN1"} in lines

@@ -23,11 +23,11 @@ def make_model(r: int, alpha: int, dropout: float) -> PeftModel:
             load_in_4bit=True,
             bnb_4bit_quant_type="nf4",
             bnb_4bit_use_double_quant=True,
-            bnb_4bit_compute_dtype=torch.float16
+            bnb_4bit_compute_dtype=torch.float16,
         ),
         trust_remote_code=True,
         device_map="auto",
-        use_cache=False
+        use_cache=False,
     )
 
     base_model = prepare_model_for_kbit_training(base_model)
@@ -40,6 +40,6 @@ def make_model(r: int, alpha: int, dropout: float) -> PeftModel:
             lora_dropout=dropout,
             bias="none",
             target_modules="all-linear",
-            init_lora_weights="gaussian"
-        )
+            init_lora_weights="gaussian",
+        ),
     )

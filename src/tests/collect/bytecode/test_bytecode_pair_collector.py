@@ -50,16 +50,25 @@ def test_get_root_name_and_guess_kt_filename():
 def test_index_kt_files_indexes_by_dir_and_pkg(temp_dataset, monkeypatch):
     collector = BytecodePairCollector(temp_dataset)
     # Patch out pool usage to call _index_one sequentially
-    monkeypatch.setattr("main.collect.bytecode.bytecode_pair_collector.ProcessPoolExecutor",
-                        lambda *a, **kw: MagicMock(__enter__=lambda s: s, __exit__=lambda s, a, b, c: None))
-    monkeypatch.setattr("main.collect.bytecode.bytecode_pair_collector.multiprocessing", MagicMock(cpu_count=lambda: 1))
+    monkeypatch.setattr(
+        "main.collect.bytecode.bytecode_pair_collector.ProcessPoolExecutor",
+        lambda *a, **kw: MagicMock(
+            __enter__=lambda s: s, __exit__=lambda s, a, b, c: None
+        ),
+    )
+    monkeypatch.setattr(
+        "main.collect.bytecode.bytecode_pair_collector.multiprocessing",
+        MagicMock(cpu_count=lambda: 1),
+    )
     files = list((temp_dataset / "originals").rglob("*.kt"))
 
     # Patch pool.map to just map function locally
     def fake_map(fn, tasks):
         return map(fn, tasks)
 
-    with patch("main.collect.bytecode.bytecode_pair_collector.ProcessPoolExecutor") as mock_pool:
+    with patch(
+        "main.collect.bytecode.bytecode_pair_collector.ProcessPoolExecutor"
+    ) as mock_pool:
         mock_pool.return_value.__enter__.return_value = mock_pool
         mock_pool.map.side_effect = fake_map
         idx_dir, idx_pkg = collector.index_kt_files()
@@ -73,9 +82,15 @@ def test_index_kt_files_indexes_by_dir_and_pkg(temp_dataset, monkeypatch):
 def test_build_pairs_finds_match(temp_dataset, monkeypatch):
     collector = BytecodePairCollector(temp_dataset)
     # Patch index_kt_files to controlled values
-    fake_idx_dir = {("repo1", ("test", "pkg"), "foo.kt"): temp_dataset / "originals/repo1/foo.kt"}
-    fake_idx_pkg = {("repo1", ("test", "pkg"), "foo.kt"): [temp_dataset / "originals/repo1/foo.kt"]}
-    monkeypatch.setattr(collector, "index_kt_files", lambda: (fake_idx_dir, fake_idx_pkg))
+    fake_idx_dir = {
+        ("repo1", ("test", "pkg"), "foo.kt"): temp_dataset / "originals/repo1/foo.kt"
+    }
+    fake_idx_pkg = {
+        ("repo1", ("test", "pkg"), "foo.kt"): [temp_dataset / "originals/repo1/foo.kt"]
+    }
+    monkeypatch.setattr(
+        collector, "index_kt_files", lambda: (fake_idx_dir, fake_idx_pkg)
+    )
     # Create matching class in bytecode/repo1/test/pkg/FooKt.class
     result = collector.build_pairs()
     assert (temp_dataset / "originals/repo1/foo.kt") in result
@@ -121,7 +136,9 @@ def test_write_jsonl_writes_lines(monkeypatch, tmp_path):
     out_path = tmp_path / "out.jsonl"
     pairs = {kt: [cls]}
     # Patch ProcessPoolExecutor to just map sequentially for test
-    with patch("main.collect.bytecode.bytecode_pair_collector.ProcessPoolExecutor") as mock_pool:
+    with patch(
+        "main.collect.bytecode.bytecode_pair_collector.ProcessPoolExecutor"
+    ) as mock_pool:
         mock_pool.return_value.__enter__.return_value = mock_pool
         mock_pool.map.side_effect = lambda f, tasks, chunksize=None: map(f, tasks)
         collector.write_jsonl(pairs, out_path)

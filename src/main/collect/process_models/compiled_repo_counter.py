@@ -27,7 +27,8 @@ class CompiledRepoCounter:
         Analyze all fields in the dataset and save results.
         """
         fields: List[str] = [
-            p.name for p in self.dataset_root.iterdir()
+            p.name
+            for p in self.dataset_root.iterdir()
             if p.is_dir() and (p / "originals").is_dir()
         ]
 
