@@ -14,7 +14,7 @@ def dummy_metrics_for_models(monkeypatch):
     mock_coll.lm_metrics.return_value = {"bar": 2.0}
     mock_coll.entropy_metrics.return_value = {"baz": 3.0}
     monkeypatch.setattr(
-        "main.collect.metrics.metrics_for_models.MetricsCollector",
+        "src.main.collect.metrics.metrics_for_models.MetricsCollector",
         mock.Mock(return_value=mock_coll),
     )
     return mock_coll
@@ -27,7 +27,7 @@ def make_calc_with_dummy_collector(monkeypatch):
     mock_coll.lm_metrics.return_value = {"bar": 2.0}
     mock_coll.entropy_metrics.return_value = {"baz": 3.0}
     monkeypatch.setattr(
-        "main.collect.metrics.metrics_for_models.MetricsCollector",
+        "src.main.collect.metrics.metrics_for_models.MetricsCollector",
         mock.Mock(return_value=mock_coll),
     )
     calc = ModelMetricsCalculator(workers=1)
@@ -94,11 +94,11 @@ def test_prepare_tasks_respects_existing_csv(tmp_path, monkeypatch):
 
 def test_process_metrics_runs_and_writes(tmp_path, monkeypatch):
     monkeypatch.setattr(
-        "main.collect.metrics.metrics_for_models.ProcessPoolExecutor",
+        "src.main.collect.metrics.metrics_for_models.ProcessPoolExecutor",
         lambda max_workers=None: DummyExecutor(),
     )
     monkeypatch.setattr(
-        "main.collect.metrics.metrics_for_models.as_completed", lambda futs: futs
+        "src.main.collect.metrics.metrics_for_models.as_completed", lambda futs: futs
     )
 
     mock_coll = mock.Mock()
@@ -107,7 +107,7 @@ def test_process_metrics_runs_and_writes(tmp_path, monkeypatch):
     mock_coll.lm_metrics.return_value = {"bar": 2.0}
     mock_coll.entropy_metrics.return_value = {"baz": 3.0}
     monkeypatch.setattr(
-        "main.collect.metrics.metrics_for_models.MetricsCollector",
+        "src.main.collect.metrics.metrics_for_models.MetricsCollector",
         mock.Mock(return_value=mock_coll),
     )
     from src.main.collect.metrics.metrics_for_models import ModelMetricsCalculator

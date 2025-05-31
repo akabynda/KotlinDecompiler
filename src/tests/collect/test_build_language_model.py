@@ -13,7 +13,7 @@ def dummy_entropy(monkeypatch):
     mock_entropy = mock.Mock()
     mock_entropy.tokens.side_effect = lambda x: x.split() if isinstance(x, str) else []
     monkeypatch.setattr(
-        "main.collect.build_language_model.Entropy",
+        "src.main.collect.build_language_model.Entropy",
         mock.Mock(return_value=mock_entropy),
     )
     return mock_entropy
@@ -35,7 +35,7 @@ def dummy_dataset(monkeypatch):
             return iter([])
 
     monkeypatch.setattr(
-        "main.collect.build_language_model.load_dataset", fake_load_dataset
+        "src.main.collect.build_language_model.load_dataset", fake_load_dataset
     )
     return (rows1, rows2)
 

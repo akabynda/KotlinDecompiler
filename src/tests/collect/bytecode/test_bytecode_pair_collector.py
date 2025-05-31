@@ -51,13 +51,13 @@ def test_index_kt_files_indexes_by_dir_and_pkg(temp_dataset, monkeypatch):
     collector = BytecodePairCollector(temp_dataset)
     # Patch out pool usage to call _index_one sequentially
     monkeypatch.setattr(
-        "main.collect.bytecode.bytecode_pair_collector.ProcessPoolExecutor",
+        "src.main.collect.bytecode.bytecode_pair_collector.ProcessPoolExecutor",
         lambda *a, **kw: MagicMock(
             __enter__=lambda s: s, __exit__=lambda s, a, b, c: None
         ),
     )
     monkeypatch.setattr(
-        "main.collect.bytecode.bytecode_pair_collector.multiprocessing",
+        "src.main.collect.bytecode.bytecode_pair_collector.multiprocessing",
         MagicMock(cpu_count=lambda: 1),
     )
     files = list((temp_dataset / "originals").rglob("*.kt"))
@@ -67,7 +67,7 @@ def test_index_kt_files_indexes_by_dir_and_pkg(temp_dataset, monkeypatch):
         return map(fn, tasks)
 
     with patch(
-        "main.collect.bytecode.bytecode_pair_collector.ProcessPoolExecutor"
+        "src.main.collect.bytecode.bytecode_pair_collector.ProcessPoolExecutor"
     ) as mock_pool:
         mock_pool.return_value.__enter__.return_value = mock_pool
         mock_pool.map.side_effect = fake_map
@@ -137,7 +137,7 @@ def test_write_jsonl_writes_lines(monkeypatch, tmp_path):
     pairs = {kt: [cls]}
     # Patch ProcessPoolExecutor to just map sequentially for test
     with patch(
-        "main.collect.bytecode.bytecode_pair_collector.ProcessPoolExecutor"
+        "src.main.collect.bytecode.bytecode_pair_collector.ProcessPoolExecutor"
     ) as mock_pool:
         mock_pool.return_value.__enter__.return_value = mock_pool
         mock_pool.map.side_effect = lambda f, tasks, chunksize=None: map(f, tasks)

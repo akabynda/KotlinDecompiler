@@ -46,7 +46,7 @@ def test_load_dataset_yields_examples(monkeypatch, mock_examples):
     # Mock datasets.load_dataset to yield our examples
     mock_loader = mock.Mock(return_value=iter(mock_examples))
     monkeypatch.setattr(
-        "main.collect.bytecode.download_kexercises.load_dataset", mock_loader
+        "src.main.collect.bytecode.download_kexercises.load_dataset", mock_loader
     )
     result = list(downloader.load_dataset())
     assert result == mock_examples

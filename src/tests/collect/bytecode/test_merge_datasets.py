@@ -50,11 +50,11 @@ def test_load_and_merge(monkeypatch, mock_hf_dataset):
 
     # Patch load_dataset and concatenate_datasets
     monkeypatch.setattr(
-        "main.collect.bytecode.merge_datasets.load_dataset",
+        "src.main.collect.bytecode.merge_datasets.load_dataset",
         lambda name, split="train": fake1 if name == "ds1" else fake2,
     )
     monkeypatch.setattr(
-        "main.collect.bytecode.merge_datasets.concatenate_datasets",
+        "src.main.collect.bytecode.merge_datasets.concatenate_datasets",
         lambda datasets: FakeDataset(fake1.items + fake2.items),
     )
 
@@ -100,11 +100,11 @@ def test_process_full_pipeline(monkeypatch, tmp_path, mock_hf_dataset):
     merger = DatasetMerger("ds1", "ds2", tmp_path, test_size=0.25, seed=123)
 
     monkeypatch.setattr(
-        "main.collect.bytecode.merge_datasets.load_dataset",
+        "src.main.collect.bytecode.merge_datasets.load_dataset",
         lambda name, split="train": ds1 if name == "ds1" else ds2,
     )
     monkeypatch.setattr(
-        "main.collect.bytecode.merge_datasets.concatenate_datasets",
+        "src.main.collect.bytecode.merge_datasets.concatenate_datasets",
         lambda datasets: merged,
     )
     monkeypatch.setattr(merger, "shuffle_and_split", lambda d: split)

@@ -69,7 +69,7 @@ def test_load_dataset_yields_kt_only(monkeypatch, mock_examples):
     # Patch load_dataset from datasets to yield our mock examples
     mock_loader = mock.Mock(return_value=iter(mock_examples))
     monkeypatch.setattr(
-        "main.collect.bytecode.download_kstack_clean.load_dataset", mock_loader
+        "src.main.collect.bytecode.download_kstack_clean.load_dataset", mock_loader
     )
 
     # Should only yield examples with .kt paths

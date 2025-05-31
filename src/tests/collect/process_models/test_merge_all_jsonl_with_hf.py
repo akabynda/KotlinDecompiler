@@ -28,7 +28,7 @@ def mock_hf(monkeypatch):
         {"kt_path": "f3.kt", "base": "zzz"},
     ]
     monkeypatch.setattr(
-        "main.collect.process_models.merge_all_jsonl_with_hf.load_dataset",
+        "src.main.collect.process_models.merge_all_jsonl_with_hf.load_dataset",
         lambda name, split: data,
     )
     return data

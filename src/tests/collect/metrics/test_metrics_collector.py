@@ -34,9 +34,9 @@ def test_structural_calls_registry(monkeypatch):
     tree_obj = object()
     called = {}
     # Patch parse and registry
-    monkeypatch.setattr("main.utils.kotlin_parser.parse", lambda src: tree_obj)
+    monkeypatch.setattr("src.main.utils.kotlin_parser.parse", lambda src: tree_obj)
     monkeypatch.setattr(
-        "main.metrics.registry", {"foo": lambda tree: 1.23, "bar": lambda tree: 4.56}
+        "src.main.metrics.registry", {"foo": lambda tree: 1.23, "bar": lambda tree: 4.56}
     )
     result = MetricsCollector.structural("some code")
     assert result == {

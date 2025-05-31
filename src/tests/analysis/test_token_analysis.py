@@ -60,7 +60,7 @@ def test_count_tokens(
     Tests token counting logic, isolating from real dataset loading.
     """
     monkeypatch.setattr(
-        "main.analysis.token_analysis.TokenAnalysis.__init__",
+        "src.main.analysis.token_analysis.TokenAnalysis.__init__",
         lambda self, dataset_name, tokenizer_name: None,
     )
 
@@ -82,7 +82,7 @@ def test_analyze(
     Tests the analysis workflow, ensuring the resulting DataFrame has correct structure.
     """
     monkeypatch.setattr(
-        "main.analysis.token_analysis.TokenAnalysis.__init__",
+        "src.main.analysis.token_analysis.TokenAnalysis.__init__",
         lambda self, dataset_name, tokenizer_name: None,
     )
 
@@ -126,7 +126,7 @@ def test_plot_data(
     Tests plotting functionality to ensure no errors during plotting.
     """
     monkeypatch.setattr(
-        "main.analysis.token_analysis.TokenAnalysis.__init__",
+        "src.main.analysis.token_analysis.TokenAnalysis.__init__",
         lambda self, dataset_name, tokenizer_name: None,
     )
 

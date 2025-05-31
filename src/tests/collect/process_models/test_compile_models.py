@@ -38,7 +38,7 @@ def test_compile_model_invokes_compiler(monkeypatch, fake_dataset):
     # Patch KotlinBytecodeCompiler.find_repositories to just return the two repos
     dummy_repos = [src / "repo1", src / "repo2"]
     monkeypatch.setattr(
-        "main.collect.bytecode.kotlin_bytecode_compiler.KotlinBytecodeCompiler.find_repositories",
+        "src.main.collect.bytecode.kotlin_bytecode_compiler.KotlinBytecodeCompiler.find_repositories",
         mock.Mock(return_value=dummy_repos),
     )
     # Patch process_map so it doesn't run parallel code, just checks arguments
@@ -49,16 +49,16 @@ def test_compile_model_invokes_compiler(monkeypatch, fake_dataset):
         return [None for _ in tasks]
 
     monkeypatch.setattr(
-        "main.collect.process_models.compile_models.process_map", fake_process_map
+        "src.main.collect.process_models.compile_models.process_map", fake_process_map
     )
     # Patch cpu_count to 2 for determinism
     monkeypatch.setattr(
-        "main.collect.process_models.compile_models.cpu_count",
+        "src.main.collect.process_models.compile_models.cpu_count",
         mock.Mock(return_value=2),
     )
     # Patch compile_task so nothing is actually run
     monkeypatch.setattr(
-        "main.collect.bytecode.kotlin_bytecode_compiler.KotlinBytecodeCompiler.compile_task",
+        "src.main.collect.bytecode.kotlin_bytecode_compiler.KotlinBytecodeCompiler.compile_task",
         mock.Mock(),
     )
     # Create a dummy bytecode dir for repo1 to simulate partial work

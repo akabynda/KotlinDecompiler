@@ -79,8 +79,8 @@ def processor(tmp_path, monkeypatch):
             self.kt_source = kt_source
             self.bytecode = bytecode
 
-    monkeypatch.setattr("main.collect.process_models.process_model.Config", DummyConfig)
-    monkeypatch.setattr("main.collect.process_models.process_model.Row", DummyRow)
+    monkeypatch.setattr("src.main.collect.process_models.process_model.Config", DummyConfig)
+    monkeypatch.setattr("src.main.collect.process_models.process_model.Row", DummyRow)
     return ModelProcessor("dummy/model")
 
 
@@ -106,11 +106,11 @@ def test_load_rows(monkeypatch, processor):
         {"kt_path": "b.kt", "kt_source": "origB", "foo": 2},
     ]
     monkeypatch.setattr(
-        "main.collect.process_models.process_model.load_dataset",
+        "src.main.collect.process_models.process_model.load_dataset",
         lambda n, split, streaming: dummy_data,
     )
     monkeypatch.setattr(
-        "main.collect.process_models.process_model.to_bytecode", lambda r: "BYTECODE"
+        "src.main.collect.process_models.process_model.to_bytecode", lambda r: "BYTECODE"
     )
     rows = processor.load_rows()
     assert rows[0].kt_path == "a.kt"
@@ -124,7 +124,7 @@ def test_hf_generate(monkeypatch, processor):
     fake_torch.inference_mode = fake_cm
     fake_torch.amp = mock.Mock()
     fake_torch.amp.autocast = fake_cm
-    monkeypatch.setattr("main.collect.process_models.process_model.torch", fake_torch)
+    monkeypatch.setattr("src.main.collect.process_models.process_model.torch", fake_torch)
     prompts = ["Prompt1", "Prompt2"]
     outs = processor._hf_generate(model, tokenizer, prompts, max_new=3)
     assert isinstance(outs, list) and len(outs) == 2
@@ -134,10 +134,10 @@ def test_load_model(monkeypatch, processor):
     # Patch AutoModelForCausalLM
     dummy_model = DummyModel()
     monkeypatch.setattr(
-        "main.collect.process_models.process_model.AutoModelForCausalLM.from_pretrained",
+        "src.main.collect.process_models.process_model.AutoModelForCausalLM.from_pretrained",
         lambda *a, **k: dummy_model,
     )
-    monkeypatch.setattr("main.collect.process_models.process_model.torch", mock.Mock())
+    monkeypatch.setattr("src.main.collect.process_models.process_model.torch", mock.Mock())
     m = processor.load_model()
     assert m is dummy_model
 
@@ -146,7 +146,7 @@ def test_unload_model(monkeypatch):
     # Patch torch
     dummy_torch = mock.Mock()
     dummy_torch.cuda.is_available.return_value = False
-    monkeypatch.setattr("main.collect.process_models.process_model.torch", dummy_torch)
+    monkeypatch.setattr("src.main.collect.process_models.process_model.torch", dummy_torch)
     ModelProcessor.unload_model("dummy_model", "dummy_tokenizer")  # Should not error
 
 
@@ -156,26 +156,26 @@ def test_process(monkeypatch, processor, tmp_path):
     processor.cfg.flush_every = 1
     processor.output_file = tmp_path / "out.jsonl"
     monkeypatch.setattr(
-        "main.collect.process_models.process_model.extract_kotlin", lambda x: x
+        "src.main.collect.process_models.process_model.extract_kotlin", lambda x: x
     )
     monkeypatch.setattr(
-        "main.collect.process_models.process_model.to_bytecode",
+        "src.main.collect.process_models.process_model.to_bytecode",
         lambda r: r["kt_path"] + "_BC",
     )
     monkeypatch.setattr(
-        "main.collect.process_models.process_model.gen_len_stats",
+        "src.main.collect.process_models.process_model.gen_len_stats",
         lambda rows, tok: (5, 0),
     )
     monkeypatch.setattr(
-        "main.collect.process_models.process_model.model_batch_size",
+        "src.main.collect.process_models.process_model.model_batch_size",
         lambda model, scale: 1,
     )
     monkeypatch.setattr(
-        "main.collect.process_models.process_model.AutoTokenizer.from_pretrained",
+        "src.main.collect.process_models.process_model.AutoTokenizer.from_pretrained",
         lambda n, **k: DummyTokenizer(),
     )
     monkeypatch.setattr(
-        "main.collect.process_models.process_model.AutoModelForCausalLM.from_pretrained",
+        "src.main.collect.process_models.process_model.AutoModelForCausalLM.from_pretrained",
         lambda *a, **k: DummyModel(),
     )
     dummy_data = [
@@ -183,12 +183,12 @@ def test_process(monkeypatch, processor, tmp_path):
         {"kt_path": "b.kt", "kt_source": "origB"},
     ]
     monkeypatch.setattr(
-        "main.collect.process_models.process_model.load_dataset",
+        "src.main.collect.process_models.process_model.load_dataset",
         lambda n, split, streaming: dummy_data,
     )
     # Don't actually run tqdm for speed
     monkeypatch.setattr(
-        "main.collect.process_models.process_model.tqdm", lambda x, desc=None: x
+        "src.main.collect.process_models.process_model.tqdm", lambda x, desc=None: x
     )
     processor.process()
     lines = [json.loads(line) for line in (tmp_path / "out.jsonl").open()]

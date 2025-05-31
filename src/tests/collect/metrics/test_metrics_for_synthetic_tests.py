@@ -27,7 +27,7 @@ def dummy_collector(monkeypatch):
 
     # Patch where SyntheticMetricsCalculator looks up MetricsCollector
     monkeypatch.setattr(
-        "main.collect.metrics.metrics_for_synthetic_tests.MetricsCollector",
+        "src.main.collect.metrics.metrics_for_synthetic_tests.MetricsCollector",
         mock.Mock(return_value=mock_metrics),
     )
     return mock_metrics
@@ -38,7 +38,7 @@ def test_init_loads_lm(monkeypatch):
     mock_metrics = mock.Mock()
     mock_metrics.load_lm.return_value = ({"u": 1}, {"b": 2}, {"l": 3})
     monkeypatch.setattr(
-        "main.collect.metrics.metrics_for_synthetic_tests.MetricsCollector",
+        "src.main.collect.metrics.metrics_for_synthetic_tests.MetricsCollector",
         mock.Mock(return_value=mock_metrics),
     )
     calc = SyntheticMetricsCalculator(Path("tests"), Path("out.csv"))

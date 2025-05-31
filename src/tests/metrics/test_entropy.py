@@ -37,7 +37,7 @@ class MockParser:
 def mock_entropy(monkeypatch) -> Entropy:
     tokens = ["a", "b", "a", "c"]
     monkeypatch.setattr(
-        "main.metrics.entropy.Entropy.__init__", lambda self, language=None: None
+        "src.main.metrics.entropy.Entropy.__init__", lambda self, language=None: None
     )
     ent = Entropy("anylang")
     ent.parser = None
@@ -113,7 +113,7 @@ def test_perplexity(mock_entropy: Entropy) -> None:
 def test_conditional_entropy(monkeypatch):
     # This test mocks tokens and bigram probabilities directly for controlled value
     monkeypatch.setattr(
-        "main.metrics.entropy.Entropy.__init__", lambda self, language=None: None
+        "src.main.metrics.entropy.Entropy.__init__", lambda self, language=None: None
     )
     ent = Entropy("anylang")
     ent.tokens = lambda src: ["a", "b", "a", "c"] if src == "src1" else ["a", "a", "b"]
@@ -147,7 +147,7 @@ def test_jensen_shannon_distance_lang(mock_entropy: Entropy) -> None:
 
 def test_conditional_entropy_lang(monkeypatch):
     monkeypatch.setattr(
-        "main.metrics.entropy.Entropy.__init__", lambda self, language=None: None
+        "src.main.metrics.entropy.Entropy.__init__", lambda self, language=None: None
     )
     ent = Entropy("anylang")
     ent.tokens = lambda src: ["a", "b", "a", "c"]

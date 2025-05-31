@@ -10,7 +10,7 @@ def tmp_repo(tmp_path):
     """Create a temp repo with a .kt file and return its path."""
     repo = tmp_path / "originals" / "repo1"
     repo.mkdir(parents=True)
-    kt = repo / "Main.kt"
+    kt = repo / "src.main.kt"
     kt.write_text("package foo\nimport kotlin.math.PI\nfun main() {}")
     return repo
 
@@ -184,6 +184,6 @@ def test_process_all(monkeypatch, tmp_path):
         return [None for _ in tasks]
 
     monkeypatch.setattr(
-        "main.collect.bytecode.kotlin_bytecode_compiler.process_map", fake_process_map
+        "src.main.collect.bytecode.kotlin_bytecode_compiler.process_map", fake_process_map
     )
     c.process_all()
